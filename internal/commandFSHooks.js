@@ -26,7 +26,6 @@ const { addPath } = require("../plugins/builtin/internal/codeBinder");
  * @property {moduledata} module
  */
 
-if(!sharedServerData.internal) sharedServerData.internal = {};
 sharedServerData.internal.loadedmodules = {
     children: {},
     path: path.join(__dirname, "../commands"),
