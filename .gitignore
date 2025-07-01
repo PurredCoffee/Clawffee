@@ -1,0 +1,17 @@
+**/*.priv
+**/*.enc
+
+config/*
+!config/internal
+
+commands/*
+!commands/examples
+!commands/examples._conf
+
+plugins/*
+!plugins/builtin
+
+html/images/*
+
+node_modules
+package-lock.json
