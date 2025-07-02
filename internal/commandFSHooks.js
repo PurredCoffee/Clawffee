@@ -46,6 +46,7 @@ const loadedmodules = {
     module: {
         module: null,
         filePath: path.join(__dirname, "../commands"),
+        confPath: path.join(__dirname, "../commands_conf"),
         modulePath: "../commands",
         parsedModulePath: null,
         name: "commands",
@@ -73,7 +74,7 @@ function setupInner(curMod, file) {
     if (!isdir && !file.endsWith(".js")) {
         return;
     }
-    const conf = autoSavedJSON(newfilePath + "._conf", {
+    const conf = autoSavedJSON(curMod.module.confPath + "/" + file + "._conf", {
         enabled: true,
     });
 
@@ -97,6 +98,7 @@ function setupInner(curMod, file) {
         module: {
             module: null,
             filePath: newfilePath,
+            confPath: curMod.module.confPath + "/" + file,
             modulePath: curMod.module.modulePath + "/" + file,
             parsedModulePath: null,
             name: curMod.module.name + "/" + file,
@@ -168,7 +170,7 @@ function removeInner(curMod) {
 
     curMod.module.watcher?.stop?.();
     require("./commandHotReloader").unloadModule(curMod);
-    fs.rmSync(curMod.module.filePath + '._conf');
+    fs.rmSync(curMod.module.confPath + "._conf");
     for (const file in curMod.children) {
         if (Object.prototype.hasOwnProperty.call(curMod, file)) {
             removeInner(curMod.children[file]);

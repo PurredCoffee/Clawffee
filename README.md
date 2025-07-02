@@ -106,8 +106,8 @@ Built-in plugins include:
     const { server } = require('#helpers');
     // Send a fun fact to connected WebSocket clients
     server.sharedServerData.funFact = "Did you know that Clawffee is a play on words combining 'claw' and 'coffee'? It just sounded cute!";
-    // Register a function to get the fun fact
-    server.setFunction('getFunFact', (searchParams,res) => res.write(sharedServerData.funFact)); 
+    // Register a REST API to get the fun fact
+    server.setFunction('/getFunFact', (searchParams, res) => res.write(sharedServerData.funFact)); 
     ```
 
 ### Create your own Plugin
