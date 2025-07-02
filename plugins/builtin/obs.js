@@ -15,8 +15,13 @@ const conf = autoSavedJSON(confPath + 'obs.json', {
  */
 let client = createUnfailable();
 async function create() {
-    let nclient = new obs.OBSWebSocket();
-    await nclient.connect(conf.url, conf.password);
+    let nclient;
+    try{
+        nclient = new obs.OBSWebSocket();
+        await nclient.connect(conf.url, conf.password);
+    } catch(e) {
+        return;
+    }
 
     let originalListener = nclient.addListener;
     nclient.addListener = (type, callback, context) => {
