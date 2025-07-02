@@ -10,6 +10,9 @@ const conf = autoSavedJSON(confPath + 'obs.json', {
     "password": ""
 });
 
+/**
+ * @type { obs.OBSWebSocket }
+ */
 let client = createUnfailable();
 async function create() {
     let nclient = new obs.OBSWebSocket();
@@ -52,3 +55,7 @@ async function create() {
     reloadPlugin(__filename);
 }
 create();
+
+module.exports = {
+    client
+}
