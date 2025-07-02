@@ -45,6 +45,14 @@ const connectedBots = {};
  */
 const connectedUser = {
     /**
+     * @type number
+     */
+    id: 0,
+    /**
+     * @type string
+     */
+    name: "",
+    /**
      * @type import('@twurple/api').ApiClient
      */
     api: createUnfailable(),
@@ -58,13 +66,11 @@ const connectedUser = {
     listener: createUnfailable(),
     /**
      * Sends a regular chat message to a channel.
-     * @param channel - The channel to send the message to.
-     * @param text - The message to send.
+     * @param {string} channel - The channel to send the message to.
+     * @param {string} text - The message to send.
      * @returns {Promise<void>}
      */
-    say: async (channel, message) => {
-        throw new Error("No connected User to say something")
-    },
+    say: async (channel, message) => {},
     /**
      * Replies to a chat message in a channel.
      * @param {string} channel - The channel to send the message to.
@@ -72,9 +78,7 @@ const connectedUser = {
      * @param {import('@twurple/chat').ChatMessage} replyTo - The message to reply to.
      * @returns {Promise<void>}
      */
-    reply: async (channel, message) => {
-        throw new Error("No connected User to say something")
-    },
+    reply: async (channel, message) => {},
 };
 
 /* -------------------------- Connection Management ------------------------- */
