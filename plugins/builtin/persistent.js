@@ -6,10 +6,10 @@ persistent = new Proxy({}, {
         let stack = {};
         Error.captureStackTrace(stack, this.get);
         stack = stack.stack.match(/(?<=at |\()\/.*\/[^/]*.js(?=:)/g);
-        for(let x = 0; x < stack.length; x++) {
+        for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
-            if(moduleByPath[path]) {
-                if(!fileData[path]) fileData[path] = {};
+            if (moduleByPath[path]) {
+                if (!fileData[path]) fileData[path] = {};
                 return fileData[path][property];
             }
         };
@@ -19,10 +19,10 @@ persistent = new Proxy({}, {
         let stack = {};
         Error.captureStackTrace(stack, this.set);
         stack = stack.stack.match(/(?<=at |\()\/.*\/[^/]*.js(?=:)/g);
-        for(let x = 0; x < stack.length; x++) {
+        for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
-            if(moduleByPath[path]) {
-                if(!fileData[path]) fileData[path] = {};
+            if (moduleByPath[path]) {
+                if (!fileData[path]) fileData[path] = {};
                 fileData[path][property] = newValue;
                 return true;
             }
@@ -33,11 +33,11 @@ persistent = new Proxy({}, {
         let stack = {};
         Error.captureStackTrace(stack, this.deleteProperty);
         stack = stack.stack.match(/(?<=at |\()\/.*\/[^/]*.js(?=:)/g);
-        for(let x = 0; x < stack.length; x++) {
+        for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
-            if(moduleByPath[path]) {
-                if(!fileData[path]) fileData[path] = {};
-                delete fileData[path][property];E
+            if (moduleByPath[path]) {
+                if (!fileData[path]) fileData[path] = {};
+                delete fileData[path][property]; E
                 return true;
             }
         };

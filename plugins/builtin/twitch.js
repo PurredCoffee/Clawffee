@@ -13,7 +13,7 @@ const { reloadPlugin } = require('./internal/pluginReg');
 
 const confPath = 'config/internal/';
 const oauthFilesPath = confPath + 'twitch/oauth/';
-let clientSecret = fs.existsSync(confPath + 'twitch/secret.enc')?decryptData(confPath + 'twitch/secret.enc'):null;
+let clientSecret = fs.existsSync(confPath + 'twitch/secret.enc') ? decryptData(confPath + 'twitch/secret.enc') : null;
 const conf = autoSavedJSON(confPath + 'twitch.json', {
     chats: {},
     clientID: "",
@@ -70,7 +70,7 @@ const connectedUser = {
      * @param {string} text - The message to send.
      * @returns {Promise<void>}
      */
-    say: async (channel, message) => {},
+    say: async (channel, message) => { },
     /**
      * Replies to a chat message in a channel.
      * @param {string} channel - The channel to send the message to.
@@ -78,7 +78,7 @@ const connectedUser = {
      * @param {import('@twurple/chat').ChatMessage} replyTo - The message to reply to.
      * @returns {Promise<void>}
      */
-    reply: async (channel, message) => {},
+    reply: async (channel, message) => { },
 };
 
 /* -------------------------- Connection Management ------------------------- */
@@ -156,14 +156,14 @@ function makeEventSubListenerEventable(object) {
                     let el = activeEventListeners;
                     let al = activeListeners;
 
-                    while(argscopy.length > 1) {
+                    while (argscopy.length > 1) {
                         let curarg = argscopy.pop();
                         el = el[curarg] = el[curarg] ?? {};
                         al = al[curarg] = al[curarg] ?? {};
                     }
-                    if(!el[argscopy[0]]) el[argscopy[0]] = [];
+                    if (!el[argscopy[0]]) el[argscopy[0]] = [];
                     el[argscopy[0]].push(callback);
-                    if(!al[argscopy[0]]) {
+                    if (!al[argscopy[0]]) {
                         args.push((...newargs) => {
                             el[argscopy[0]].forEach((call) => call(...newargs));
                         });
@@ -218,25 +218,25 @@ async function connect() {
                             connectedUser.api = connectedBots[name].api;
                             connectedUser.chat = connectedBots[name].chat;
                             connectedUser.listener = associateClassWithFile(
-                                makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })), 
+                                makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
                                 "stop"
                             );
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
-                            connectionInfo.main = {...user, listenTo: channels[name].channels};
+                            connectionInfo.main = { ...user, listenTo: channels[name].channels };
                         } else {
                             let user = (await addBot(tokenData.tokenData, true));
                             let name = user.name;
                             connectionInfo.bots.push(
-                                {...user, listenTo: channels[name].channels}
+                                { ...user, listenTo: channels[name].channels }
                             );
                         }
                     } catch (e) {
                         console.error(`Failed to load token for user ${userId}:`, e);
                         let user = JSON.parse(decrypted).userInfo;
                         let name = user.name;
-                        connectionInfo.failed.push({...user, listenTo: channels[name].channels});
+                        connectionInfo.failed.push({ ...user, listenTo: channels[name].channels });
                     }
                 } else {
                     console.error(`Failed to decrypt the token for user ${userId}`);
@@ -256,7 +256,7 @@ function addNew(main, scopes) {
     return (searchParams, res) => {
         const redirectURL = "http://localhost:4444/twitch";
         const twitchURL = "https://id.twitch.tv/oauth2/authorize";
-        const oauthURL = `${twitchURL}?response_type=${clientSecret?'code':'token'}&force_verify=true&client_id=${clientID}&redirect_uri=${redirectURL}&scope=${scopes.join("+")}`
+        const oauthURL = `${twitchURL}?response_type=${clientSecret ? 'code' : 'token'}&force_verify=true&client_id=${clientID}&redirect_uri=${redirectURL}&scope=${scopes.join("+")}`
 
         setFunction("/twitch", async (searchParams, res, req) => {
             // Save the code to a file
@@ -265,7 +265,7 @@ function addNew(main, scopes) {
             //depending on the grant flow, work differently
             if (clientSecret) {
                 const code = searchParams.get("code");
-                if(!code) {
+                if (!code) {
                     res.end("Missing code for grant flow.");
                     return;
                 }
@@ -307,7 +307,7 @@ function addNew(main, scopes) {
                     connectedUser.api = connectedBots[name].api;
                     connectedUser.chat = connectedBots[name].chat;
                     connectedUser.listener = associateClassWithFile(
-                        makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })), 
+                        makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
                         "stop"
                     );
                     connectedUser.listener.start();
@@ -440,7 +440,7 @@ setFunction("/twitch/removeListenTo", (searchParams) => {
     }
     const botEntry = Object.values(connectedBots).find(b => b.id === user);
     if (botEntry) {
-        channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => {val != channel});
+        channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => { val != channel });
     }
     connect();
 });
@@ -454,17 +454,17 @@ let rateLimit = null;
 let cache = "";
 function print() {
     let text = "";
-    for(let x = 0; x < arguments.length; x++) {
+    for (let x = 0; x < arguments.length; x++) {
         text += " " + arguments[x].toString();
     }
     text = text.trim();
-    if(text) {
+    if (text) {
         console.log(...arguments);
         cache += " - " + text;
     }
-    if(rateLimit == null && cache) {
+    if (rateLimit == null && cache) {
         rateLimit = setTimeout((200, () => {
-            if(cache.length > 450) {
+            if (cache.length > 450) {
                 cache = cache.substring(0, 450) + " ... truncated (API issue)";
             }
             connectedUser.say(debug_channel, cache.substring(3).trim());

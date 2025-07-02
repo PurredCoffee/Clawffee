@@ -41,7 +41,7 @@ const loadedmodules = {
     children: {},
     parent: null,
     dependencies: [],
-    conf: {enabled: true},
+    conf: { enabled: true },
     active: false,
     module: {
         module: null,
@@ -65,12 +65,12 @@ const moduleByPath = {}
  * @param {string} file
  */
 function setupInner(curMod, file) {
-    if(file.endsWith("._conf")) {
+    if (file.endsWith("._conf")) {
         return;
     }
     const newfilePath = path.join(curMod.module.filePath, file);
     const isdir = fs.statSync(newfilePath).isDirectory();
-    if(!isdir && !file.endsWith(".js")) {
+    if (!isdir && !file.endsWith(".js")) {
         return;
     }
     const conf = autoSavedJSON(newfilePath + "._conf", {
@@ -106,7 +106,7 @@ function setupInner(curMod, file) {
     }
     curMod.children[file] = newModule;
     moduleByPath[newModule.module.filePath] = newModule;
-    if(isdir) {
+    if (isdir) {
         setupFolder(newModule);
     } else {
         setupFile(newModule);
@@ -122,7 +122,7 @@ function setupFile(curMod) {
     addPath(curMod.module.filePath);
     let timeout = null;
     curMod.module.watcher = fs.watch(curMod.module.filePath, {}, (event) => {
-        if(timeout) {
+        if (timeout) {
             return;
         }
         timeout = setTimeout(() => {
@@ -144,27 +144,27 @@ function setupFolder(curMod) {
     });
     let timeout = {};
     curMod.module.watcher = fs.watch(curMod.module.filePath, {}, (event, file) => {
-        if(timeout[file]) {
+        if (timeout[file]) {
             return;
         }
         timeout[file] = setTimeout(() => {
             timeout[file] = null;
         }, 400);
-        if(!fs.existsSync(path.join(curMod.module.filePath, file))) {
-            if(curMod.children[file]) {
+        if (!fs.existsSync(path.join(curMod.module.filePath, file))) {
+            if (curMod.children[file]) {
                 removeInner(curMod.children[file]);
                 delete curMod.children[file];
                 delete curMod.serverData.children[file];
             }
             return;
         }
-        if(event == 'rename')
+        if (event == 'rename')
             setupInner(curMod, file);
     });
 }
 
 function removeInner(curMod) {
-    if(!curMod) return;
+    if (!curMod) return;
 
     curMod.module.watcher?.stop?.();
     require("./commandHotReloader").unloadModule(curMod);
