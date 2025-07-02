@@ -47,7 +47,7 @@ console.debug = (...data) => {
     } else {
         olddebug(...data);
     }
-    sharedServerData.internal.debug = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.debug = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
     }) : String(arg)).join(' ');
@@ -64,7 +64,7 @@ console.log = (...data) => {
     } else {
         oldlog("".padEnd(longestName, " "), "|", ...data);
     }
-    sharedServerData.internal.log = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.log = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5,
     }) : String(arg).substring(0, 80)).join(' ');
@@ -82,7 +82,7 @@ console.info = (...data) => {
     } else {
         oldinfo("".padEnd(longestName, " "), "|", ...data);
     }
-    sharedServerData.internal.info = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.info = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
     }) : String(arg)).join(' ');
@@ -99,7 +99,7 @@ console.warn = (...data) => {
     } else {
         oldwarn("".padEnd(longestName, " "), "|", ...data);
     }
-    sharedServerData.internal.warn = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.warn = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
     }) : String(arg)).join(' ');
@@ -116,7 +116,7 @@ console.error = (...data) => {
     } else {
         olderr("".padEnd(longestName, " "), "|", ...data);
     }
-    sharedServerData.internal.error = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.error = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
     }) : String(arg)).join(' ');

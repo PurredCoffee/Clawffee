@@ -3,9 +3,33 @@
  */
 function createUnfailable() {
     return new Proxy(() => { }, {
+        getOwnPropertyDescriptor(target, property) {
+            if (property === "valueOf") {
+                return {
+                    configurable: true,
+                    enumerable: false,
+                    writable: true,
+                    value: () => () => "[Unfailable]"
+                };
+            }
+            return {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: createUnfailable()
+            };
+        },
         get(target, property, receiver) {
+            if (property === "valueOf") {
+                return () => "";
+            }
+            if (property === Symbol.toPrimitive) {
+                return (hint) => {
+                    return false;
+                };
+            }
             if (property === "__katz__unfailable") {
-                return () => true;
+                return true;
             }
             return createUnfailable();
         },
@@ -18,7 +42,6 @@ function createUnfailable() {
     });
 }
 
-createUnfailable().meow();
 
 module.exports = {
     createUnfailable
