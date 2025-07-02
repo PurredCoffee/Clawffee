@@ -27,11 +27,18 @@ A simple Twitch bot tool for streamers!
 - **Custom Scripts**: Write your own scripts to create and extend functionality.
 - **User-Friendly**: Designed to be easy to use for both streamers and viewers. As long as you understand basic JavaScript, you can create custom commands and scripts with no extra thought.
 - **Real-Time Updates**: Changes take effect immediately without needing to restart the bot.
+- **Dashboard**: A web-based dashboard for managing the bot and viewing logs.
 - **Cross-Platform**: Works on any platform that supports Node.js.
 - **Multi-Channel Support**: Manage multiple Twitch channels from a single instance.
 - **Integration**: Connect with other services like Discord, Twitter, etc.
 - **API Access**: Create bot features accessible via a REST API.
 
+## Dependencies
+
+- [Node.js](https://nodejs.org/) (v16.0.0 or higher)
+- [Twurple](https://twurple.js.org/) - Twitch API library
+- [obs-websocket-js](https://npmjs.com/package/obs-websocket-js) - OBS WebSocket library
+- [ini](https://npmjs.com/package/ini) - INI file parser
 
 ## Installation
 
@@ -48,7 +55,7 @@ A simple Twitch bot tool for streamers!
 
 3. Start the bot:
     ```bash
-    node index.js
+    npm start
     ```
 
 4. (Optional) Open the dashboard by opening `html/dashboard.html` in your web browser to authenticate a bot account.
