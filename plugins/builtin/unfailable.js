@@ -3,7 +3,10 @@
  */
 function createUnfailable() {
     return new Proxy(() => { }, {
-        get() {
+        get(target, property, receiver) {
+            if (property === "__katz__unfailable") {
+                return () => true;
+            }
             return createUnfailable();
         },
         apply() {
