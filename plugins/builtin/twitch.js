@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const { ApiClient } = require('@twurple/api');
 const { ChatClient } = require('@twurple/chat');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
-const { RefreshingAuthProvider, exchangeCode } = require('@twurple/auth');
+const { RefreshingAuthProvider, StaticAuthProvider, exchangeCode, getTokenInfo } = require('@twurple/auth');
 const path = require("path");
 
 const { autoSavedJSON, encryptData, decryptData } = require("./files");
@@ -10,7 +10,6 @@ const { associateClassWithFile } = require('./internal/codeBinder');
 const { setFunction, sharedServerData } = require("./server");
 const { createUnfailable } = require("./unfailable");
 const { reloadPlugin } = require('./internal/pluginReg');
-const { StaticAuthProvider } = require('@twurple/auth');
 
 const confPath = 'config/internal/';
 const oauthFilesPath = confPath + 'twitch/oauth/';
@@ -26,6 +25,8 @@ const channels = conf.chats;
 
 /**
  * @typedef {Object} ConnectedBot
+ * @property {number} id - The user ID of the bot.
+ * @property {string} name - The user login of the bot.
  * @property {import('@twurple/api').ApiClient} api - The Twurple API client for the bot.
  * @property {import('@twurple/chat').ChatClient} chat - The Twurple Chat client for the bot.
  * @property {(channel: string, message: string) => Promise<void>} say - Function to send a message to a channel.
@@ -78,30 +79,36 @@ const connectedUser = {
 
 /* -------------------------- Connection Management ------------------------- */
 
+function saveToken(path, newTokenData) {
+    let data = JSON.stringify(decryptData(path));
+    data.tokenData = newTokenData;
+    encryptData(path, JSON.stringify(data));
+}
+
 /**
  * Adds a new bot using the provided token data.
  * @param {object} tokenData - The OAuth token data for the bot.
  * @returns {Promise<{id: string, name: string}>} The user ID and name of the added bot.
  */
 async function addBot(tokenData, main = false) {
-    let auth, userID;
+    let auth;
 
     // depending on the grant flow, work differently
     if (clientSecret) {
         auth = new RefreshingAuthProvider({ clientId: clientID, clientSecret: clientSecret });
-        auth.onRefresh(async (userID, newTokenData) => encryptData(`${oauthFilesPath}${userID}${(main ? ".main" : "")}.json.enc`, JSON.stringify(newTokenData)));
+        auth.onRefresh(async (userID, newTokenData) => saveToken(`${oauthFilesPath}${userID}${(main ? ".main" : "")}.json.enc`, newTokenData));
         userID = await auth.addUserForToken(tokenData, ['chat']);
     } else {
         auth = new StaticAuthProvider(clientID, tokenData.accessToken || tokenData.access_token, tokenData.scopes || ['chat']);
         const tempApi = new ApiClient({ authProvider: auth });
-        userID = (await tempApi.callApi({
-            type: 'helix',
-            url: 'users'
-        })).data[0].id;
     }
 
     const api = associateClassWithFile(new ApiClient({ authProvider: auth }), "unbind");
-    const ownName = (await api.users.getUserById(userID)).name;
+    const userInfo = (await api.callApi({
+        type: 'helix',
+        url: 'users'
+    })).data[0];
+    const ownName = userInfo.login;
     if (!channels[ownName] || !channels[ownName].channels) {
         channels[ownName] = {
             channels: []
@@ -110,18 +117,20 @@ async function addBot(tokenData, main = false) {
     const ownedChannels = channels[ownName].channels;
     const chat = associateClassWithFile(new ChatClient({ authProvider: auth, channels: ownedChannels }), "unbind");
     chat.connect();
+
     connectedBots[ownName] = {
         api: api,
         chat: chat,
-        id: userID,
+        id: userInfo.id,
+        name: ownName,
         say: async (channel, message) => await chat.say(channel, message),
         reply: async (channel, message, replyTo) => await chat.say(channel, message, {
             replyTo: replyTo
         }),
         onWhisper: (callback) => chat.onWhisper(callback)
     };
-    console.log(`added token for ${userID} (${ownName}) and connected to [${ownedChannels}]`);
-    return { id: userID, name: ownName };
+    console.log(`added token for ${userInfo.id} (${ownName}) and connected to [${ownedChannels}]`);
+    return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url };
 }
 
 /**
@@ -180,7 +189,16 @@ function makeEventSubListenerEventable(object) {
  * @returns {Promise<void>}
  */
 async function connect() {
-    Object.keys(connectedBots).forEach(key => delete connectedBots[key]);
+    connectedUser.listener.stop();
+    Object.keys(connectedBots).forEach(key => {
+        connectedBots[key].chat.quit()
+        delete connectedBots[key]
+    });
+    const connectionInfo = {
+        main: {},
+        bots: [],
+        failed: []
+    }
     if (fs.existsSync(oauthFilesPath)) {
         const files = fs.readdirSync(oauthFilesPath);
         for (const file of files) {
@@ -191,7 +209,8 @@ async function connect() {
                     try {
                         const tokenData = JSON.parse(decrypted);
                         if (file.endsWith('.main.json.enc')) {
-                            let name = (await addBot(tokenData, true)).name;
+                            let user = (await addBot(tokenData.tokenData, true));
+                            let name = user.name;
                             connectedUser.api = connectedBots[name].api;
                             connectedUser.chat = connectedBots[name].chat;
                             connectedUser.listener = associateClassWithFile(
@@ -201,11 +220,19 @@ async function connect() {
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
+                            connectionInfo.main = {...user, listenTo: channels[name].channels};
                         } else {
-                            await addBot(tokenData, false);
+                            let user = (await addBot(tokenData.tokenData, true));
+                            let name = user.name;
+                            connectionInfo.bots.push(
+                                {...user, listenTo: channels[name].channels}
+                            );
                         }
                     } catch (e) {
                         console.error(`Failed to load token for user ${userId}:`, e);
+                        let user = JSON.parse(decrypted).userInfo;
+                        let name = user.name;
+                        connectionInfo.failed.push({...user, listenTo: channels[name].channels});
                     }
                 } else {
                     console.error(`Failed to decrypt the token for user ${userId}`);
@@ -213,6 +240,7 @@ async function connect() {
             }
         }
     }
+    sharedServerData.internal.twitch = connectionInfo
     console.log("Connected to Twitch API with Twurple.");
     reloadPlugin(__filename);
 }
@@ -268,17 +296,28 @@ function addNew(main, scopes) {
                     scopes: (searchParams.get("scope") || "").split(" ").filter(Boolean)
                 };
             }
-            
+
             addBot(tokenData, main).then((value) => {
                 if (main) {
                     let name = value.name;
                     connectedUser.api = connectedBots[name].api;
                     connectedUser.chat = connectedBots[name].chat;
+                    connectedUser.listener = associateClassWithFile(
+                        makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })), 
+                        "stop"
+                    );
+                    connectedUser.listener.start();
                     connectedUser.say = connectedBots[name].say;
                     connectedUser.reply = connectedBots[name].reply;
-                    encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify(tokenData));
+                    encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify({
+                        userInfo: value,
+                        tokenData: tokenData
+                    }))
                 } else {
-                    encryptData(`${oauthFilesPath}${value.id}.json.enc`, JSON.stringify(tokenData));
+                    encryptData(`${oauthFilesPath}${value.id}.main.enc`, JSON.stringify({
+                        userInfo: value,
+                        tokenData: tokenData
+                    }))
                 }
                 reloadPlugin(__filename);
                 res.end(`Code for ${value.id} saved and encrypted.`);
@@ -377,6 +416,31 @@ setFunction("/twitch/setSecret", (searchParams) => {
         connect();
     }
 })
+setFunction("/twitch/addListenTo", (searchParams) => {
+    const user = searchParams.get("id");
+    const channel = searchParams.get("user");
+    if (!user || !channel) {
+        return;
+    }
+    const botEntry = Object.values(connectedBots).find(b => b.id === user);
+    if (botEntry && !channels[botEntry.name].channels.includes(channel)) {
+        channels[botEntry.name].channels.push(channel);
+    }
+    connect();
+});
+setFunction("/twitch/removeListenTo", (searchParams) => {
+    const user = searchParams.get("id");
+    const channel = searchParams.get("user");
+    if (!user || !channel) {
+        return;
+    }
+    const botEntry = Object.values(connectedBots).find(b => b.id === user);
+    if (botEntry) {
+        channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => {val != channel});
+    }
+    connect();
+});
+
 
 
 /* --------------------------------- Exports -------------------------------- */

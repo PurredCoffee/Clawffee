@@ -95,7 +95,7 @@ function autoSavedJSON(filePath, fallback, options) {
                 target[prop] = value;
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    fs.writeFileSync(filePath, JSON.stringify(data), options);
+                    fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
                 }, 500);
                 return true;
             },
@@ -103,7 +103,7 @@ function autoSavedJSON(filePath, fallback, options) {
                 delete target[prop];
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    fs.writeFileSync(filePath, JSON.stringify(data), options);
+                    fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
                 }, 500);
                 return true;
             },
