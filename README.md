@@ -4,7 +4,7 @@ A simple Twitch bot tool for streamers!
 
 ## Download
 
-1. Download the latest release from the [Releases](https://github.com/PurredCoffee/Clawffee/releases).
+1. Download the latest release from [here](https://github.com/PurredCoffee/Clawffee/releases).
 
 2. Extract the zip and run `run.bat` (Windows) or `run.sh` (Linux/Mac) to start the bot.
 
@@ -40,12 +40,15 @@ A simple Twitch bot tool for streamers!
    git clone https://github.com/PurredCoffee/Clawffee.git
    cd Clawffee
     ```
+
 2. Install dependencies:
     ```bash
     npm install
     ```
+
 3. Start the bot:
     ```bash
     node index.js
     ```
+
 4. (Optional) Open the dashboard by opening `html/dashboard.html` in your web browser to authenticate a bot account.
