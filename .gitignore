@@ -7,7 +7,7 @@ config/*
 
 commands/*
 !commands/examples
-!commands_conf/examples._conf
+!/internal/commands_conf/examples._conf
 
 plugins/*
 !plugins/builtin
