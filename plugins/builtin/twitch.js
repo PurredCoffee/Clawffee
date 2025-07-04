@@ -9,7 +9,7 @@ const { autoSavedJSON, encryptData, decryptData } = require("./files");
 const { associateClassWithFile } = require('./internal/codeBinder');
 const { setFunction, sharedServerData } = require("./server");
 const { createUnfailable } = require("./unfailable");
-const { reloadPlugin } = require('./internal/pluginReg');
+const { reloadPlugin, blockPlugin } = require('./internal/pluginReg');
 
 const confPath = 'config/internal/';
 const oauthFilesPath = confPath + 'twitch/oauth/';
@@ -248,6 +248,7 @@ async function connect() {
     console.log("Connected to Twitch API with Twurple.");
     reloadPlugin(__filename);
 }
+blockPlugin(__filename);
 connect()
 
 /* ------------------------ Websites to add accounts ------------------------ */
