@@ -5,8 +5,14 @@ const {
 const WebSocket = require('ws');
 const http = require('http');
 const { associateObjectWithFile } = require("./internal/codeBinder");
+const { autoSavedJSON } = require("./files");
 
 const sharedServerData = createServer({ internal: {} });
+
+const confPath = 'config/internal/';
+const conf = autoSavedJSON(confPath + "html.json", JSON.stringify({
+    "port": 4444
+}))
 
 __katz__global__listener = addListener(sharedServerData, ".", (path, newValue, oldValue) => {
     if (path[0] != 'internal')
@@ -110,8 +116,8 @@ wss.on('connection', (ws) => {
 })
 
 
-server.listen(4444, "localhost", () => {
-    console.log("created server on 4444");
+server.listen(conf.port, "localhost", () => {
+    console.log(`created server on ${conf.port}`);
 });
 
 module.exports = {

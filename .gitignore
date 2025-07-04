@@ -3,7 +3,6 @@
 **/*._conf
 
 config/*
-!config/internal
 
 commands/*
 !commands/examples
