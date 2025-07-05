@@ -20,6 +20,9 @@ function encryptData(path, data) {
 
     // Save the encrypted code and IV
     let encryptedData = "DO NOT SHARE THIS FILE EVER!" + "\n".repeat(400) + encrypted;
+
+    if(fs.existsSync(path.dirname(filePath)))
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(path, encryptedData);
 }
 
