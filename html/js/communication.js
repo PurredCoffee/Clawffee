@@ -91,11 +91,7 @@ function onChange(obj, property, fullPath, oldValue, newValue) {
     const trimPath = fullPath.slice(1);
 
     // call all eventlisteners
-    const eaten = ProxyObj.listener.ownListeners[property]?.reduce?.((eaten, listener) => listener.deref()?.(trimPath, newValue, oldValue, obj[property]) || eaten, false);
-
-    // clear GC functions
-    if (ProxyObj.listener?.ownListeners[property])
-        ProxyObj.listener.ownListeners[property] = ProxyObj.listener.ownListeners[property].filter((val) => val.deref());
+    const eaten = ProxyObj.listener.ownListeners[property]?.reduce?.((eaten, listener) => listener(trimPath, newValue, oldValue, obj[property]) || eaten, false);
 
     // call parents onChange if output is not eaten yet
     if (ProxyObj.parent && !eaten)
@@ -195,20 +191,18 @@ function addListener(server, path, callback, ifChanged = false) {
         name = path[path.length - 1];
         childListener = getChild(ProxyObj.listener, server, path);
     }
-    const weakRef = new WeakRef(callback);
     childListener.ownListeners[name] = childListener.ownListeners[name] ?? [];
-    childListener.ownListeners[name].push(weakRef);
+    childListener.ownListeners[name].push(callback);
 
     //create Listener Object
     return {
         callback: callback,
-        _WeakRef: weakRef,
         _AttachedListener: childListener,
         removeSelf() {
             if (!this._AttachedListener) {
                 return;
             }
-            this._AttachedListener.ownListeners[name] = this._AttachedListener.ownListeners[name].filter((val) => val != this._WeakRef);
+            this._AttachedListener.ownListeners[name] = this._AttachedListener.ownListeners[name].filter((val) => val != this.callback);
             this._AttachedListener = null;
         }
     }
