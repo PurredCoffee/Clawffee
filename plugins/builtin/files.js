@@ -56,14 +56,14 @@ function decryptData(path) {
 
 function readFileSyncDefault(filePath, fallback, options) {
     if (fs.existsSync(filePath)) {
-        return fs.readFileSync(filePath, options);
+        return fs.readFileSync(filePath, options).toString();
     }
     fs.mkdir(path.dirname(filePath), { recursive: true }, (err) => {
         if (err) {
             console.error(err);
             return;
         }
-        fs.writeFileSync(filePath, fallback);
+        fs.writeFileSync(filePath, fallback).toString();
     });
     return fallback;
 }
