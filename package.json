@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "node --expose_gc index.js"
+  },
   "dependencies": {
     "@twurple/api": "^7.3.0",
     "@twurple/chat": "^7.3.0",
