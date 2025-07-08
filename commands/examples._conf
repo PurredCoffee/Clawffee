@@ -1,1 +1,10 @@
-{"enabled":false,"hide":true,"pos":{"left":1,"top":1,"w":1,"h":1}}
+{
+    "enabled": false,
+    "hide": true,
+    "pos": {
+        "left": 1,
+        "top": 1,
+        "w": 1,
+        "h": 1
+    }
+}

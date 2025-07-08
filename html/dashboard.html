@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Antler</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
     <style>
         .material-symbols-outlined {
@@ -34,6 +34,32 @@
             z-index: -10000000;
         }
 
+        a {
+            color: unset;
+        }
+    </style>
+    <script src="js/communication.js"></script>
+    <script>
+        function createDiv(innerHTML) {
+            const div = document.createElement('div');
+            div.innerHTML = innerHTML;
+            return div.children[0];
+        }
+        const sharedServerData = katzComm.createServer({internal: {}});
+        let firstmessage = null;
+        let firstsubs = [];
+        function onfirstSub(callback) {
+            if(firstmessage) {
+                callback(firstmessage);
+            } else {
+                firstsubs.push(callback);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="modules">
+        <style>
         .modules {
             border: wheat solid;
             border-radius: 8px;
@@ -220,75 +246,13 @@
             text-decoration: underline;
         }
 
-        .twitch {
-            margin-left: 20px;
-        }
-
         #commandpath>a {
             cursor: pointer;
         }
         #commandpath>a>span {
             text-decoration: underline;
         }
-
-        a {
-            color: unset;
-        }
-
-        @keyframes log {
-            0% {
-                opacity: 0;
-            }
-            5% {
-                opacity: 1;
-            }
-            95% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-
-        #log {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-        }
-        #log>* {
-            animation: log 10s forwards;
-        }
-        #log>.error {
-            color: red;
-        }
-        #log>.warn {
-            color: yellow;
-        }
-        #log>.info {
-            color: lightcyan;
-        }
-    </style>
-    <script src="js/communication.js"></script>
-    <script>
-        function createDiv(innerHTML) {
-            const div = document.createElement('div');
-            div.innerHTML = innerHTML;
-            return div.children[0];
-        }
-        const sharedServerData = katzComm.createServer({internal: {}});
-        let firstmessage = null;
-        let firstsubs = [];
-        function onfirstSub(callback) {
-            if(firstmessage) {
-                callback(firstmessage);
-            } else {
-                firstsubs.push(callback);
-            }
-        }
-    </script>
-</head>
-<body>
-    <div class="modules">
+        </style>
         <h3 style="margin-top: 0;">Commands<span id="commandpath"></span></h3>
         <div id="sub-modules"></div>
         <div id="cur-module" style="display: none;">
@@ -593,17 +557,163 @@
         </script>
     </div>
     <div class="twitch">
+        <style>
+        .twitch {
+            margin-inline: 20px;
+        }
+        .twitch-cards>* {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background: #2226;
+            border-radius: 8px;
+            padding: 8px 12px;
+            gap: 12px;
+        }
+        .twitch-cards>*>img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .twitch-cards>*>span {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .twitch-cards>*>ul {
+            margin: 0 0 0 10px;
+            padding: 0;
+            list-style: disc inside;
+            font-size: 0.95em;
+            color: #ccc;
+        }
+        .twitch-cards>*>button {
+            margin-left: auto;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: none;
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+        }
+        </style>
         <h3>Twitch Settings</h3>
         <a href="http://localhost:4444/twitch/add/main">Set main user</a> | 
         <a href="http://localhost:4444/twitch/add/bot">Add new bot</a>
-        <h4>Connected Users</h4>
-        <div id="twitch"></div>
+        <h4>Main User</h4>
+        <div id="twitch-main" class="twitch-cards"></div>
+        <h4>Main Bots</h4>
+        <div id="twitch-bots" class="twitch-cards"></div>
+        <h4>Failed Connections</h4>
+        <div id="twitch-failed" class="twitch-cards"></div>
         <script>
+            const twitchMainDiv = document.getElementById('twitch-main');
+            const twitchBotsDiv = document.getElementById('twitch-bots');
+            const twitchFailDiv = document.getElementById('twitch-failed');
+            function addTwitchUserCard(twitchDiv, { id, name, pfp, listenTo }) {
+                const card = document.createElement('div');
+
+                const img = document.createElement('img');
+                img.src = pfp;
+                img.alt = name;
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name + `(${id})`;
+                card.appendChild(img);
+                card.appendChild(nameSpan);
+                card.setAttribute('data-id', id);
+                if (Array.isArray(listenTo) && listenTo.length > 0) {
+                    const listenList = document.createElement('ul');
+                    listenTo.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        li.style.cursor = "pointer";
+                        li.title = "Click to remove";
+                        li.onclick = function() {
+                            fetch(`http://localhost:4444/twitch/removeListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(item)}`, {
+                                method: 'POST'
+                            }).then(() => {
+                                li.remove();
+                            });
+                        };
+                        listenList.appendChild(li);
+                    });
+                    card.appendChild(listenList);
+                }
+
+                const addBtn = document.createElement('button');
+                addBtn.textContent = 'Add Channel';
+                addBtn.onclick = function() {
+                    const user = prompt('Enter username to listen to:');
+                    if (user && user.trim()) {
+                        fetch(`http://localhost:4444/twitch/addListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(user.trim())}`, {
+                            method: 'POST'
+                        })
+                    }
+                };
+                card.appendChild(addBtn);
+
+                twitchDiv.appendChild(card);
+            }
+
+            onfirstSub((data) => {
+                twitchMainDiv.innerHTML = "";
+                if(data.internal.twitch?.main)
+                    addTwitchUserCard(twitchMainDiv, data.internal.twitch.main);
+                twitchBotsDiv.innerHTML = "";
+                if(data.internal.twitch?.bots)
+                    data.internal.twitch.bots.foreach((obj) => addTwitchUserCard(twitchBotsDiv, obj));
+                twitchFailDiv.innerHTML = "";
+                if(data.internal.twitch?.failed)
+                    data.internal.twitch.failed.foreach((obj) => addTwitchUserCard(twitchFailDiv, obj));
+            })
             const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
+                twitchMainDiv.innerHTML = "";
+                if(sharedServerData.internal.twitch?.main)
+                    addTwitchUserCard(twitchMainDiv, sharedServerData.internal.twitch.main);
+                twitchBotsDiv.innerHTML = "";
+                if(data.internal.twitch?.bots)
+                    data.internal.twitch.bots.foreach((obj) => addTwitchUserCard(twitchBotsDiv, obj));
+                twitchFailDiv.innerHTML = "";
+                if(data.internal.twitch?.failed)
+                    data.internal.twitch.failed.foreach((obj) => addTwitchUserCard(twitchFailDiv, obj));
             });
         </script>
     </div>
     <div class="log">
+        <style>
+        @keyframes log {
+            0% {
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #log {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+        }
+        #log>* {
+            animation: log 10s forwards;
+        }
+        #log>.error {
+            color: red;
+        }
+        #log>.warn {
+            color: yellow;
+        }
+        #log>.info {
+            color: lightcyan;
+        }
+        </style>
         <div id="log"></div>
         <script>
             const logParent = document.getElementById('log');
