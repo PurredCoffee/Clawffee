@@ -36,23 +36,6 @@ JSON.stringify = (value, replacer, space) => {
 /* ---------------------------- CONSOLE FORWARDS ---------------------------- */
 
 let longestName = 28;
-const oldlog = console.log;
-console.log = (...data) => {
-    let stack = {};
-    Error.captureStackTrace(stack, console.log);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if (stack?.[0]) {
-        longestName = Math.max(longestName, stack[0].length + 4);
-        oldlog(stack[0].padEnd(longestName, " "), "|", ...data);
-    } else {
-        oldlog(...data);
-    }
-    sharedServerData.internal.log = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
-        maxStringLength: 80,
-        maxArrayLength: 5,
-    }) : String(arg).substring(0, 80)).join(' ');
-}
-
 const olddebug = console.debug;
 console.debug = (...data) => {
     let stack = {};
@@ -70,33 +53,34 @@ console.debug = (...data) => {
     }) : String(arg)).join(' ');
 }
 
-const olderr = console.error;
-console.error = (...data) => {
+const oldlog = console.log;
+console.log = (...data) => {
     let stack = {};
-    Error.captureStackTrace(stack, console.error);
+    Error.captureStackTrace(stack, console.log);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
-        olderr(stack[0].padEnd(longestName, " "), "|", ...data);
+        oldlog(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
-        olderr(...data);
+        oldlog("".padEnd(longestName, " "), "|", ...data);
     }
-    sharedServerData.internal.error = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+    sharedServerData.internal.log = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
-        maxArrayLength: 5
-    }) : String(arg)).join(' ');
+        maxArrayLength: 5,
+    }) : String(arg).substring(0, 80)).join(' ');
 }
+
 
 const oldinfo = console.info;
 console.info = (...data) => {
     let stack = {};
-    Error.captureStackTrace(stack, console.error);
+    Error.captureStackTrace(stack, console.info);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldinfo(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
-        oldinfo(...data);
+        oldinfo("".padEnd(longestName, " "), "|", ...data);
     }
     sharedServerData.internal.info = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
@@ -107,15 +91,32 @@ console.info = (...data) => {
 const oldwarn = console.warn;
 console.warn = (...data) => {
     let stack = {};
-    Error.captureStackTrace(stack, console.error);
+    Error.captureStackTrace(stack, console.warn);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldwarn(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
-        oldwarn(...data);
+        oldwarn("".padEnd(longestName, " "), "|", ...data);
     }
     sharedServerData.internal.warn = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
+        maxStringLength: 80,
+        maxArrayLength: 5
+    }) : String(arg)).join(' ');
+}
+
+const olderr = console.error;
+console.error = (...data) => {
+    let stack = {};
+    Error.captureStackTrace(stack, console.error);
+    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    if (stack?.[0]) {
+        longestName = Math.max(longestName, stack[0].length + 4);
+        olderr(stack[0].padEnd(longestName, " "), "|", ...data);
+    } else {
+        olderr("".padEnd(longestName, " "), "|", ...data);
+    }
+    sharedServerData.internal.error = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
     }) : String(arg)).join(' ');

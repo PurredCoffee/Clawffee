@@ -13,6 +13,7 @@ const conf = autoSavedJSON(confPath + 'obs.json', {
 /**
  * @type { obs.OBSWebSocket }
  */
+let connected = true;
 let client = createUnfailable();
 async function create() {
     let nclient;
@@ -22,6 +23,8 @@ async function create() {
     } catch (e) {
         return;
     }
+    console.log("Connected to OBS!");
+    connected = true;
 
     let originalListener = nclient.addListener;
     nclient.addListener = (type, callback, context) => {
@@ -60,6 +63,16 @@ async function create() {
     reloadPlugin(__filename);
 }
 create();
+
+setInterval(async () => {
+    if (client.__katz__unfailable || (client?.socket?.readyState ?? 0) !== 1) {
+        if(connected) {
+            console.warn("Disconnected from OBS!");
+        }
+        connected = false;
+        await create();
+    }
+}, 5000);
 
 module.exports = {
     client
