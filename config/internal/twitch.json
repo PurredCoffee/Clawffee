@@ -1,11 +1,6 @@
 {
     "chats": {
-        "katzentatzentanz": {
-            "channels": [
-                "katzentatzentanz"
-            ]
-        }
     },
     "clientID": "e728jp4m53o8o9jb0q34nfefhjmd8t",
-    "printChannel": "katzentatzentanz"
+    "printChannel": ""
 }
