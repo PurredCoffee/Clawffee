@@ -63,7 +63,7 @@ function readFileSyncDefault(filePath, fallback, options) {
             console.error(err);
             return;
         }
-        fs.writeFileSync(filePath, fallback).toString();
+        fs.writeFileSync(filePath, fallback);
     });
     return fallback;
 }
