@@ -74,7 +74,7 @@ function readFileDefault(filePath, fallback, options, callback) {
             console.error(err);
             return;
         }
-        fs.writeFile(filePath, fallback);
+        fs.writeFileSync(filePath, fallback);
     });
     callback(null, fallback);
 }
