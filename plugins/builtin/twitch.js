@@ -7,13 +7,14 @@ const path = require("path");
 
 const { autoSavedJSON, encryptData, decryptData } = require("./files");
 const { associateClassWithFile } = require('./internal/codeBinder');
-const { setFunction } = require("./server");
+const { setFunction, sharedServerData } = require("./server");
 const { createUnfailable } = require("./unfailable");
 const { reloadPlugin } = require('./internal/pluginReg');
+const { StaticAuthProvider } = require('@twurple/auth');
 
 const confPath = 'config/internal/';
 const oauthFilesPath = confPath + 'twitch/oauth/';
-const clientSecret = decryptData(confPath + 'twitch/secret.enc');
+let clientSecret = fs.existsSync(confPath + 'twitch/secret.enc')?decryptData(confPath + 'twitch/secret.enc'):null;
 const conf = autoSavedJSON(confPath + 'twitch.json', {
     chats: {},
     clientID: "",
@@ -83,9 +84,21 @@ const connectedUser = {
  * @returns {Promise<{id: string, name: string}>} The user ID and name of the added bot.
  */
 async function addBot(tokenData, main = false) {
-    const auth = new RefreshingAuthProvider({ clientId: clientID, clientSecret: clientSecret })
-    auth.onRefresh(async (userID, newTokenData) => encryptData(`${oauthFilesPath}${userID}${(main?".main":"")}.json.enc`, JSON.stringify(newTokenData)));
-    userID = await auth.addUserForToken(tokenData, ['chat']);
+    let auth, userID;
+
+    // depending on the grant flow, work differently
+    if (clientSecret) {
+        auth = new RefreshingAuthProvider({ clientId: clientID, clientSecret: clientSecret });
+        auth.onRefresh(async (userID, newTokenData) => encryptData(`${oauthFilesPath}${userID}${(main ? ".main" : "")}.json.enc`, JSON.stringify(newTokenData)));
+        userID = await auth.addUserForToken(tokenData, ['chat']);
+    } else {
+        auth = new StaticAuthProvider(clientID, tokenData.accessToken || tokenData.access_token, tokenData.scopes || ['chat']);
+        const tempApi = new ApiClient({ authProvider: auth });
+        userID = (await tempApi.callApi({
+            type: 'helix',
+            url: 'users'
+        })).data[0].id;
+    }
 
     const api = associateClassWithFile(new ApiClient({ authProvider: auth }), "unbind");
     const ownName = (await api.users.getUserById(userID)).name;
@@ -161,11 +174,13 @@ function makeEventSubListenerEventable(object) {
         }
     });
 }
+
 /**
  * Connects all bots by loading and decrypting their OAuth tokens.
  * @returns {Promise<void>}
  */
 async function connect() {
+    Object.keys(connectedBots).forEach(key => delete connectedBots[key]);
     if (fs.existsSync(oauthFilesPath)) {
         const files = fs.readdirSync(oauthFilesPath);
         for (const file of files) {
@@ -209,12 +224,51 @@ function addNew(main, scopes) {
     return (searchParams, res) => {
         const redirectURL = "http://localhost:4444/twitch";
         const twitchURL = "https://id.twitch.tv/oauth2/authorize";
-        const oauthURL = `${twitchURL}?response_type=code&client_id=${clientID}&redirect_uri=${redirectURL}&scope=${scopes.join("+")}`
+        const oauthURL = `${twitchURL}?response_type=${clientSecret?'code':'token'}&force_verify=true&client_id=${clientID}&redirect_uri=${redirectURL}&scope=${scopes.join("+")}`
 
-        setFunction("/twitch", async (searchParams, res) => {
+        setFunction("/twitch", async (searchParams, res, req) => {
             // Save the code to a file
-            const code = searchParams.get("code");
-            const tokenData = await exchangeCode(clientID, clientSecret, code, redirectURL);
+            let tokenData;
+
+            //depending on the grant flow, work differently
+            if (clientSecret) {
+                const code = searchParams.get("code");
+                if(!code) {
+                    res.end("Missing code for grant flow.");
+                    return;
+                }
+                tokenData = await exchangeCode(clientID, clientSecret, code, redirectURL);
+            } else {
+                let accessToken = null;
+                accessToken = searchParams.get("access_token");
+                if (!accessToken) {
+                    res.end(`
+                        <html>
+                            <body>
+                                <script>
+                                    // If access_token is in the fragment, redirect with it as a search param
+                                    if (window.location.hash) {
+                                        const params = new URLSearchParams(window.location.hash.slice(1));
+                                        if (params.has('access_token')) {
+                                            const url = new URL(window.location.href);
+                                            url.hash = '';
+                                            url.search = params.toString();
+                                            window.location.replace(url.toString());
+                                        }
+                                    }
+                                </script>
+                                <p>Processing Twitch OAuth...</p>
+                            </body>
+                        </html>
+                    `);
+                    return;
+                }
+                tokenData = {
+                    accessToken,
+                    scopes: (searchParams.get("scope") || "").split(" ").filter(Boolean)
+                };
+            }
+            
             addBot(tokenData, main).then((value) => {
                 if (main) {
                     let name = value.name;
@@ -227,8 +281,9 @@ function addNew(main, scopes) {
                     encryptData(`${oauthFilesPath}${value.id}.json.enc`, JSON.stringify(tokenData));
                 }
                 reloadPlugin(__filename);
-                res.end(`Code for ${userID} saved and encrypted.`);
+                res.end(`Code for ${value.id} saved and encrypted.`);
             });
+            reloadPlugin(__filename);
         });
         res.end(`
             <html>
@@ -312,6 +367,16 @@ setFunction("/twitch/add/bot", addNew(false, [
     "whispers:read",
     "whispers:edit"
 ]));
+setFunction("/twitch/setSecret", (searchParams) => {
+    const clientID = searchParams.get("clientID");
+    const secret = searchParams.get("secret");
+    if (clientID) {
+        encryptData(confPath + 'twitch/secret.enc', secret);
+        clientSecret = secret;
+        conf.clientID = clientID;
+        connect();
+    }
+})
 
 
 /* --------------------------------- Exports -------------------------------- */

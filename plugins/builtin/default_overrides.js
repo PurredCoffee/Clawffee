@@ -46,7 +46,6 @@ console.log = (...data) => {
     } else {
         oldlog(...data);
     }
-    if(!sharedServerData.internal) sharedServerData.internal = {};
     sharedServerData.internal.log = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5,
@@ -64,7 +63,6 @@ console.debug = (...data) => {
     } else {
         olddebug(...data);
     }
-    if(!sharedServerData.internal) sharedServerData.internal = {};
     sharedServerData.internal.debug = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
@@ -82,7 +80,6 @@ console.error = (...data) => {
     } else {
         olderr(...data);
     }
-    if(!sharedServerData.internal) sharedServerData.internal = {};
     sharedServerData.internal.error = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
@@ -100,7 +97,6 @@ console.info = (...data) => {
     } else {
         oldinfo(...data);
     }
-    if(!sharedServerData.internal) sharedServerData.internal = {};
     sharedServerData.internal.info = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
@@ -118,7 +114,6 @@ console.warn = (...data) => {
     } else {
         oldwarn(...data);
     }
-    if(!sharedServerData.internal) sharedServerData.internal = {};
     sharedServerData.internal.warn = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5

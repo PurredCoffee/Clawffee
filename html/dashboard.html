@@ -275,8 +275,7 @@
             div.innerHTML = innerHTML;
             return div.children[0];
         }
-        const sharedServerData = katzComm.createServer();
-        if(!sharedServerData.internal) sharedServerData.internal = {};
+        const sharedServerData = katzComm.createServer({internal: {}});
         let firstmessage = null;
         let firstsubs = [];
         function onfirstSub(callback) {
@@ -635,12 +634,10 @@
     <script>
         let ws = new WebSocket("ws://localhost:4444");
         ws.onopen = () => {
-            if(!sharedServerData.internal) sharedServerData.internal = {};
             sharedServerData.internal.info = "Connected!";
             firstmessage = null;
         }
         ws.onclose = () => {
-            if(!sharedServerData.internal) sharedServerData.internal = {};
             sharedServerData.internal.error = "disconnected... reconnecting...";
             setTimeout(() => {
                 let newWS = new WebSocket(ws.url);
