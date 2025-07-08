@@ -2,6 +2,7 @@
 
 A simple Twitch bot tool for streamers!
 
+
 ## Download
 
 1. Download the latest release from [here](https://github.com/PurredCoffee/Clawffee/releases).
@@ -22,6 +23,7 @@ A simple Twitch bot tool for streamers!
     ```
     Check the `commands/examples` directory for more examples of how to create commands and scripts.
 
+
 ## Features
 
 - **Custom Scripts**: Write your own scripts to create and extend functionality.
@@ -32,6 +34,7 @@ A simple Twitch bot tool for streamers!
 - **Multi-Channel Support**: Manage multiple Twitch channels from a single instance.
 - **Integration**: Connect with other services like Discord, Twitter, etc.
 - **API Access**: Create bot features accessible via a REST API.
+
 
 ## Usage
 
@@ -106,6 +109,7 @@ Built-in plugins include:
     // Register a function to get the fun fact
     server.setFunction('getFunFact', (searchParams,res) => res.write(sharedServerData.funFact)); 
     ```
+
 ### Create your own Plugin
 To create a new plugin, create a new JavaScript file in the `plugins` directory and export an object with the desired functionality.
 
@@ -116,12 +120,14 @@ const { reloadPlugin } = require('./builtin/internal/pluginReg');
 reloadPlugin(__filename);
 ```
 
+
 ## Dependencies
 
 - [Node.js](https://nodejs.org/) (v16.0.0 or higher)
 - [Twurple](https://twurple.js.org/) - Twitch API library
 - [obs-websocket-js](https://npmjs.com/package/obs-websocket-js) - OBS WebSocket library
 - [ini](https://npmjs.com/package/ini) - INI file parser
+
 
 ## Installation
 
