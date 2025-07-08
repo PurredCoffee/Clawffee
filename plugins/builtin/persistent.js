@@ -5,7 +5,7 @@ persistent = new Proxy({}, {
     get(target, property, receiver) {
         let stack = {};
         Error.captureStackTrace(stack, this.get);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\\\)[^\/\\]*\.js(?=:)/g);
+        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
         for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
             if (moduleByPath[path]) {
@@ -18,7 +18,7 @@ persistent = new Proxy({}, {
     set(target, property, newValue, receiver) {
         let stack = {};
         Error.captureStackTrace(stack, this.set);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\\\)[^\/\\]*\.js(?=:)/g);
+        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
         for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
             if (moduleByPath[path]) {
@@ -32,7 +32,7 @@ persistent = new Proxy({}, {
     deleteProperty(target, property) {
         let stack = {};
         Error.captureStackTrace(stack, this.deleteProperty);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\\\)[^\/\\]*\.js(?=:)/g);
+        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
         for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
             if (moduleByPath[path]) {
