@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { setFunction } = require("../server");
 let loadTimeout = null;
 setFunction('/internal/unloadModule', (searchParams, res) => {
-    if(loadTimeout) {
+    if (loadTimeout) {
         return;
     }
     loadTimeout = setTimeout(() => {
@@ -13,13 +13,13 @@ setFunction('/internal/unloadModule', (searchParams, res) => {
     }, 400);
     let path = searchParams.get("path");
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
-    if(!module) return;
+    if (!module) return;
     module.conf.enabled = false;
     require("../../../internal/commandHotReloader").unloadModule(module);
 });
 
 setFunction('/internal/loadModule', (searchParams, res) => {
-    if(loadTimeout) {
+    if (loadTimeout) {
         return;
     }
     loadTimeout = setTimeout(() => {
@@ -27,7 +27,7 @@ setFunction('/internal/loadModule', (searchParams, res) => {
     }, 400);
     let path = searchParams.get("path");
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
-    if(!module) return;
+    if (!module) return;
     module.conf.enabled = true;
     require("../../../internal/commandHotReloader").loadModule(module);
 });
@@ -35,7 +35,7 @@ setFunction('/internal/loadModule', (searchParams, res) => {
 setFunction('/internal/setModulePos', (searchParams, res) => {
     let path = searchParams.get("path");
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
-    if(!module) return;
+    if (!module) return;
     module.conf.pos = {
         left: parseInt(searchParams.get("left")) ?? 1,
         top: parseInt(searchParams.get("top")) ?? 1,
@@ -48,7 +48,7 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
     let path = searchParams.get("path");
     let image = JSON.parse(body).image;
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
-    if(!module || !image) return;
+    if (!module || !image) return;
     const imagesDir = pathModule.resolve(__dirname, '../../../html/images');
     console.log(imagesDir);
     if (!fs.existsSync(imagesDir)) {
@@ -57,12 +57,12 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
 
     const ext = image.startsWith('data:image/png') ? '.png'
         : image.startsWith('data:image/jpeg') ? '.jpg'
-        : image.startsWith('data:image/gif') ? '.gif'
-        : image.startsWith('data:image/webp') ? '.webp'
-        : image.startsWith('data:image/svg+xml') ? '.svg'
-        : image.startsWith('data:image/bmp') ? '.bmp'
-        : image.startsWith('data:image/x-icon') ? '.ico'
-        : '.img';
+            : image.startsWith('data:image/gif') ? '.gif'
+                : image.startsWith('data:image/webp') ? '.webp'
+                    : image.startsWith('data:image/svg+xml') ? '.svg'
+                        : image.startsWith('data:image/bmp') ? '.bmp'
+                            : image.startsWith('data:image/x-icon') ? '.ico'
+                                : '.img';
 
     const randomName = crypto.randomBytes(16).toString('hex') + ext;
     const filePath = pathModule.join(imagesDir, randomName);
@@ -83,6 +83,6 @@ setFunction('/internal/setModuleName', (searchParams, res) => {
     let path = searchParams.get("path");
     let name = searchParams.get("name");
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
-    if(!module) return;
+    if (!module) return;
     module.conf.name = name;
 });

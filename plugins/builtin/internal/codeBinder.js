@@ -7,9 +7,9 @@ const associatedObjects = {};
  * @returns {T}
  */
 function associateObjectWithFile(output, unbindfuncname, fn) {
-    if(output?.[unbindfuncname]) {
-        let stack = {stack: ""};
-        if(fn) {
+    if (output?.[unbindfuncname]) {
+        let stack = { stack: "" };
+        if (fn) {
             Error.captureStackTrace(stack, fn);
         } else {
             fn = () => {
@@ -18,9 +18,9 @@ function associateObjectWithFile(output, unbindfuncname, fn) {
             fn();
         }
         stack = stack.stack.match(/(?<=at |\()\/.*\/[^/]*.js(?=:)/g);
-        for(let x = 0; x < stack.length; x++) {
+        for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
-            if(associatedObjects[path]) {
+            if (associatedObjects[path]) {
                 associatedObjects[path].push(() => {
                     output?.[unbindfuncname]?.();
                 });
@@ -67,7 +67,7 @@ function associateClassWithFile(value, unbindfuncname) {
 
 
 function addPath(path) {
-    if(!associatedObjects[path])
+    if (!associatedObjects[path])
         associatedObjects[path] = [];
 }
 

@@ -41,16 +41,16 @@ console.log = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.log);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if(stack?.[0]) {
+    if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldlog(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
         oldlog(...data);
     }
-    sharedServerData.internal.log = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
+    sharedServerData.internal.log = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5,
-    }):String(arg).substring(0, 80)).join(' ');
+    }) : String(arg).substring(0, 80)).join(' ');
 }
 
 const olddebug = console.debug;
@@ -58,16 +58,16 @@ console.debug = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.debug);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if(stack?.[0]) {
+    if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         olddebug(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
         olddebug(...data);
     }
-    sharedServerData.internal.debug = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
+    sharedServerData.internal.debug = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
-    }):String(arg)).join(' ');
+    }) : String(arg)).join(' ');
 }
 
 const olderr = console.error;
@@ -75,16 +75,16 @@ console.error = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.error);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if(stack?.[0]) {
+    if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         olderr(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
         olderr(...data);
     }
-    sharedServerData.internal.error = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
+    sharedServerData.internal.error = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
-    }):String(arg)).join(' ');
+    }) : String(arg)).join(' ');
 }
 
 const oldinfo = console.info;
@@ -92,16 +92,16 @@ console.info = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.error);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if(stack?.[0]) {
+    if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldinfo(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
         oldinfo(...data);
     }
-    sharedServerData.internal.info = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
+    sharedServerData.internal.info = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
-    }):String(arg)).join(' ');
+    }) : String(arg)).join(' ');
 }
 
 const oldwarn = console.warn;
@@ -109,16 +109,16 @@ console.warn = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.error);
     stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
-    if(stack?.[0]) {
+    if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldwarn(stack[0].padEnd(longestName, " "), "|", ...data);
     } else {
         oldwarn(...data);
     }
-    sharedServerData.internal.warn = data.map(arg => typeof(arg) === 'object'?util.inspect(arg, {
+    sharedServerData.internal.warn = data.map(arg => typeof (arg) === 'object' ? util.inspect(arg, {
         maxStringLength: 80,
         maxArrayLength: 5
-    }):String(arg)).join(' ');
+    }) : String(arg)).join(' ');
 }
 
 /* ------------------------------- FILE SAFETY ------------------------------ */
@@ -132,7 +132,7 @@ function isPathAllowed(targetPath) {
 
 function wrapFsMethod(methodName) {
     const orig = fs[methodName];
-    fs[methodName] = function(...args) {
+    fs[methodName] = function (...args) {
         let filePath = args[0];
         if (typeof filePath === 'string' || Buffer.isBuffer(filePath)) {
             if (!isPathAllowed(filePath)) {

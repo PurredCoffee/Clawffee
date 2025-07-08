@@ -1,4 +1,4 @@
-const { 
+const {
     createServer,
     addListener
 } = require("./subscribable");
@@ -6,11 +6,11 @@ const WebSocket = require('ws');
 const http = require('http');
 const { associateObjectWithFile } = require("./internal/codeBinder");
 
-const sharedServerData = createServer({internal: {}});
+const sharedServerData = createServer({ internal: {} });
 
 __katz__global__listener = addListener(sharedServerData, ".", (path, newValue, oldValue) => {
-    if(path[0] != 'internal')
-        console.debug(`# set ${path.map((val) => val.includes('.')?`"${val}"`:val).join(".")} from ${JSON.stringify(oldValue)} to`, newValue);
+    if (path[0] != 'internal')
+        console.debug(`# set ${path.map((val) => val.includes('.') ? `"${val}"` : val).join(".")} from ${JSON.stringify(oldValue)} to`, newValue);
 });
 
 const functions = {}
@@ -35,7 +35,7 @@ function setFunction(path, callback) {
         path: path,
         callback: callback,
         unbind() {
-            if(callback == functions[path])
+            if (callback == functions[path])
                 functions[path] = null;
         }
     }, "unbind");
@@ -49,7 +49,7 @@ let server = http.createServer((req, res) => {
     };
     let url = new URL(req.url, "http://localhost/");
     let path = url.pathname;
-    if(!functions[path]) {
+    if (!functions[path]) {
         console.error(`Could Not Find Function at ${path}`);
         res.writeHead(404, "no such function defined");
         res.end();
@@ -58,20 +58,20 @@ let server = http.createServer((req, res) => {
     res.writeHead(200, headers);
     origwrite = res.write;
     res.write = (...data) => {
-        if(!res.headersSent) {
+        if (!res.headersSent) {
             res.writeHead(200, headers);
         }
         origwrite(...data);
     }
 
     var body = "";
-    req.on('readable', function() {
+    req.on('readable', function () {
         let buffer = req.read();
         if (buffer !== null) {
             body += buffer.toString();
         }
     });
-    req.on('end', function() {
+    req.on('end', function () {
         try {
             functions[path]?.(url.searchParams, res, req, body);
         } catch (e) {

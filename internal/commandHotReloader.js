@@ -18,14 +18,14 @@ const moduleDependers = {}
  * @param {loadedmodule} curMod
  */
 function loadFile(curMod) {
-    if(curMod.module.errored) return false;
+    if (curMod.module.errored) return false;
 
     addPath(curMod.module.filePath);
     try {
         curMod.module.module = require(curMod.module.parsedModulePath);
         console.log(`+ ${curMod.module.name}`);
         curMod.module.errored = false;
-    } catch(e) {
+    } catch (e) {
         console.error(e);
         curMod.module.errored = true;
         return false;
@@ -38,8 +38,8 @@ function loadFile(curMod) {
  * @param {loadedmodule} curMod
  */
 function unloadFile(curMod) {
-    if(curMod.module.module == null) return;
-    
+    if (curMod.module.module == null) return;
+
     // unload self
     try {
         curMod.module.module?.unloadModule?.();
@@ -50,7 +50,7 @@ function unloadFile(curMod) {
     console.log(`- ${curMod.module.name}`);
 
     // clear cache
-    if(global.gc) {
+    if (global.gc) {
         setTimeout(() => global.gc({
             execution: "sync",
             flavor: "last-resort",
@@ -58,7 +58,7 @@ function unloadFile(curMod) {
         }), 200);
     } else {
         console.warn('Garbage collection unavailable.  Pass --expose_gc '
-        + 'when launching node to enable forced garbage collection.');
+            + 'when launching node to enable forced garbage collection.');
     }
 }
 
@@ -67,16 +67,16 @@ function unloadFile(curMod) {
  * @param {string} absPath 
  * @returns {Array[string]} all dependencies
  */
-function parseRequirements(absPath){
+function parseRequirements(absPath) {
     var requiredFiles = [];
-    if(!fs.statSync(absPath).isFile())
+    if (!fs.statSync(absPath).isFile())
         return [];
     var contents = fs.readFileSync(absPath).toString().split('\n');
 
-    contents.forEach(function(line){
+    contents.forEach(function (line) {
         var re = /(?:require\('?"?)(.*?)(?:'?"?\))/;
         var matches = re.exec(line);
-        if(matches && matches[1].startsWith(".")){
+        if (matches && matches[1].startsWith(".")) {
             try {
                 var relPath = require.resolve("./" + path.relative(__dirname, path.join(path.dirname(absPath), matches[1])));
                 requiredFiles.push(relPath);
@@ -98,7 +98,7 @@ function isActivateable(n, visited = new Set()) {
     if (!n.conf.enabled) return false;
     visited.add(n);
     for (const dep of n.dependencies || []) {
-        if(moduleByPath[dep] && !isActivateable(moduleByPath[dep], visited)) return false;
+        if (moduleByPath[dep] && !isActivateable(moduleByPath[dep], visited)) return false;
     }
     if (n.parent && !isActivateable(n.parent, visited)) return false;
     return true;
@@ -128,10 +128,10 @@ function reloadDependency(filename) {
  * @param {loadedmodule} curMod
  */
 function loadModule(curMod) {
-    if(!fs.existsSync(curMod.module.filePath) || !curMod) {
+    if (!fs.existsSync(curMod.module.filePath) || !curMod) {
         return false;
     }
-    if(curMod.active) {
+    if (curMod.active) {
         return true;
     }
 
@@ -139,31 +139,31 @@ function loadModule(curMod) {
     curMod.dependencies?.forEach(dep => moduleDependers[dep] = moduleDependers[dep]?.filter(mod => mod !== curMod));
     curMod.dependencies = parseRequirements(curMod.module.filePath);
     curMod.dependencies.forEach((dep) => {
-        if(!moduleDependers[dep]) {
+        if (!moduleDependers[dep]) {
             moduleDependers[dep] = [];
         }
         moduleDependers[dep].push(curMod);
     });
 
     // check if the file is loadable
-    if(!isActivateable(curMod)) {
+    if (!isActivateable(curMod)) {
         return false;
     }
     curMod.active = true;
 
     // load dependencies
     curMod.dependencies.forEach((dep) => {
-        if(moduleByPath[dep])
+        if (moduleByPath[dep])
             curMod.active &&= loadModule(moduleByPath[dep]);
     });
 
     // load self
-    if(curMod.module.parsedModulePath) {
+    if (curMod.module.parsedModulePath) {
         curMod.active &&= loadFile(curMod);
     }
 
     // load children
-    if(curMod.active)
+    if (curMod.active)
         for (const subModPath in curMod.children) {
             if (Object.prototype.hasOwnProperty.call(curMod.children, subModPath)) {
                 const subMod = curMod.children[subModPath];
@@ -172,9 +172,9 @@ function loadModule(curMod) {
         }
 
     // load dependers
-    if(curMod.active)
+    if (curMod.active)
         moduleDependers[curMod.module.filePath]?.forEach((mod) => loadModule(mod));
-    
+
     curMod.serverData.active = curMod.active;
     return curMod.active;
 }
@@ -184,7 +184,7 @@ function loadModule(curMod) {
  * @param {loadedmodule} curMod
  */
 function unloadModule(curMod) {
-    if(!curMod || !curMod.active) {
+    if (!curMod || !curMod.active) {
         return;
     }
     curMod.active = false;
@@ -207,9 +207,9 @@ function unloadModule(curMod) {
     // dont unload dependencies because they are loaded independently
 }
 
-try{
+try {
     loadModule(loadedmodules);
-} catch(e) {
+} catch (e) {
     console.error(e);
 }
 

@@ -52,11 +52,11 @@ function decryptData(path) {
 }
 
 function readFileSyncDefault(filePath, fallback, options) {
-    if(fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
         return fs.readFileSync(filePath, options);
     }
     fs.mkdir(path.dirname(filePath), { recursive: true }, (err) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return;
         }
@@ -66,11 +66,11 @@ function readFileSyncDefault(filePath, fallback, options) {
 }
 
 function readFileDefault(filePath, fallback, options, callback) {
-    if(fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
         return fs.readFile(filePath, options, callback);
     }
     fs.mkdir(path.dirname(filePath), { recursive: true }, (err) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return;
         }
@@ -83,7 +83,7 @@ function autoSavedJSON(filePath, fallback, options) {
     let data = fallback;
     try {
         data = JSON.parse(readFileSyncDefault(filePath, JSON.stringify(data), options));
-    } catch(e) {
+    } catch (e) {
         fs.writeFile(filePath, JSON.stringify(data), options, (err) => {
             if (err) console.error(err);
         });

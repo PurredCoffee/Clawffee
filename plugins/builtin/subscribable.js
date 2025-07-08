@@ -103,7 +103,7 @@ function onChange(obj, property, fullPath, oldValue, newValue) {
 
     // call all eventlisteners
     const eaten = ProxyObj.listener.ownListeners[property]?.reduce((eaten, listener) => listener.deref()?.(trimPath, newValue, oldValue, obj[property]) || eaten, false);
-    
+
     // clear GC functions
     if (ProxyObj.listener.ownListeners[property])
         ProxyObj.listener.ownListeners[property] = ProxyObj.listener.ownListeners[property].filter((val) => val.deref());
@@ -121,7 +121,7 @@ function onChange(obj, property, fullPath, oldValue, newValue) {
  * @returns {Object} The proxy object representing the server.
  */
 function createServer(data = {}) {
-    return makeProxy({root: data}, null, null, onChange).root;
+    return makeProxy({ root: data }, null, null, onChange).root;
 }
 
 /**
@@ -202,7 +202,7 @@ function addListener(server, path, callback, ifChanged = false) {
     //get the listener object under `path`
     let name = ProxyObj.name;
     let childListener = ProxyObjDict.get(ProxyObj.parent).listener;
-    if(path.length > 0) {
+    if (path.length > 0) {
         name = path[path.length - 1];
         childListener = getChild(ProxyObj.listener, server, path);
     }
@@ -232,33 +232,33 @@ function addListener(server, path, callback, ifChanged = false) {
  * @param {string[]|string} path
  * @param {number} depth 
  */
-function apply(server, value, path = [], depth=0) {
-    if(!ProxyObjDict.has(server)) {
+function apply(server, value, path = [], depth = 0) {
+    if (!ProxyObjDict.has(server)) {
         throw new TypeError("`server` is not a registered Server Object");
     }
     const ProxyObj = ProxyObjDict.get(server);
-    if(typeof path == 'string') {
+    if (typeof path == 'string') {
         path = path.split('.').filter((val) => val.trim());
     }
-    if(typeof depth != 'number') {
+    if (typeof depth != 'number') {
         throw new TypeError("`depth` must be a number");
     }
 
     path.unshift(ProxyObj.name);
     let obj = ProxyObj.parent;
 
-    while(path.length > 1) {
+    while (path.length > 1) {
         const key = path.shift();
         ProxyObjDict.get(obj).disabled = true;
         if (!(key in obj)) obj[key] = {};
         ProxyObjDict.get(obj).disabled = false;
         obj = obj[key];
     }
-    value = {[path[0]]:value};
+    value = { [path[0]]: value };
 
 
     function innerApply(obj, copy, depth, dont_delete = false) {
-        if(!dont_delete)
+        if (!dont_delete)
             for (const key in obj) {
                 if (Object.prototype.hasOwnProperty.call(obj, key) && !Object.prototype.hasOwnProperty.call(copy, key)) {
                     delete obj[key];
@@ -266,19 +266,19 @@ function apply(server, value, path = [], depth=0) {
             }
         for (const key in copy) {
             if (Object.prototype.hasOwnProperty.call(copy, key)) {
-                if(depth <= 1 || typeof copy[key] != 'object') {
+                if (depth <= 1 || typeof copy[key] != 'object') {
                     obj[key] = copy;
-                } else { 
-                    if(obj[key] === copy[key]) {
+                } else {
+                    if (obj[key] === copy[key]) {
                         //prevent a crash
                         obj[key] = copy[key];
                     } else {
-                        if(!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] != 'object') {
+                        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] != 'object') {
                             ProxyObjDict.get(obj).disabled = true;
                             obj[key] = Object.getPrototypeOf(copy[key]);
                             ProxyObjDict.get(obj).disabled = false;
                         }
-                        innerApply(obj[key], copy[key], depth-1);
+                        innerApply(obj[key], copy[key], depth - 1);
                     }
                 }
             }
@@ -287,7 +287,7 @@ function apply(server, value, path = [], depth=0) {
     innerApply(obj, value, depth + 1, true);
 }
 
-if(typeof module != 'undefined') {
+if (typeof module != 'undefined') {
     module.exports = {
         createServer,
         addListener,

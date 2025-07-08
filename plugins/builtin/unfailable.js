@@ -2,7 +2,7 @@
  * @returns {object} object that will always have every object and always be callable
  */
 function createUnfailable() {
-    return new Proxy(() => {}, {
+    return new Proxy(() => { }, {
         get() {
             return createUnfailable();
         },
