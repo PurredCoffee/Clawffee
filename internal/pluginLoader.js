@@ -3,6 +3,8 @@ const path = require('path');
 
 const pluginsDir = path.resolve(__dirname, '../plugins');
 
+const unavailablePlugins = {};
+
 function requirePluginsRecursively(dir) {
     fs.readdirSync(dir).forEach(file => {
         const filePath = path.join(dir, file);
@@ -17,3 +19,7 @@ function requirePluginsRecursively(dir) {
 
 requirePluginsRecursively(pluginsDir + '/builtin');
 requirePluginsRecursively(pluginsDir);
+
+module.exports = {
+    unavailablePlugins
+}

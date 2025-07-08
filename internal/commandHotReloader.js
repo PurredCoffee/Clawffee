@@ -5,7 +5,7 @@ const { loadedmodules, moduleByPath } = require("./commandFSHooks");
 
 
 // load plugins first
-require("./pluginLoader");
+const { unavailablePlugins } = require("./pluginLoader");
 
 
 /**
@@ -65,27 +65,36 @@ function unloadFile(curMod) {
 /**
  * parses a path and returns all dependencies of the file relative to the current project
  * @param {string} absPath 
+ * @param {Set} requiredFiles
  * @returns {Array[string]} all dependencies
  */
-function parseRequirements(absPath) {
-    var requiredFiles = [];
+function parseRequirements(absPath, requiredFiles = new Set()) {
     if (!fs.statSync(absPath).isFile())
         return [];
-    var contents = fs.readFileSync(absPath).toString().split('\n');
+    var contents = fs.readFileSync(absPath).toString();
+    var re = /(?<=require\((?:'|"))(?:\.|#).*?(?=(?:'|")\))/g;
 
-    contents.forEach(function (line) {
-        var re = /(?:require\('?"?)(.*?)(?:'?"?\))/;
-        var matches = re.exec(line);
-        if (matches && matches[1].startsWith(".")) {
-            try {
-                var relPath = require.resolve("./" + path.relative(__dirname, path.join(path.dirname(absPath), matches[1])));
-                requiredFiles.push(relPath);
-            } catch {
+    let matches = contents.matchAll(re);
+    for (const match of matches) {
+        let reqPath = match[0];
+        let resolvedPath;
+        try {
+            if (reqPath.startsWith(".")) {
+                resolvedPath = require.resolve("./" + path.relative(__dirname, path.join(path.dirname(absPath), reqPath)));
+            } else if (reqPath.startsWith("#")) {
+                resolvedPath = require.resolve(reqPath);
+            } else {
+                continue;
             }
+            if (!requiredFiles.has(resolvedPath)) {
+                requiredFiles.add(resolvedPath);
+                parseRequirements(resolvedPath, requiredFiles);
+            }
+        } catch (e) {
+            // ignore resolution errors
         }
-    });
-
-    return requiredFiles;
+    }
+    return Array.from(requiredFiles.keys());
 }
 
 /**
@@ -98,7 +107,7 @@ function isActivateable(n, visited = new Set()) {
     if (!n.conf.enabled) return false;
     visited.add(n);
     for (const dep of n.dependencies || []) {
-        if (moduleByPath[dep] && !isActivateable(moduleByPath[dep], visited)) return false;
+        if (unavailablePlugins[dep] || moduleByPath[dep] && !isActivateable(moduleByPath[dep], visited)) return false;
     }
     if (n.parent && !isActivateable(n.parent, visited)) return false;
     return true;
@@ -207,11 +216,14 @@ function unloadModule(curMod) {
     // dont unload dependencies because they are loaded independently
 }
 
-try {
-    loadModule(loadedmodules);
-} catch (e) {
-    console.error(e);
-}
+// TODO: clean this up
+setTimeout(() => {
+    try {
+        loadModule(loadedmodules);
+    } catch (e) {
+        console.error(e);
+    }
+}, 10);
 
 module.exports = {
     unloadModule,
