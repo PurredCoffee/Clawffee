@@ -54,7 +54,17 @@ function decryptData(path) {
     }
 }
 
-function readFileSyncDefault(filePath, fallback, options) {
+/**
+ * 
+ * @param {string} filePath 
+ * @param {string} fallback 
+ * @param {{encoding: string|undefined, flag: string|undefined}} options 
+ * @returns {string}
+ */
+function readFileSyncDefault(filePath, fallback = "", options = {}) {
+    if(!fallback) {
+        fallback = "";
+    }
     if (fs.existsSync(filePath)) {
         return fs.readFileSync(filePath, options).toString();
     }
@@ -68,6 +78,14 @@ function readFileSyncDefault(filePath, fallback, options) {
     return fallback;
 }
 
+/**
+ * Asynchronously read a file or create it with the given fallback if it doesnt exist
+ * @param {string} filePath 
+ * @param {string} fallback 
+ * @param {{encoding: string|undefined, flag: string|undefined}} options 
+ * @param {(err: NodeJS.ErrnoException | null, data: NonSharedBuffer) => void} callback
+ * @returns {void}
+ */
 function readFileDefault(filePath, fallback, options, callback) {
     if (fs.existsSync(filePath)) {
         return fs.readFile(filePath, options, callback);
@@ -168,5 +186,5 @@ module.exports = {
     readFileSyncDefault,
     readFileDefault,
     encryptData,
-    decryptData
+    decryptData,
 }

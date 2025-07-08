@@ -304,16 +304,6 @@ function addNew(main, scopes) {
 
             addBot(tokenData, main).then((value) => {
                 if (main) {
-                    let name = value.name;
-                    connectedUser.api = connectedBots[name].api;
-                    connectedUser.chat = connectedBots[name].chat;
-                    connectedUser.listener = associateClassWithFile(
-                        makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
-                        "stop"
-                    );
-                    connectedUser.listener.start();
-                    connectedUser.say = connectedBots[name].say;
-                    connectedUser.reply = connectedBots[name].reply;
                     encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify({
                         userInfo: value,
                         tokenData: tokenData
@@ -324,10 +314,9 @@ function addNew(main, scopes) {
                         tokenData: tokenData
                     }))
                 }
-                reloadPlugin(__filename);
                 res.end(`Code for ${value.id} saved and encrypted.`);
+                connect();
             });
-            reloadPlugin(__filename);
         });
         res.end(`
             <html>
@@ -478,13 +467,9 @@ function print() {
     }
 }
 
-async function idFromUser(name) {
-    await connectedUser.api.users.getUserByName(name);
-}
 
 module.exports = {
     connectedBots,
     connectedUser,
-    print,
-    idFromUser
+    print
 }

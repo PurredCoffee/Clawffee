@@ -160,8 +160,10 @@ function setupFolder(curMod) {
             }
             return;
         }
-        if (event == 'rename')
+        if (event == 'rename') {
             setupInner(curMod, file);
+            require('./commandHotReloader').reloadModule(curMod.children[file]);
+        }
     });
 }
 
