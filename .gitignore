@@ -1,5 +1,6 @@
 **/*.priv
 **/*.enc
+**/*._conf
 
 config/*
 !config/internal
