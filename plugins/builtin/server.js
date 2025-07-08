@@ -10,9 +10,9 @@ const { autoSavedJSON } = require("./files");
 const sharedServerData = createServer({ internal: {} });
 
 const confPath = 'config/internal/';
-const conf = autoSavedJSON(confPath + "html.json", JSON.stringify({
+const conf = autoSavedJSON(confPath + "html.json", {
     "port": 4444
-}))
+})
 
 __katz__global__listener = addListener(sharedServerData, ".", (path, newValue, oldValue) => {
     if (path[0] != 'internal')
