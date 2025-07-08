@@ -16,7 +16,7 @@ const oauthFilesPath = confPath + 'twitch/oauth/';
 let clientSecret = fs.existsSync(confPath + 'twitch/secret.enc') ? decryptData(confPath + 'twitch/secret.enc') : null;
 const conf = autoSavedJSON(confPath + 'twitch.json', {
     chats: {},
-    clientID: "",
+    clientID: "e728jp4m53o8o9jb0q34nfefhjmd8t",
     printChannel: ""
 });
 const clientID = conf.clientID;
