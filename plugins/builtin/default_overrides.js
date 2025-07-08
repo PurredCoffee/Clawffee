@@ -2,6 +2,7 @@ const { sharedServerData } = require("./server");
 var util = require('util');
 const path = require('path');
 const fs = require('fs');
+const { associateObjectWithFile } = require("./internal/codeBinder");
 
 /* ------------------------------- JSON SAFETY ------------------------------ */
 
@@ -158,3 +159,27 @@ function wrapFsMethod(methodName) {
         wrapFsMethod(method);
     }
 });
+
+/* -------------------------------- Intervals ------------------------------- */
+
+const oldSetInterval = setInterval;
+setInterval = (...params) => {
+    let x = associateObjectWithFile({
+        callback: oldSetInterval(...params),
+        disconnect: () => {
+            clearTimeout(this.callback);
+        }
+    }, "disconnect");
+    return x.callback;
+}
+
+const oldSetTimeout = setTimeout;
+setTimeout = (...params) => {
+    let x = associateObjectWithFile({
+        callback: oldSetTimeout(...params),
+        disconnect: () => {
+            clearTimeout(this.callback);
+        }
+    }, "disconnect");
+    return x.callback;
+}
