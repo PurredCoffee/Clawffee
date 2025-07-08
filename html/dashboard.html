@@ -661,10 +661,10 @@
                     addTwitchUserCard(twitchMainDiv, data.internal.twitch.main);
                 twitchBotsDiv.innerHTML = "";
                 if(data.internal.twitch?.bots)
-                    data.internal.twitch.bots.foreach((obj) => addTwitchUserCard(twitchBotsDiv, obj));
+                    data.internal.twitch.bots?.foreach?.((obj) => addTwitchUserCard(twitchBotsDiv, obj));
                 twitchFailDiv.innerHTML = "";
                 if(data.internal.twitch?.failed)
-                    data.internal.twitch.failed.foreach((obj) => addTwitchUserCard(twitchFailDiv, obj));
+                    data.internal.twitch.failed?.foreach?.((obj) => addTwitchUserCard(twitchFailDiv, obj));
             })
             const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
                 twitchMainDiv.innerHTML = "";
@@ -672,10 +672,10 @@
                     addTwitchUserCard(twitchMainDiv, sharedServerData.internal.twitch.main);
                 twitchBotsDiv.innerHTML = "";
                 if(data.internal.twitch?.bots)
-                    data.internal.twitch.bots.foreach((obj) => addTwitchUserCard(twitchBotsDiv, obj));
+                    data.internal.twitch.bots?.foreach?.((obj) => addTwitchUserCard(twitchBotsDiv, obj));
                 twitchFailDiv.innerHTML = "";
                 if(data.internal.twitch?.failed)
-                    data.internal.twitch.failed.foreach((obj) => addTwitchUserCard(twitchFailDiv, obj));
+                    data.internal.twitch.failed?.foreach?.((obj) => addTwitchUserCard(twitchFailDiv, obj));
             });
         </script>
     </div>
