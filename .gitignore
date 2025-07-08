@@ -7,7 +7,7 @@ config/*
 
 commands/*
 !commands/examples
-!commands/examples._conf
+!commands_conf/examples._conf
 
 plugins/*
 !plugins/builtin
@@ -16,3 +16,5 @@ html/images/*
 
 node_modules
 package-lock.json
+
+build
