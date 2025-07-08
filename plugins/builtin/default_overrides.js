@@ -40,7 +40,7 @@ const olddebug = console.debug;
 console.debug = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.debug);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    stack = stack.stack.match(/(?<=at |\((\/|\\\\).*(\/|\\\\))[^\/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         olddebug(stack[0].padEnd(longestName, " "), "|", ...data);
@@ -57,7 +57,7 @@ const oldlog = console.log;
 console.log = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.log);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    stack = stack.stack.match(/(?<=at |\((\/|\\\\).*(\/|\\\\))[^\/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldlog(stack[0].padEnd(longestName, " "), "|", ...data);
@@ -75,7 +75,7 @@ const oldinfo = console.info;
 console.info = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.info);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    stack = stack.stack.match(/(?<=at |\((\/|\\\\).*(\/|\\\\))[^\/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldinfo(stack[0].padEnd(longestName, " "), "|", ...data);
@@ -92,7 +92,7 @@ const oldwarn = console.warn;
 console.warn = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.warn);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    stack = stack.stack.match(/(?<=at |\((\/|\\\\).*(\/|\\\\))[^\/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         oldwarn(stack[0].padEnd(longestName, " "), "|", ...data);
@@ -109,7 +109,7 @@ const olderr = console.error;
 console.error = (...data) => {
     let stack = {};
     Error.captureStackTrace(stack, console.error);
-    stack = stack.stack.match(/(?<=at |\(\/.*\/)[^/]*.js:\d*(?=:)/g);
+    stack = stack.stack.match(/(?<=at |\((\/|\\\\).*(\/|\\\\))[^\/]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
         olderr(stack[0].padEnd(longestName, " "), "|", ...data);
