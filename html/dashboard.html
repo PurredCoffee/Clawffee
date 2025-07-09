@@ -704,16 +704,16 @@
                                 
                                 let header = "Bots";
                                 if (data.internal.twitch?.bots)
-                                    data.internal.twitch.bots?.foreach?.((obj) => () => {
+                                    data.internal.twitch.bots?.forEach?.((obj) => {
                                         addTwitchUserCard(header, obj);
                                         header = "";
                                     });
 
                                 header = "Failed";
                                 if (data.internal.twitch?.failed)
-                                    data.internal.twitch.failed?.foreach?.((obj) => () => {
+                                    data.internal.twitch.failed.forEach((obj) => {
                                         let card = addTwitchUserCard(header, obj);
-                                        card.classList.append("danger");
+                                        card.classList.add("danger");
                                         header = "";
                                     });
                             }
@@ -721,7 +721,7 @@
                                 update_twitch(data);
                             });
                             const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
-                                update_twitch(sharedServerData.internal.twitch.main);
+                                update_twitch(sharedServerData);
                             });
                         </script>
                     </div>
