@@ -50,19 +50,18 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
     if (!module || !image) return;
     const imagesDir = pathModule.resolve(__dirname, '../../../html/images');
-    console.log(imagesDir);
     if (!fs.existsSync(imagesDir)) {
         fs.mkdirSync(imagesDir, { recursive: true });
     }
 
     const ext = image.startsWith('data:image/png') ? '.png'
         : image.startsWith('data:image/jpeg') ? '.jpg'
-            : image.startsWith('data:image/gif') ? '.gif'
-                : image.startsWith('data:image/webp') ? '.webp'
-                    : image.startsWith('data:image/svg+xml') ? '.svg'
-                        : image.startsWith('data:image/bmp') ? '.bmp'
-                            : image.startsWith('data:image/x-icon') ? '.ico'
-                                : '.img';
+        : image.startsWith('data:image/gif') ? '.gif'
+        : image.startsWith('data:image/webp') ? '.webp'
+        : image.startsWith('data:image/svg+xml') ? '.svg'
+        : image.startsWith('data:image/bmp') ? '.bmp'
+        : image.startsWith('data:image/x-icon') ? '.ico'
+        : '.img';
 
     const randomName = crypto.randomBytes(16).toString('hex') + ext;
     const filePath = pathModule.join(imagesDir, randomName);
