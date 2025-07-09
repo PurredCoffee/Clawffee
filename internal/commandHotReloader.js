@@ -20,6 +20,7 @@ const moduleDependers = {}
 function loadFile(curMod) {
     if (curMod.module.errored) return false;
 
+    deletePath(curMod.module.filePath);
     addPath(curMod.module.filePath);
     try {
         curMod.module.module = require(curMod.module.parsedModulePath);
@@ -28,6 +29,7 @@ function loadFile(curMod) {
     } catch (e) {
         console.error(e);
         curMod.module.errored = true;
+        deletePath(curMod.module.filePath);
         return false;
     }
     return true;

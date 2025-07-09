@@ -423,14 +423,14 @@ setFunction("/twitch/addListenTo", (searchParams) => {
     connect();
 });
 setFunction("/twitch/removeListenTo", (searchParams) => {
-    const user = searchParams.get("id");
+    const bot = searchParams.get("id");
     const channel = searchParams.get("user");
-    if (!user || !channel) {
+    if (!bot || !channel) {
         return;
     }
-    const botEntry = Object.values(connectedBots).find(b => b.id === user);
+    const botEntry = Object.values(connectedBots).find(b => b.id === bot);
     if (botEntry) {
-        channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => { val != channel });
+        channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => val != channel);
     }
     connect();
 });

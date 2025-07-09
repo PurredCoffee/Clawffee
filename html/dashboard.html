@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clawffee</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
+    <link rel="stylesheet" href="css/index.css">
     <style>
         .material-symbols-outlined {
             font-variation-settings:
@@ -12,26 +15,6 @@
                 'wght' 400,
                 'GRAD' 0,
                 'opsz' 24
-        }
-
-        body {
-            color:white;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 900;
-            margin: 0;
-            padding: 0;
-        }
-        body::before {
-            background: 
-                linear-gradient(120deg, #09090f99, transparent),
-                linear-gradient(40deg, #010101, #0d0b0b);
-            position: fixed;
-            content: "";
-            top:0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: -10000000;
         }
 
         a {
@@ -45,11 +28,11 @@
             div.innerHTML = innerHTML;
             return div.children[0];
         }
-        const sharedServerData = katzComm.createServer({internal: {}});
+        const sharedServerData = katzComm.createServer({ internal: {} });
         let firstmessage = null;
         let firstsubs = [];
         function onfirstSub(callback) {
-            if(firstmessage) {
+            if (firstmessage) {
                 callback(firstmessage);
             } else {
                 firstsubs.push(callback);
@@ -57,221 +40,239 @@
         }
     </script>
 </head>
+
 <body>
     <div class="modules">
         <style>
-        .modules {
-            border: wheat solid;
-            border-radius: 8px;
-            margin: 8px;
-            padding: 20px;
-            padding-bottom: 10px;
-            overflow: scroll;
-        }
-        #sub-modules {
-            display: grid;
-            position: relative;
-            grid-template-columns: repeat(8, calc(100% / 8));
-            grid-auto-rows: 120px;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-            min-height: 480px;
-            padding-bottom: 120px;
-            min-width: 1000px;
-            font-size: clamp(18px, 1.5vw, 40px);
-        }
-        #sub-modules::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: linear-gradient(0deg, transparent 9px, gray 10px, transparent 10.5px),
-                linear-gradient(90deg, transparent calc(100% - 10px), gray calc(100% - 9px), transparent calc(100% - 8.5px));
-            background-repeat: repeat;
-            background-size: calc((100% + 20px) / 8) 120px;
-            z-index: -1;
-        }
-        #sub-modules>* {
-            border-radius: 20px;
-            margin: 10px;
-            margin-bottom: 20px;
-            margin-top: 0;
-            padding-inline: auto;
-            position: relative;
-            z-index: 2;
-            cursor: pointer;
-            user-select: none;
-        }
-        #sub-modules>*::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: wheat solid;
-            border-radius: 20px;
-            z-index: -3;
-        }
-        #sub-modules>*::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                linear-gradient(120deg, #09090f99, transparent),
-                linear-gradient(40deg, #010101, #0d0b0b);
-            background-size: 100vw 100vh;
-            background-attachment: fixed;
-            filter: brightness(1000%) contrast(200%) blur(15px);
-            z-index: -5;
-        }
-        #sub-modules>.inactive {
-            background-color: #44000088;
-            color: gray;
-        }
-        #sub-modules>.inactive::before {
-            border-color: gray;
-        }
-        #sub-modules>.inactive::after {
-            filter: brightness(1000%) contrast(200%) blur(20px) brightness(70%);
-        }
-        #sub-modules>.folder>.btn-text>span {
-            text-decoration: underline;
-        }
-        #sub-modules>.folder>.btn-text {
-            padding-bottom: 4px;
-        }
-        #sub-modules>.folder::before {
-            border-style: double;
-            border-width: 9px;
-        }
-        #sub-modules>*>.btn-text {
-            position: absolute;
-            top:50%;
-            left:50%;
-            translate: -50% -50%;
-            width: max-content;
-            max-width: calc(100%-20px);
-            text-shadow: black 2px 2px 0px;
-            overflow: hidden;
-        }
-        #sub-modules>*>.btn-action {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-        }
-        #sub-modules>*>.btn-action>button {
-            background-color: transparent;
-            border: none;
-            color:  transparent;
-            transition: color 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
-            text-shadow: transparent 2px 2px 0px;
-        }
-        #sub-modules>*>.btn-bg {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            z-index: -4;
-            border-radius: 14px;
-            background-size: cover;
-            background-position: 50% 50%;
-            filter: brightness(70%);
-        }
-        #sub-modules>.inactive>.btn-bg {
-            filter: brightness(40%) hue-rotate(50deg) sepia(40%) hue-rotate(-50deg);
-        }
+            .modules {
+                border: var(--c) solid 1px;
+                border-bottom-width: 3px;
+                border-radius: 8px;
+                margin: 8px;
+                padding: 20px;
+                padding-bottom: 10px;
+                overflow: scroll;
+            }
 
-        #sub-modules>*:hover>.btn-action>button  {
-            text-shadow: black 2px 2px 0px;
-            color: gray;
-        }
-        #sub-modules>*>.btn-action>button:hover {
-            text-shadow: black 2px 2px 0px;
-            color: white;
-        }
-        #sub-modules>*>.btn-action>button.disabled  {
-            text-shadow: black 2px 2px 0px;
-            color: white;
-        }
-        #sub-modules>.resize>.btn-action>button  {
-            display: none;
-        }
-        #sub-modules>.resize  {
-            opacity: 0.5;
-            cursor: nesw-resize;
-        }
-        #sub-modules>.move>.btn-action>button  {
-            display: none;
-        }
-        #sub-modules>.move {
-            opacity: 0.5;
-            cursor: move;
-        }
+            #sub-modules {
+                display: grid;
+                position: relative;
+                grid-template-columns: repeat(8, calc(100% / 8));
+                grid-auto-rows: 140px;
+                width: 100%;
+                padding: 0;
+                margin: 0;
+                min-height: 700px;
+                padding-bottom: 140px;
+                min-width: 1000px;
+                font-size: clamp(18px, 1.5vw, 40px);
+            }
 
-        #cur-module {
-            border-top: solid white;
-            position: relative;
-            padding: 20px;
-            margin: 0;
-        }
-        #btn-name {
-            background: none;
-            border: none;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 900;
-            font-size: medium;
-            color: white;
-            text-decoration: underline;
-        }
-        #btn-name:focus {
-            outline: none;
-            text-decoration-color: blue;
-            box-shadow: none;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        .bg-upload {
-            display: inline-block;
-            height: auto;
-            cursor: pointer;
-            text-decoration: underline;
-        }
+            #sub-modules::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                background: linear-gradient(0deg, transparent 9px, gray 10px, transparent 10.5px),
+                    linear-gradient(90deg, transparent calc(100% - 10px), gray calc(100% - 9px), transparent calc(100% - 8.5px));
+                background-repeat: repeat;
+                background-size: calc((100% + 20px) / 8) 140px;
+                z-index: -1;
+            }
 
-        #commandpath>a {
-            cursor: pointer;
-        }
-        #commandpath>a>span {
-            text-decoration: underline;
-        }
+            #sub-modules>* {
+                border-radius: 20px;
+                margin: 10px;
+                margin-bottom: 20px;
+                margin-top: 0;
+                padding-inline: auto;
+                position: relative;
+                z-index: 2;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            #sub-modules>*::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border: var(--c) 2px solid;
+                border-bottom-width: 3px;
+                border-radius: 20px;
+                z-index: -3;
+            }
+
+            #sub-modules>*::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background:
+                    linear-gradient(120deg, #09090f99, transparent),
+                    linear-gradient(40deg, #010101, #0d0b0b);
+                background-size: 100vw 100vh;
+                background-attachment: fixed;
+                filter: brightness(1000%) contrast(200%) blur(15px);
+                z-index: -5;
+            }
+
+            #sub-modules>.inactive {
+                background-color: #44000088;
+            }
+
+            #sub-modules>.inactive::after {
+                filter: brightness(1000%) contrast(200%) blur(20px) brightness(70%);
+            }
+
+            #sub-modules>.inactive::before {
+                --c: var(--e);
+            }
+
+            #sub-modules>.folder>.btn-text>span {
+                text-decoration: underline;
+                text-decoration-thickness: 2px;
+            }
+
+            #sub-modules>.folder>.btn-text {
+                padding-bottom: 4px;
+            }
+
+            #sub-modules>.folder::before {
+                border-style: double;
+                border-width: 4px;
+                border-bottom-width: 9px;
+            }
+
+            #sub-modules>*>.btn-text {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                translate: -50% -50%;
+                width: max-content;
+                max-width: calc(100%-20px);
+                text-shadow: black 2px 2px 0px;
+                overflow: hidden;
+            }
+
+            #sub-modules>*>.btn-action {
+                position: absolute;
+                bottom: 8px;
+                right: 8px;
+            }
+
+            #sub-modules>*>.btn-action>button {
+                background: none !important;
+                border: none;
+                transition: --c 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
+                text-shadow: transparent 2px 2px 0px;
+                padding: 0.2em;
+                margin-inline: 0em;
+                --c: #00000000;
+            }
+
+            #sub-modules>*>.btn-bg {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                z-index: -4;
+                border-radius: 14px;
+                background-size: cover;
+                background-position: 50% 50%;
+                --c: #fff;
+            }
+
+            #sub-modules>.inactive>.btn-bg {
+                filter: brightness(40%) hue-rotate(50deg) sepia(40%) hue-rotate(-50deg);
+            }
+
+            #sub-modules>*:hover {
+                outline: rgba(var(--pr), 33%) 4px solid;
+            }
+
+            #sub-modules>*>.btn-action>button {
+                box-shadow: none;
+            }
+
+            #sub-modules>*:hover>.btn-action>button {
+                text-shadow: black 2px 2px 0px;
+                --c: var(--P);
+            }
+
+            #sub-modules>*>.btn-action>button:hover {
+                text-shadow: black 2px 2px 0px;
+                --c: #fff;
+            }
+
+            #sub-modules>*>.btn-action>button.disabled {
+                text-shadow: black 2px 2px 0px;
+                --c: #fff;
+            }
+
+            #sub-modules>.resize>.btn-action>button {
+                display: none;
+            }
+
+            #sub-modules>.resize {
+                opacity: 0.5;
+                cursor: nesw-resize;
+            }
+
+            #sub-modules>.move>.btn-action>button {
+                display: none;
+            }
+
+            #sub-modules>.move {
+                opacity: 0.5;
+                cursor: move;
+            }
+
+            #cur-module {
+                padding: 1em;
+            }
+
+            #commandpath>a {
+                cursor: pointer;
+            }
+
+            #commandpath>a>span {
+                text-decoration: underline;
+            }
         </style>
         <h3 style="margin-top: 0;">Commands<span id="commandpath"></span></h3>
         <div id="sub-modules"></div>
         <div id="cur-module" style="display: none;">
-            <span>Button Settings for <input id="btn-name" type="text">: </span>
-            <label for="bg-upload" class="bg-upload">
+            <hr info>
+            <span>
+                Button Settings for
+                <label for="btn-name">
+                    Button Name
+                </label>
+                <input id="btn-name" type="text">:
+            </span>
+            <label for="bg-upload">
                 Set Background
             </label>
-            <input type="file" id="bg-upload"/>
+            <input type="file" id="bg-upload" />
         </div>
         <script>
             function lockButton(path, enable) {
-                let url = new URL(enable?"internal/loadModule":"internal/unloadModule", 'http://localhost:4444/');
+                let url = new URL(enable ? "internal/loadModule" : "internal/unloadModule", 'http://localhost:4444/');
                 url.searchParams.append("path", path);
                 fetch(url);
             }
             function moveButton(path, left, top, w, h) {
                 for (let r = top; r < top + h; r++) {
                     for (let c = left; c < left + w; c++) {
-                        if(map.has(`${r-1},${c-1}`)) return false;
+                        if (map.has(`${r - 1},${c - 1}`)) return false;
                     }
                 }
                 let url = new URL("internal/setModulePos", 'http://localhost:4444/');
@@ -288,36 +289,36 @@
             let map = new Set();
 
             function placeModule(module) {
-                let left = Math.min(8,module.conf.pos.left ?? 1);
-                let w = Math.min(9 - left,module.conf.pos.w ?? 1);
+                let left = Math.min(8, module.conf.pos.left ?? 1);
+                let w = Math.min(9 - left, module.conf.pos.w ?? 1);
                 let top = module.conf.pos.top ?? 1;
                 let h = module.conf.pos.h ?? 1;
                 for (let r = top; r < top + h; r++) {
                     for (let c = left; c < left + w; c++) {
-                        map.add(`${r-1},${c-1}`);
+                        map.add(`${r - 1},${c - 1}`);
                     }
                 }
             }
             function deleteModule(module) {
-                let left = Math.min(8,module.conf.pos.left ?? 1);
-                let w = Math.min(9 - left,module.conf.pos.w ?? 1);
+                let left = Math.min(8, module.conf.pos.left ?? 1);
+                let w = Math.min(9 - left, module.conf.pos.w ?? 1);
                 let top = module.conf.pos.top ?? 1;
                 let h = module.conf.pos.h ?? 1;
                 for (let r = top; r < top + h; r++) {
                     for (let c = left; c < left + w; c++) {
-                        map.delete(`${r-1},${c-1}`);
+                        map.delete(`${r - 1},${c - 1}`);
                     }
                 }
             }
 
             function addModule(name, module, left, top, w, h) {
                 let moduleName = module.conf.name;
-                if(!moduleName) {
+                if (!moduleName) {
                     moduleName = name.split('.js')[0];
                     moduleName = moduleName.replace(/[_\.\-]/g, ' ');
                     moduleName = moduleName.replace(/\b\w/g, c => c.toUpperCase());
                 }
-                let divider = createDiv(`<div><div class="btn-text">${Object.keys(module.children).length?`&gt; <span>${moduleName}</span>`:moduleName}</div>
+                let divider = createDiv(`<div><div class="btn-text">${Object.keys(module.children).length ? `&gt; <span>${moduleName}</span>` : moduleName}</div>
                     <div class="btn-action"><button><span class="material-symbols-outlined">
                         open_with
                     </span></button>
@@ -326,19 +327,19 @@
                     </span></button></div>
                     <div class="btn-bg"></div>
                 </div>`);
-                divider.classList = `${module.active?'':'inactive '}${Object.keys(module.children).length?'folder ':''}`;
+                divider.classList = `${module.active ? '' : 'inactive '}${Object.keys(module.children).length ? 'folder ' : ''}`;
                 divider.style.gridColumn = `${left} / span ${w}`;
                 divider.style.gridRow = `${top} / span ${h}`;
-                divider.children[1].children[1].classList = (module.conf.enabled?'':'disabled ');
+                divider.children[1].children[1].classList = (module.conf.enabled ? '' : 'disabled ');
                 let path = module.path;
                 let enabled = !module.conf.enabled;
                 divider.children[2].style.backgroundImage = `url("images/${module.conf.img}")`;
                 let disabled = false;
 
                 let clickListener;
-                if(Object.keys(module.children).length) {
+                if (Object.keys(module.children).length) {
                     clickListener = (e) => {
-                        if(disabled) return;
+                        if (disabled) return;
                         modpath.push(name);
                         curPath = module.path;
                         active = "";
@@ -348,7 +349,7 @@
                             modpath.length = len;
                             active = name;
                             updateModuleDisplay();
-                            while(btn.parentElement.lastChild != btn) {
+                            while (btn.parentElement.lastChild != btn) {
                                 btn.parentElement.removeChild(btn.parentElement.lastChild);
                             }
                             btn.parentElement.removeChild(btn.parentElement.lastChild);
@@ -365,7 +366,7 @@
                     }
                 }
 
-                divider.children[1].children[1].addEventListener('click', (event) => {lockButton(path, enabled); event.stopPropagation();});
+                divider.children[1].children[1].addEventListener('click', (event) => { lockButton(path, enabled); event.stopPropagation(); });
                 divider.children[1].children[0].addEventListener('click', (event) => {
                     deleteModule(module);
                     divider.removeEventListener('click', clickListener);
@@ -378,7 +379,7 @@
                         const x = e.clientX - rect.left;
                         const y = e.clientY - rect.top;
                         const colWidth = rect.width / 8;
-                        const rowHeight = 120;
+                        const rowHeight = 140;
                         col = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
                         row = Math.max(0, Math.floor(y / rowHeight));
                         divider.style.gridColumn = `${col + 1} / span 1`;
@@ -399,11 +400,11 @@
                             const x = e.clientX - rect.left;
                             const y = e.clientY - rect.top;
                             const colWidth = rect.width / 8;
-                            const rowHeight = 120;
+                            const rowHeight = 140;
                             ncol = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
                             nrow = Math.max(0, Math.floor(y / rowHeight));
-                            divider.style.gridColumn = `${Math.min(col,ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                            divider.style.gridRow = `${Math.min(row,nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
+                            divider.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
+                            divider.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
                         }
                         moveFollower(event);
                         document.addEventListener('mousemove', moveFollower);
@@ -414,15 +415,15 @@
                             moduleParent.removeEventListener('mousemove', mouseLeave);
                             divider.classList.remove('move');
                             divider.classList.remove('resize');
-                            if(!moveButton(module.path, Math.min(col,ncol) + 1, Math.min(row,nrow) + 1, Math.abs(col - ncol) + 1, Math.abs(row - nrow) + 1)) {
+                            if (!moveButton(module.path, Math.min(col, ncol) + 1, Math.min(row, nrow) + 1, Math.abs(col - ncol) + 1, Math.abs(row - nrow) + 1)) {
                                 divider.style.gridColumn = `${left} / span ${w}`;
                                 divider.style.gridRow = `${top} / span ${h}`;
                                 placeModule(module);
                             } else {
-                                divider.style.gridColumn = `${Math.min(col,ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                                divider.style.gridRow = `${Math.min(row,nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
+                                divider.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
+                                divider.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
                             }
-                            setTimeout(() => divider.addEventListener('click', clickListener),500);
+                            setTimeout(() => divider.addEventListener('click', clickListener), 500);
                         }
                         document.addEventListener('mouseup', mouseDown);
                     }
@@ -453,12 +454,12 @@
                 for (const name in data) {
                     if (Object.prototype.hasOwnProperty.call(data, name)) {
                         const module = data[name];
-                        if(!module) {
+                        if (!module) {
                             continue;
                         }
-                        if(module.conf.pos && !module.conf.hide) {
-                            let left = Math.min(8,module.conf.pos.left ?? 1);
-                            let w = Math.min(9 - left,module.conf.pos.w ?? 1);
+                        if (module.conf.pos && !module.conf.hide) {
+                            let left = Math.min(8, module.conf.pos.left ?? 1);
+                            let w = Math.min(9 - left, module.conf.pos.w ?? 1);
                             let top = module.conf.pos.top ?? 1;
                             let h = module.conf.pos.h ?? 1;
                             placeModule(module);
@@ -469,12 +470,12 @@
                 for (const name in data) {
                     if (Object.prototype.hasOwnProperty.call(data, name)) {
                         const module = data[name];
-                        if(!module) {
+                        if (!module) {
                             continue;
                         }
-                        let moduleName = `${Object.keys(module.children).length?">&NonBreakingSpace;":""}${name.split('.js')[0]}`;
+                        let moduleName = `${Object.keys(module.children).length ? ">&NonBreakingSpace;" : ""}${name.split('.js')[0]}`;
                         let style = '';
-                        if(!module.conf.pos) {
+                        if (!module.conf.pos) {
                             while (map.has(`${Math.trunc(firstfree / 8)},${firstfree % 8}`)) {
                                 firstfree++;
                             }
@@ -484,14 +485,14 @@
                     }
                 }
             }
-            
+
             function printSettings(data) {
-                if(!data) {
+                if (!data) {
                     return;
                 }
                 let moduleName = data.conf.name;
-                if(!moduleName) {
-                    moduleName = (active || modpath[modpath.length-1]).split('.js')[0];
+                if (!moduleName) {
+                    moduleName = (active || modpath[modpath.length - 1]).split('.js')[0];
                     moduleName = moduleName.replace(/[_\.\-]/g, ' ');
                     moduleName = moduleName.replace(/\b\w/g, c => c.toUpperCase());
                 }
@@ -513,7 +514,7 @@
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = function(e) {
+                        reader.onload = function (e) {
                             let url = new URL('internal/setModuleImage', 'http://localhost:4444/');
                             url.searchParams.append('path', curPath);
                             fetch(url, {
@@ -527,7 +528,7 @@
                     }
                 }
             }
-            
+
             let modpath = [];
             let active = "";
             let curPath = "";
@@ -537,10 +538,10 @@
                     root = root.children[e] ?? root;
                 });
                 printModules(root.children);
-                if(modpath.length && !active) {
+                if (modpath.length && !active) {
                     moduleEditor.style.display = '';
                     printSettings(root);
-                } else if(active) {
+                } else if (active) {
                     moduleEditor.style.display = '';
                     printSettings(root.children[active]);
                 } else {
@@ -556,163 +557,221 @@
             });
         </script>
     </div>
-    <div class="twitch">
+    <div class="plugins">
+        <h3>Plugins</h3>
         <style>
-        .twitch {
-            margin-inline: 20px;
-        }
-        .twitch-cards>* {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            background: #2226;
-            border-radius: 8px;
-            padding: 8px 12px;
-            gap: 12px;
-        }
-        .twitch-cards>*>img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .twitch-cards>*>span {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .twitch-cards>*>ul {
-            margin: 0 0 0 10px;
-            padding: 0;
-            list-style: disc inside;
-            font-size: 0.95em;
-            color: #ccc;
-        }
-        .twitch-cards>*>button {
-            margin-left: auto;
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: none;
-            background: #444;
-            color: #fff;
-            cursor: pointer;
-        }
-        </style>
-        <h3>Twitch Settings</h3>
-        <a href="http://localhost:4444/twitch/add/main">Set main user</a> | 
-        <a href="http://localhost:4444/twitch/add/bot">Add new bot</a>
-        <h4>Main User</h4>
-        <div id="twitch-main" class="twitch-cards"></div>
-        <h4>Main Bots</h4>
-        <div id="twitch-bots" class="twitch-cards"></div>
-        <h4>Failed Connections</h4>
-        <div id="twitch-failed" class="twitch-cards"></div>
-        <script>
-            const twitchMainDiv = document.getElementById('twitch-main');
-            const twitchBotsDiv = document.getElementById('twitch-bots');
-            const twitchFailDiv = document.getElementById('twitch-failed');
-            function addTwitchUserCard(twitchDiv, { id, name, pfp, listenTo }) {
-                const card = document.createElement('div');
-
-                const img = document.createElement('img');
-                img.src = pfp;
-                img.alt = name;
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = name + `(${id})`;
-                card.appendChild(img);
-                card.appendChild(nameSpan);
-                card.setAttribute('data-id', id);
-                if (Array.isArray(listenTo) && listenTo.length > 0) {
-                    const listenList = document.createElement('ul');
-                    listenTo.forEach(item => {
-                        const li = document.createElement('li');
-                        li.textContent = item;
-                        li.style.cursor = "pointer";
-                        li.title = "Click to remove";
-                        li.onclick = function() {
-                            fetch(`http://localhost:4444/twitch/removeListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(item)}`, {
-                                method: 'POST'
-                            }).then(() => {
-                                li.remove();
-                            });
-                        };
-                        listenList.appendChild(li);
-                    });
-                    card.appendChild(listenList);
-                }
-
-                const addBtn = document.createElement('button');
-                addBtn.textContent = 'Add Channel';
-                addBtn.onclick = function() {
-                    const user = prompt('Enter username to listen to:');
-                    if (user && user.trim()) {
-                        fetch(`http://localhost:4444/twitch/addListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(user.trim())}`, {
-                            method: 'POST'
-                        })
-                    }
-                };
-                card.appendChild(addBtn);
-
-                twitchDiv.appendChild(card);
+            .plugins {
+                padding-inline: 1em;
             }
 
-            onfirstSub((data) => {
-                twitchMainDiv.innerHTML = "";
-                if(data.internal.twitch?.main)
-                    addTwitchUserCard(twitchMainDiv, data.internal.twitch.main);
-                twitchBotsDiv.innerHTML = "";
-                if(data.internal.twitch?.bots)
-                    data.internal.twitch.bots?.foreach?.((obj) => addTwitchUserCard(twitchBotsDiv, obj));
-                twitchFailDiv.innerHTML = "";
-                if(data.internal.twitch?.failed)
-                    data.internal.twitch.failed?.foreach?.((obj) => addTwitchUserCard(twitchFailDiv, obj));
-            })
-            const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
-                twitchMainDiv.innerHTML = "";
-                if(sharedServerData.internal.twitch?.main)
-                    addTwitchUserCard(twitchMainDiv, sharedServerData.internal.twitch.main);
-                twitchBotsDiv.innerHTML = "";
-                if(data.internal.twitch?.bots)
-                    data.internal.twitch.bots?.foreach?.((obj) => addTwitchUserCard(twitchBotsDiv, obj));
-                twitchFailDiv.innerHTML = "";
-                if(data.internal.twitch?.failed)
-                    data.internal.twitch.failed?.foreach?.((obj) => addTwitchUserCard(twitchFailDiv, obj));
-            });
-        </script>
+            .plugin {
+                margin-block: 1em;
+                padding-inline: 1em;
+                position: relative;
+            }
+
+            .plugin::before {
+                content: "";
+                position: absolute;
+                left: -1px;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background-color: var(--c);
+                border-radius: 2px;
+            }
+        </style>
+        <ul>
+            <li>
+                <details name="plugin" open>
+                    <summary>twitch</summary>
+                    <div class="plugin">
+                        <style>
+                            .usergrid {
+                                display: flex;
+                                gap: 1em;
+                                align-items: end;
+                            }
+
+                            .usergrid>* {
+                                flex-grow: 1;
+                                max-width: 300px;
+                                height: 100%;
+                            }
+
+                            .card {
+                                padding: 1em;
+                                border: 1px solid var(--c);
+                                border-bottom-width: 3px;
+                                border-radius: 1em;
+                            }
+
+                            .card>*>*:first-child {
+                                display: flex;
+                                gap: 8px;
+                            }
+
+                            .card>*>ul>li:hover {
+                                --c: var(--e);
+                                cursor: pointer;
+                            }
+
+                            .card img {
+                                width: 48px;
+                                height: 48px;
+                                border-radius: 8px;
+                            }
+                        </style>
+                        <h3>Twitch Settings</h3>
+                        <a href="http://localhost:4444/twitch/add/main">Set main user</a> |
+                        <a href="http://localhost:4444/twitch/add/bot">Add new bot</a>
+                        <div class="usergrid" id="twitch-usergrid">
+                            <div id="card-template" template>
+                                <h4 card-template-header></h4>
+                                <div class="card">
+                                    <div>
+                                        <div>
+                                            <img card-template-pfp src="">
+                                            <div><span card-template-username></span> (<span card-template-id secondary></span>)</div>
+                                        </div>
+                                        <h5>
+                                            Connected Channels:
+                                        </h5>
+                                        <ul card-template-listening>
+                                        </ul><button card-template-add-channel>Add Channel</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="card-template-unset" template>
+                                <h4 card-template-header>Main User</h4>
+                                <div class="card">
+                                    <h4>No User Set!</h4>
+                                    <a href="http://localhost:4444/twitch/add/main"><button card-template-add-channel>Set Main User</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            const template = document.getElementById("card-template");
+                            template.removeAttribute("template");
+                            template.remove();
+                            const template_unset = document.getElementById("card-template-unset");
+                            template_unset.removeAttribute("template");
+                            template_unset.remove();
+
+                            const twitchMainDiv = document.getElementById('twitch-usergrid');
+
+                            function addTwitchUserCard(header, { id, name, pfp, listenTo }) {
+                                const card = template.cloneNode(true);
+                                card.querySelector("[card-template-header]").innerText = header;
+                                card.querySelector("[card-template-pfp]").src = pfp;
+                                card.querySelector("[card-template-username]").innerText = name;
+                                card.querySelector("[card-template-id]").innerText = id;
+                                const list = card.querySelector("[card-template-listening]");
+                                if (Array.isArray(listenTo) && listenTo.length > 0) {
+                                    listenTo.forEach(channel => {
+                                        const li = document.createElement('li');
+                                        li.textContent = channel;
+                                        li.style.cursor = "pointer";
+                                        li.title = "Click to remove";
+                                        li.onclick = function () {
+                                            fetch(`http://localhost:4444/twitch/removeListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(channel)}`, {
+                                                method: 'POST'
+                                            }).then(() => {
+                                                li.remove();
+                                            });
+                                        };
+                                        list.appendChild(li);
+                                    });
+                                }
+                                card.querySelector("[card-template-add-channel]").onclick = function () {
+                                    const user = prompt('Enter username to listen to:');
+                                    if (user && user.trim()) {
+                                        fetch(`http://localhost:4444/twitch/addListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(user.trim())}`, {
+                                            method: 'POST'
+                                        });
+                                    }
+                                };
+                                twitchMainDiv.appendChild(card);
+                                return card;
+                            }
+                            function update_twitch(data) {
+                                twitchMainDiv.innerHTML = "";
+                                if (data.internal.twitch?.main?.name)
+                                    addTwitchUserCard("Main User", data.internal.twitch.main);
+                                else {
+                                    twitchMainDiv.appendChild(template_unset.cloneNode(true));
+                                }
+                                
+                                let header = "Bots";
+                                if (data.internal.twitch?.bots)
+                                    data.internal.twitch.bots?.foreach?.((obj) => () => {
+                                        addTwitchUserCard(header, obj);
+                                        header = "";
+                                    });
+
+                                header = "Failed";
+                                if (data.internal.twitch?.failed)
+                                    data.internal.twitch.failed?.foreach?.((obj) => () => {
+                                        let card = addTwitchUserCard(header, obj);
+                                        card.classList.append("danger");
+                                        header = "";
+                                    });
+                            }
+                            onfirstSub((data) => {
+                                update_twitch(data);
+                            });
+                            const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
+                                update_twitch(sharedServerData.internal.twitch.main);
+                            });
+                        </script>
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details name="plugin">
+                    <summary>html</summary>
+                    <div class="plugin">
+                    </div>
+                </details>
+            </li>
+            <li>
+                <details name="plugin">
+                    <summary>obs</summary>
+                    <div class="plugin">
+                    </div>
+                </details>
+            </li>
+        </ul>
     </div>
     <div class="log">
         <style>
-        @keyframes log {
-            0% {
-                opacity: 0;
-            }
-            5% {
-                opacity: 1;
-            }
-            95% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
+            @keyframes log {
+                0% {
+                    opacity: 0;
+                }
 
-        #log {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-        }
-        #log>* {
-            animation: log 10s forwards;
-        }
-        #log>.error {
-            color: red;
-        }
-        #log>.warn {
-            color: yellow;
-        }
-        #log>.info {
-            color: lightcyan;
-        }
+                5% {
+                    opacity: 1;
+                }
+
+                95% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0;
+                }
+            }
+
+            #log {
+                position: fixed;
+                bottom: 12px;
+                left: 12px;
+            }
+
+            #log>* {
+                animation: log 10s forwards;
+            }
         </style>
         <div id="log"></div>
         <script>
@@ -730,10 +789,10 @@
                 log(newData);
             });
             const errorL = katzComm.addListener(sharedServerData, "internal.error", (path, newData, oldData) => {
-                log(newData, "error");
+                log(newData, "danger");
             });
             const warnL = katzComm.addListener(sharedServerData, "internal.warn", (path, newData, oldData) => {
-                log(newData, "warn");
+                log(newData, "warning");
             });
             const infoL = katzComm.addListener(sharedServerData, "internal.info", (path, newData, oldData) => {
                 log(newData, "info");
@@ -759,7 +818,7 @@
         }
         ws.onmessage = (message) => {
             let change = JSON.parse(message.data);
-            if(!firstmessage) {
+            if (!firstmessage) {
                 firstmessage = change.v;
                 firstsubs.forEach((c) => c(firstmessage));
             } else {
@@ -769,4 +828,5 @@
         }
     </script>
 </body>
+
 </html>
