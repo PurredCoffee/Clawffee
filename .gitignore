@@ -10,6 +10,7 @@ commands/*
 
 plugins/*
 !plugins/builtin
+plugins/builtin/twitch_data.js
 
 html/images/*
 

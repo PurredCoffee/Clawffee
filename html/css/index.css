@@ -63,6 +63,7 @@
     --db: var(--d);
     --drb: var(--dr);
 }
+
 *:not(.no-css) {
     [primary],.primary {
         --c: var(--p);

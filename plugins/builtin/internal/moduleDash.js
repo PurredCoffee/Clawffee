@@ -3,6 +3,9 @@ const pathModule = require('path');
 const crypto = require('crypto');
 
 const { setFunction } = require("../server");
+const { moduleByPath } = require("../../../internal/commandFSHooks");
+const { unloadModule, loadModule } = require("../../../internal/commandHotReloader");
+
 let loadTimeout = null;
 setFunction('/internal/unloadModule', (searchParams, res) => {
     if (loadTimeout) {
@@ -12,10 +15,10 @@ setFunction('/internal/unloadModule', (searchParams, res) => {
         loadTimeout = null;
     }, 400);
     let path = searchParams.get("path");
-    const module = require("../../../internal/commandFSHooks").moduleByPath[path];
+    const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = false;
-    require("../../../internal/commandHotReloader").unloadModule(module);
+    unloadModule(module);
 });
 
 setFunction('/internal/loadModule', (searchParams, res) => {
@@ -29,7 +32,7 @@ setFunction('/internal/loadModule', (searchParams, res) => {
     const module = require("../../../internal/commandFSHooks").moduleByPath[path];
     if (!module) return;
     module.conf.enabled = true;
-    require("../../../internal/commandHotReloader").loadModule(module);
+    loadModule(module);
 });
 
 setFunction('/internal/setModulePos', (searchParams, res) => {
@@ -47,7 +50,7 @@ setFunction('/internal/setModulePos', (searchParams, res) => {
 setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
     let path = searchParams.get("path");
     let image = JSON.parse(body).image;
-    const module = require("../../../internal/commandFSHooks").moduleByPath[path];
+    const module = moduleByPath[path];
     if (!module || !image) return;
     const imagesDir = pathModule.resolve(__dirname, '../../../html/images');
     if (!fs.existsSync(imagesDir)) {
@@ -81,7 +84,7 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
 setFunction('/internal/setModuleName', (searchParams, res) => {
     let path = searchParams.get("path");
     let name = searchParams.get("name");
-    const module = require("../../../internal/commandFSHooks").moduleByPath[path];
+    const module = moduleByPath[path];
     if (!module) return;
     module.conf.name = name;
 });

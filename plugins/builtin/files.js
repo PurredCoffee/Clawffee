@@ -7,11 +7,11 @@ const machineHash = crypto.createHash('md5').update(require("os").hostname()).di
 
 /**
  * Encrypts data and saves it to a file.
- * @param {string} path - The file path to save the encrypted data.
- * @param {string} data - The data to encrypt.
+ * @param {string} filePath - The file path to save the encrypted data.
+ * @param {string} filePath - The data to encrypt.
  * @returns {void}
  */
-function encryptData(path, data) {
+function encryptData(filePath, data) {
     const iv = Buffer.alloc(16, 0); // 16 bytes of zeros
     const key = crypto.scryptSync(machineHash, 'salt', 32);
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -23,7 +23,7 @@ function encryptData(path, data) {
 
     if(fs.existsSync(path.dirname(filePath)))
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(path, encryptedData);
+    fs.writeFileSync(filePath, encryptedData);
 }
 
 /**
@@ -31,14 +31,14 @@ function encryptData(path, data) {
  * @param {string} path - The file path to read and decrypt data from.
  * @returns {string|null} The decrypted data, or null if decryption fails.
  */
-function decryptData(path) {
-    if (!fs.existsSync(path)) {
-        console.error("file does not exist", path)
+function decryptData(filePath) {
+    if (!fs.existsSync(filePath)) {
+        console.error("file does not exist", filePath)
         return null;
     }
 
     try {
-        const encryptedData = fs.readFileSync(path).toString().split("\n");
+        const encryptedData = fs.readFileSync(filePath).toString().split("\n");
         const encrypted = encryptedData[encryptedData.length - 1].trim();
 
         const iv = Buffer.alloc(16, 0); // 16 bytes of zeros

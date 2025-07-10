@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require('path');
 const { deletePath, addPath } = require("../plugins/builtin/internal/codeBinder");
-const { loadedmodules, moduleByPath } = require("./commandFSHooks");
+const { moduleByPath } = require("./commandFSHooks");
 
 
 // load plugins first
@@ -217,15 +217,6 @@ function unloadModule(curMod) {
 
     // dont unload dependencies because they are loaded independently
 }
-
-// TODO: clean this up
-setTimeout(() => {
-    try {
-        loadModule(loadedmodules);
-    } catch (e) {
-        console.error(e);
-    }
-}, 10);
 
 module.exports = {
     unloadModule,

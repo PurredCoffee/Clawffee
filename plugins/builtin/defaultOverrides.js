@@ -87,7 +87,7 @@ function wrapFsMethod(methodName) {
                 throw new Error(`Access to path "${filePath}" is not allowed.`);
             }
         }
-        return orig.apply(fs, args);
+        return orig(...args);
     };
 }
 

@@ -162,7 +162,9 @@ function setupFolder(curMod) {
         }
         if (event == 'rename') {
             setupInner(curMod, file);
-            require('./commandHotReloader').reloadModule(curMod.children[file]);
+            if(file.endsWith('.js')) {
+                require('./commandHotReloader').reloadModule(curMod.children[file]);
+            }
         }
     });
 }

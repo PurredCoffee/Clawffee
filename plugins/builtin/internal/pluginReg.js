@@ -1,11 +1,12 @@
+const { unavailablePlugins } = require('../../../internal/pluginLoader');
+const { reloadDependency } = require('../../../internal/commandHotReloader');
+
 function reloadPlugin(filename) {
-    setTimeout(() => {
-        require('../../../internal/pluginLoader').unavailablePlugins[filename] = false;
-        require('../../../internal/commandHotReloader').reloadDependency(filename)
-    }, 1);
+    unavailablePlugins[filename] = false;
+    reloadDependency(filename);
 }
 function blockPlugin(filename) {
-    setTimeout(() => require('../../../internal/pluginLoader').unavailablePlugins[filename] = true, 1);
+    unavailablePlugins[filename] = true;
 }
 
 module.exports = {

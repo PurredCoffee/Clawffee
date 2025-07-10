@@ -1,8 +1,6 @@
 const fs = require('node:fs');
 const path = require('path');
 
-const pluginsDir = path.resolve(__dirname, '../plugins');
-
 const unavailablePlugins = {};
 
 function requirePluginsRecursively(dir) {
@@ -17,9 +15,7 @@ function requirePluginsRecursively(dir) {
     });
 }
 
-requirePluginsRecursively(pluginsDir + '/builtin');
-requirePluginsRecursively(pluginsDir);
-
 module.exports = {
-    unavailablePlugins
+    unavailablePlugins,
+    requirePluginsRecursively
 }

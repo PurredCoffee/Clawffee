@@ -5,11 +5,20 @@ const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { RefreshingAuthProvider, StaticAuthProvider, exchangeCode, getTokenInfo } = require('@twurple/auth');
 const path = require("path");
 
-const { autoSavedJSON, encryptData, decryptData } = require("./files");
+const { autoSavedJSON, encryptData, decryptData, readFileSyncDefault } = require("./files");
 const { associateClassWithFile } = require('./internal/codeBinder');
 const { setFunction, sharedServerData } = require("./server");
 const { createUnfailable } = require("./unfailable");
 const { reloadPlugin, blockPlugin } = require('./internal/pluginReg');
+
+if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
+    fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify({
+        IDs: {},
+        redeems: {}
+    }))
+}
+const extraData = require("./twitch_data");
+
 
 const confPath = 'config/internal/';
 const oauthFilesPath = confPath + 'twitch/oauth/';
@@ -314,6 +323,9 @@ function addNew(main, scopes) {
                         tokenData: tokenData
                     }))
                 }
+                extraData.IDs[value.name] = parseInt(value.id);
+                extraData.redeems[value.name] = extraData.redeems[value.name] ?? {};
+                fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
                 res.end(`Code for ${value.id} saved and encrypted.`);
                 connect();
             });
@@ -471,5 +483,7 @@ function print() {
 module.exports = {
     connectedBots,
     connectedUser,
-    print
+    print,
+    IDs: extraData.IDs,
+    redeems: extraData.redeems
 }
