@@ -904,19 +904,32 @@
     <div class="background"></div>
     <script>
         let ws = new WebSocket("ws://localhost:4444");
+        function reconnect() {
+            let newWS = new WebSocket(ws.url);
+            newWS.onmessage = ws.onmessage;
+            newWS.onopen = ws.onopen;
+            newWS.onclose = ws.onclose;
+            ws = newWS;
+        }
         ws.onopen = () => {
             sharedServerData.internal.info = "Connected!";
             firstmessage = null;
+            ws.onclose = () => {
+                sharedServerData.internal.error = "disconnected... reconnecting...";
+                setTimeout(() => {
+                    ws.onclose = () => {
+                        setTimeout(() => {
+                            reconnect();
+                        }, 5000);
+                    }
+                    reconnect();
+                }, 1000);
+            }
         }
         ws.onclose = () => {
-            sharedServerData.internal.error = "disconnected... reconnecting...";
             setTimeout(() => {
-                let newWS = new WebSocket(ws.url);
-                newWS.onmessage = ws.onmessage;
-                newWS.onopen = ws.onopen;
-                newWS.onclose = ws.onclose;
-                ws = newWS;
-            }, 10000);
+                reconnect();
+            }, 5000);
         }
         ws.onmessage = (message) => {
             let change = JSON.parse(message.data);
