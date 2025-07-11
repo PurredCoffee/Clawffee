@@ -46,7 +46,7 @@ const loadedmodules = {
     module: {
         module: null,
         filePath: path.join(__dirname, "../commands"),
-        confPath: path.join(__dirname, "../internal/commands_conf"),
+        confPath: path.join(__dirname, "../config/internal/commands_conf"),
         modulePath: "../commands",
         parsedModulePath: null,
         name: "commands",

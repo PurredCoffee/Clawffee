@@ -58,6 +58,8 @@ function unloadFile(curMod) {
             flavor: "last-resort",
             type: "major"
         }), 200);
+    } else if(Bun?.gc) {
+        setTimeout(() => Bun.gc(true), 200);
     } else {
         console.warn('Garbage collection unavailable.  Pass --expose_gc '
             + 'when launching node to enable forced garbage collection.');
