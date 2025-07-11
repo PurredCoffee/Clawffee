@@ -14,7 +14,7 @@ const conf = autoSavedJSON(confPath + "html.json", {
     "port": 4444
 })
 
-__katz__global__listener = addListener(sharedServerData, ".", (path, newValue, oldValue) => {
+addListener(sharedServerData, ".", (path, newValue, oldValue) => {
     if (path[0] != 'internal')
         console.debug(`# set ${path.map((val) => val.includes('.') ? `"${val}"` : val).join(".")} from ${JSON.stringify(oldValue)} to`, newValue);
 });

@@ -45,9 +45,9 @@ const loadedmodules = {
     active: false,
     module: {
         module: null,
-        filePath: path.join(__dirname, "../commands"),
-        confPath: path.join(__dirname, "../config/internal/commands_conf"),
-        modulePath: "../commands",
+        filePath: fs.realpathSync("./commands"),
+        confPath: fs.realpathSync("./config/internal/commands_conf"),
+        modulePath: fs.realpathSync("./commands"),
         parsedModulePath: null,
         name: "commands",
         watcher: null
