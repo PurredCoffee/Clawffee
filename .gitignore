@@ -3,10 +3,10 @@
 **/*._conf
 
 config/*
+!config/internal/commands_conf/examples._conf
 
 commands/*
 !commands/examples
-!/internal/commands_conf/examples._conf
 
 plugins/*
 !plugins/builtin
