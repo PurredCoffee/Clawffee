@@ -324,7 +324,6 @@ function addNew(main, scopes) {
                     }))
                 }
                 extraData.IDs[value.name] = parseInt(value.id);
-                extraData.redeems[value.name] = extraData.redeems[value.name] ?? {};
                 fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
                 res.end(`Code for ${value.id} saved and encrypted.`);
                 connect();
