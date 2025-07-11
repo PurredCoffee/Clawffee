@@ -121,6 +121,7 @@ async function addBot(tokenData, main = false) {
         type: 'helix',
         url: 'users'
     })).data[0];
+    const TokenInfo = (await api.getTokenInfo());
     const ownName = userInfo.login;
     if (!channels[ownName] || !channels[ownName].channels) {
         channels[ownName] = {
@@ -143,7 +144,7 @@ async function addBot(tokenData, main = false) {
         onWhisper: (callback) => chat.onWhisper(callback)
     };
     console.log(`added token for ${userInfo.id} (${ownName}) and connected to [${ownedChannels}]`);
-    return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url };
+    return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url, expiryDate: TokenInfo.expiryDate.getTime() };
 }
 
 /**
@@ -210,7 +211,8 @@ async function connect() {
     const connectionInfo = {
         main: {},
         bots: [],
-        failed: []
+        failed: [],
+        redeems: {}
     }
     if (fs.existsSync(oauthFilesPath)) {
         const files = fs.readdirSync(oauthFilesPath);
@@ -233,6 +235,14 @@ async function connect() {
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
+                            try {
+                                (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
+                                    connectionInfo.redeems[val.id] = {...val, img: val.getImageUrl(2), managed: false};
+                                });
+                                (await connectedUser.api.channelPoints.getCustomRewards(user.id, true)).forEach((val) => {
+                                    connectionInfo.redeems[val.id].managed = true;
+                                });
+                            } catch (e) {}
                             connectionInfo.main = { ...user, listenTo: channels[name].channels };
                         } else {
                             let user = (await addBot(tokenData.tokenData, true));
@@ -310,9 +320,12 @@ function addNew(main, scopes) {
                     scopes: (searchParams.get("scope") || "").split(" ").filter(Boolean)
                 };
             }
-
+            const oldMainPath = `${oauthFilesPath}${tokenData.userId || tokenData.id}.main.json.enc`;
             addBot(tokenData, main).then((value) => {
                 if (main) {
+                    if (main && fs.existsSync(oldMainPath)) {
+                        fs.unlinkSync(oldMainPath);
+                    }
                     encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify({
                         userInfo: value,
                         tokenData: tokenData
@@ -324,7 +337,7 @@ function addNew(main, scopes) {
                     }))
                 }
                 extraData.IDs[value.name] = parseInt(value.id);
-                fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
+                fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
                 res.end(`Code for ${value.id} saved and encrypted.`);
                 connect();
             });
@@ -421,7 +434,7 @@ setFunction("/twitch/setSecret", (searchParams) => {
         connect();
     }
 })
-setFunction("/twitch/addListenTo", (searchParams) => {
+setFunction("/twitch/addListenTo", async (searchParams) => {
     const user = searchParams.get("id");
     const channel = searchParams.get("user");
     if (!user || !channel) {
@@ -429,6 +442,12 @@ setFunction("/twitch/addListenTo", (searchParams) => {
     }
     const botEntry = Object.values(connectedBots).find(b => b.id === user);
     if (botEntry && !channels[botEntry.name].channels.includes(channel)) {
+        const channelObj = await botEntry.api.users.getUserByName(channel);
+        if(!channelObj || channelObj.name != channel) {
+            console.error("cannot find user!", channel);
+        }
+        extraData.IDs[channel] = parseInt(channelObj.id);
+        fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
         channels[botEntry.name].channels.push(channel);
     }
     connect();
@@ -444,6 +463,66 @@ setFunction("/twitch/removeListenTo", (searchParams) => {
         channels[botEntry.name].channels = channels[botEntry.name].channels.filter((val) => val != channel);
     }
     connect();
+});
+setFunction("/twitch/cloneRedeem", (searchParams) => {
+    const redeemId = searchParams.get("redeemId");
+
+    if (!redeemId) {
+        return;
+    }
+    (async () => {
+        try {
+            const redeem = await connectedUser.api.channelPoints.getCustomRewardById(connectedUser.id, redeemId);
+            if (!redeem) {
+                console.error(`Could not get redeem ${redeemId}`);
+                return;
+            }
+            const cloned = await connectedUser.api.channelPoints.createCustomReward(connectedUser.id, {
+                title: redeem.title + " (Clone)",
+                cost: redeem.cost,
+                prompt: redeem.prompt,
+                backgroundColor: redeem.backgroundColor,
+                isEnabled: false,
+                globalCooldown: redeem.globalCooldown,
+                autoFulfill: redeem.autoFulfill,
+                maxRedemptionsPerStream: redeem.maxRedemptionsPerStream,
+                maxRedemptionsPerUserPerStream: redeem.maxRedemptionsPerUserPerStream,
+                userInputRequired: redeem.userInputRequired
+            });
+            sharedServerData.twitch.redeems[cloned.id] = {...cloned, img: undefined};
+
+            let redeemName = redeem.title;
+            redeemName.replaceAll(" ", "_");
+            redeemName.replaceAll(/[^a-zA-Z0-9_$]+/g,"");
+            if(redeemName.match(/^[0-9]/)) {
+                redeemName = "_" + redeemName;
+            }
+            if(redeemName == "") {
+                redeemName = "$" + redeem.id;
+            }
+            extraData.redeems[redeemName] = redeem.id;
+            fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
+            console.log(`Cloned redeem ${redeem.title}`);
+        } catch (err) {
+            console.error(`Could not clone redeem ${redeemId}`);
+        }
+    })();
+});
+setFunction("/twitch/deleteRedeem", (searchParams) => {
+    const redeemId = searchParams.get("redeemId");
+
+    if (!redeemId) {
+        return;
+    }
+    (async () => {
+        try {
+            const redeem = await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
+            delete sharedServerData.twitch.redeems[cloned.id];
+            console.log(`Deleted redeem ${redeem.title}`);
+        } catch (err) {
+            console.error(`Could not delete redeem ${redeemId}`);
+        }
+    })();
 });
 
 

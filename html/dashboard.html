@@ -558,7 +558,7 @@
         </script>
     </div>
     <div class="plugins">
-        <h3>Plugins</h3>
+        <h3>Plugin Settings</h3>
         <style>
             .plugins {
                 padding-inline: 1em;
@@ -583,9 +583,10 @@
         </style>
         <ul>
             <li>
-                <details name="plugin" open>
+                <details name="plugin">
                     <summary>twitch</summary>
                     <div class="plugin">
+                        <h3>Twitch Settings</h3>
                         <style>
                             .usergrid {
                                 display: flex;
@@ -621,10 +622,26 @@
                                 height: 48px;
                                 border-radius: 8px;
                             }
+
+                            .redeem img {
+                                height: 2em;
+                                width: 2em;
+                            }
+                            .redeem td:first-child>div {
+                                display: flex;
+                                flex-direction: row;
+                                justify-content: flex-start;
+                                align-items: center;
+                                height: 100%;
+                            }
+                            .redeem td:last-child>div {
+                                display: flex;
+                                flex-direction: row;
+                                justify-content: flex-end;
+                                align-items: center;
+                            }
                         </style>
-                        <h3>Twitch Settings</h3>
-                        <a href="http://localhost:4444/twitch/add/main">Set main user</a> |
-                        <a href="http://localhost:4444/twitch/add/bot">Add new bot</a>
+                        <a href="http://localhost:4444/twitch/add/main"><button>Set main user</button></a><a href="http://localhost:4444/twitch/add/bot"><button>Add new bot</button></a>
                         <div class="usergrid" id="twitch-usergrid">
                             <div id="card-template" template>
                                 <h4 card-template-header></h4>
@@ -634,11 +651,13 @@
                                             <img card-template-pfp src="">
                                             <div><span card-template-username></span> (<span card-template-id secondary></span>)</div>
                                         </div>
+                                        <div secondary>Expires: <span card-template-expiry></span></div>
                                         <h5>
                                             Connected Channels:
                                         </h5>
                                         <ul card-template-listening>
-                                        </ul><button card-template-add-channel>Add Channel</button>
+                                        </ul>
+                                        <button card-template-add-channel>Add Channel</button>
                                     </div>
                                 </div>
                             </div>
@@ -650,22 +669,64 @@
                                 </div>
                             </div>
                         </div>
+                        <h4>Redeems</h4>
+                        <button onclick="
+                            document.getElementById('redeem-menu').classList.toggle('show');
+                        ">View Redeems</button>
+                        <menu id="redeem-menu">
+                            <menubar>
+                                <close-btn onclick="
+                                    document.getElementById('redeem-menu').classList.toggle('show');
+                                "></close-btn>
+                                Redeems
+                            </menubar>
+                            <div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th secondary>Status</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="twitch-redeems">
+                                        <tr id="redeem-template" class="redeem" template>
+                                            <td>
+                                                <div>
+                                                    <img style="margin-right: 1em;" src="images/3c4cec93bec49a9745eb147f604c1fbc.webp" alt="" redeem-template-img>
+                                                    <span redeem-template-name>Redeem Name</span>
+                                                    &MediumSpace;(<span redeem-template-id secondary>A8734-3984-DFS3-349823</span>)
+                                                </div>
+                                            </td>
+                                            <td secondary><span redeem-template-owned success>Owned</span></td>
+                                            <td><div><button redeem-template-action-button danger>Delete</button></div></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </menu>
                         <script>
-                            const template = document.getElementById("card-template");
-                            template.removeAttribute("template");
-                            template.remove();
-                            const template_unset = document.getElementById("card-template-unset");
-                            template_unset.removeAttribute("template");
-                            template_unset.remove();
+                            const twitch_template = document.getElementById("card-template");
+                            twitch_template.removeAttribute("template");
+                            twitch_template.remove();
+                            const twitch_template_unset = document.getElementById("card-template-unset");
+                            twitch_template_unset.removeAttribute("template");
+                            twitch_template_unset.remove();
 
                             const twitchMainDiv = document.getElementById('twitch-usergrid');
 
-                            function addTwitchUserCard(header, { id, name, pfp, listenTo }) {
-                                const card = template.cloneNode(true);
+                            function addTwitchUserCard(header, { id, name, pfp, listenTo, expiryDate }) {
+                                const card = twitch_template.cloneNode(true);
                                 card.querySelector("[card-template-header]").innerText = header;
                                 card.querySelector("[card-template-pfp]").src = pfp;
                                 card.querySelector("[card-template-username]").innerText = name;
                                 card.querySelector("[card-template-id]").innerText = id;
+                                card.querySelector("[card-template-expiry]").innerText = new Date(expiryDate).toDateString();
+                                if(expiryDate < new Date().getTime() + 1000*60*60*24*14) {
+                                    card.classList.add("warning");
+                                    card.querySelector("[card-template-expiry]").classList.add("danger");
+                                }
+                                
                                 const list = card.querySelector("[card-template-listening]");
                                 if (Array.isArray(listenTo) && listenTo.length > 0) {
                                     listenTo.forEach(channel => {
@@ -691,15 +752,48 @@
                                         });
                                     }
                                 };
+                                if(expiryDate)
                                 twitchMainDiv.appendChild(card);
                                 return card;
                             }
+                            
+                            const twitch_redeem_template = document.getElementById("redeem-template");
+                            twitch_redeem_template.removeAttribute("template");
+                            twitch_redeem_template.remove();
+
+                            const twitchRedeemDiv = document.getElementById('twitch-redeems');
+                            
+                            function addRedeem({ id, managed, title, img }) {
+                                const card = twitch_redeem_template.cloneNode(true);
+                                if(img)
+                                    card.querySelector("[redeem-template-img]").src = img;
+                                else 
+                                    card.querySelector("[redeem-template-img]").remove();
+                                card.querySelector("[redeem-template-name]").innerText = title;
+                                card.querySelector("[redeem-template-id]").innerText = id;
+                                card.querySelector("[redeem-template-owned]").innerText = managed?"Owned":"Unowned";
+                                const btn = card.querySelector("[redeem-template-action-button]");
+                                if(managed) {
+                                    btn.innerText = "Delete";
+                                    btn.classList.add("danger");
+                                    btn.onclick = () => {
+                                        fetch(`http://localhost:4444/twitch/deleteRedeem?${id}`);
+                                    }
+                                } else {
+                                    btn.innerText = "Clone";
+                                    btn.onclick = () => {
+                                        fetch(`http://localhost:4444/twitch/cloneRedeem?${id}`);
+                                    }
+                                }
+                                console.log(id, managed, title, img);
+                            }
+
                             function update_twitch(data) {
                                 twitchMainDiv.innerHTML = "";
                                 if (data.internal.twitch?.main?.name)
                                     addTwitchUserCard("Main User", data.internal.twitch.main);
                                 else {
-                                    twitchMainDiv.appendChild(template_unset.cloneNode(true));
+                                    twitchMainDiv.appendChild(twitch_template_unset.cloneNode(true));
                                 }
                                 
                                 let header = "Bots";
@@ -716,7 +810,16 @@
                                         card.classList.add("danger");
                                         header = "";
                                     });
+
+                                twitchRedeemDiv.innerHTML = "";
+                                if (data.internal.twitch?.redeems)
+                                    Object.keys(data.internal.twitch.redeems).sort((a,b) => {
+                                        return data.internal.twitch.redeems[a].name.localeCompare(data.internal.twitch.redeems[b].name)
+                                    }).forEach((key) => {
+                                        addRedeem(data.internal.twitch.redeems[key]);
+                                    });
                             }
+
                             onfirstSub((data) => {
                                 update_twitch(data);
                             });
@@ -826,6 +929,21 @@
             }
             katzComm.apply(sharedServerData, change.v, change.p);
         }
+
+        document.onkeydown = function(evt) {
+            evt = evt || window.event;
+            var isEscape = false;
+            if ("key" in evt) {
+                isEscape = (evt.key === "Escape" || evt.key === "Esc");
+            } else {
+                isEscape = (evt.keyCode === 27);
+            }
+            if (isEscape) {
+                document.querySelectorAll('menu.show').forEach((el) => {
+                    el.classList.remove("show");
+                })
+            }
+        };
     </script>
 </body>
 
