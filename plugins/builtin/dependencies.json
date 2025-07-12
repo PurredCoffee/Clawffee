@@ -1,0 +1,7 @@
+{
+    "@twurple/api": "^7.3.0",
+    "@twurple/chat": "^7.3.0",
+    "@twurple/eventsub-ws": "^7.3.0",
+    "ini": "^5.0.0",
+    "obs-websocket-js": "^5.0.6"
+}

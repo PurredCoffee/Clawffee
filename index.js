@@ -1,15 +1,20 @@
-const { requirePluginsRecursively } = require("./internal/pluginLoader")
-const { loadedmodules } = require("./internal/commandFSHooks");
-const { loadModule } = require("./internal/commandHotReloader");
-const path = require('path');
-const fs = require('fs');
+const dependencyInstaller = require('./internal/dependencyInstaller');
+dependencyInstaller.checkDependenciesFile('./plugins').then(() => {
+    console.log("-".repeat(48));
+    const { requirePluginsRecursively } = require("./internal/pluginLoader")
+    const { loadedmodules } = require("./internal/commandFSHooks");
+    const { loadModule } = require("./internal/commandHotReloader");
+    const path = require('path');
+    const fs = require('fs');
 
-const pluginsDir = fs.realpathSync('./plugins');
+    const pluginsDir = fs.realpathSync('./plugins');
 
-// Higher priority
-requirePluginsRecursively(path.join(pluginsDir + '/internal'));
-requirePluginsRecursively(path.join(pluginsDir + '/builtin'));
 
-requirePluginsRecursively(pluginsDir);
+    // Higher priority
+    requirePluginsRecursively(path.join(pluginsDir + '/internal'));
+    requirePluginsRecursively(path.join(pluginsDir + '/builtin'));
 
-loadModule(loadedmodules);
+    requirePluginsRecursively(pluginsDir);
+
+    loadModule(loadedmodules);
+}).catch(() => {});

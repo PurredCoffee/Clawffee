@@ -12,5 +12,8 @@
   "imports": {
     "#helpers": "./plugins/builtin/helpers.js",
     "#helper": "./plugins/builtin/helpers.js"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.18"
   }
 }
