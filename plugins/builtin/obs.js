@@ -11,10 +11,10 @@ const conf = autoSavedJSON(confPath + 'obs.json', {
     "password": ""
 });
 
+let connected = true;
 /**
  * @type { obs.OBSWebSocket }
  */
-let connected = true;
 let client = createUnfailable();
 async function create() {
     let nclient;
