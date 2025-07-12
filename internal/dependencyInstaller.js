@@ -45,7 +45,7 @@ function checkDependenciesFile(basePath) {
                     err += data;
                 })
                 child.on('close', () => {
-                    if(err && err != "Saved lockfile\n") {
+                    if(err && !err.endsWith("Saved lockfile\n")) {
                         console.error(`failed to resolve ${subfolder}:`);
                         console.error(err);
                         return reject();
