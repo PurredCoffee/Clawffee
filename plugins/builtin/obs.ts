@@ -1,8 +1,8 @@
-const obs = require('obs-websocket-js');
-const { autoSavedJSON } = require('./files');
-const { associateObjectWithFile } = require('./internal/codeBinder');
-const { createUnfailable } = require('./unfailable');
-const { reloadPlugin } = require('./internal/ClawCallbacks');
+import { OBSWebSocket } from 'obs-websocket-js'
+import { autoSavedJSON } from './files';
+import { associateObjectWithFile } from './internal/codeBinder';
+import { createUnfailable } from './unfailable';
+import { blockPlugin, reloadPlugin } from './internal/ClawCallbacks';
 
 const confPath = 'config/internal/';
 const conf = autoSavedJSON(confPath + 'obs.json', {
@@ -18,7 +18,7 @@ let client = createUnfailable();
 async function create() {
     let nclient;
     try {
-        nclient = new obs.OBSWebSocket();
+        nclient = new OBSWebSocket();
         await nclient.connect(conf.url, conf.password);
     } catch (e) {
         return;
@@ -62,6 +62,7 @@ async function create() {
     client = nclient;
     reloadPlugin(__filename);
 }
+blockPlugin(__filename);
 create();
 
 setInterval(async () => {
@@ -74,6 +75,6 @@ setInterval(async () => {
     }
 }, 5000);
 
-module.exports = {
+export {
     client
 }

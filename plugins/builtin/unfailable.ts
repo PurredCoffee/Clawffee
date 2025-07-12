@@ -1,5 +1,5 @@
 /**
- * @returns {object} object that will always have every object and always be callable
+ * creates an object that will always have every object and always be callable
  */
 function createUnfailable() {
     return new Proxy(() => { }, {
@@ -43,6 +43,6 @@ function createUnfailable() {
 }
 
 
-module.exports = {
+export {
     createUnfailable
 }

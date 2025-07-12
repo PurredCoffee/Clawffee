@@ -1,11 +1,8 @@
-const {
-    createServer,
-    addListener
-} = require("./subscribable");
-const WebSocket = require('ws');
-const http = require('http');
-const { associateObjectWithFile } = require("./internal/codeBinder");
-const { autoSavedJSON } = require("./files");
+import { addListener, createServer } from "./subscribable";
+import { WebSocketServer } from 'ws';
+import http from 'http';
+import { associateObjectWithFile } from "./internal/codeBinder";
+import { autoSavedJSON } from "./files";
 
 const sharedServerData = createServer({ internal: {} });
 
@@ -53,7 +50,7 @@ let server = http.createServer((req, res) => {
         'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
         'Access-Control-Max-Age': 2592000, // 30 days
     };
-    let url = new URL(req.url, "http://localhost/");
+    let url = new URL(req.url ?? "/", "http://localhost/");
     let path = url.pathname;
     if (!functions[path]) {
         console.error(`Could Not Find Function at ${path}`);
@@ -62,12 +59,12 @@ let server = http.createServer((req, res) => {
         return;
     }
     res.writeHead(200, headers);
-    origwrite = res.write;
+    let origwrite = res.write;
     res.write = (...data) => {
         if (!res.headersSent) {
             res.writeHead(200, headers);
         }
-        origwrite(...data);
+        return origwrite.apply(res, data);
     }
 
     var body = "";
@@ -87,7 +84,7 @@ let server = http.createServer((req, res) => {
     });
 });
 
-let wss = new WebSocket.Server({
+let wss = new WebSocketServer({
     server: server
 });
 
@@ -120,7 +117,7 @@ server.listen(conf.port, "localhost", () => {
     console.log(`created server on ${conf.port}`);
 });
 
-module.exports = {
+export {
     setFunction,
     sharedServerData
 }

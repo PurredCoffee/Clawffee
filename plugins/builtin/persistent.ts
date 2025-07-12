@@ -1,13 +1,18 @@
-const { moduleByPath } = require("./internal/ClawCallbacks");
+import { moduleByPath } from "./internal/ClawCallbacks";
 
 const fileData = {};
+
+declare global {
+    var persistent: object;
+}
+
 persistent = new Proxy({}, {
     get(target, property, receiver) {
-        let stack = {};
+        let stack = {stack: ""};
         Error.captureStackTrace(stack, this.get);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
-        for (let x = 0; x < stack.length; x++) {
-            let path = stack[x];
+        let regstack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g) ?? [];
+        for (let x = 0; x < regstack.length; x++) {
+            let path = regstack[x];
             if (moduleByPath[path]) {
                 if (!fileData[path]) fileData[path] = {};
                 return fileData[path][property];
@@ -16,11 +21,11 @@ persistent = new Proxy({}, {
         return null;
     },
     set(target, property, newValue, receiver) {
-        let stack = {};
+        let stack = {stack: ""};
         Error.captureStackTrace(stack, this.set);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
-        for (let x = 0; x < stack.length; x++) {
-            let path = stack[x];
+        let regstack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g) ?? [];
+        for (let x = 0; x < regstack.length; x++) {
+            let path = regstack[x];
             if (moduleByPath[path]) {
                 if (!fileData[path]) fileData[path] = {};
                 fileData[path][property] = newValue;
@@ -30,14 +35,14 @@ persistent = new Proxy({}, {
         return false;
     },
     deleteProperty(target, property) {
-        let stack = {};
+        let stack = {stack: ""};
         Error.captureStackTrace(stack, this.deleteProperty);
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g);
-        for (let x = 0; x < stack.length; x++) {
-            let path = stack[x];
+        let regstack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g) ?? [];
+        for (let x = 0; x < regstack.length; x++) {
+            let path = regstack[x];
             if (moduleByPath[path]) {
                 if (!fileData[path]) fileData[path] = {};
-                delete fileData[path][property]; E
+                delete fileData[path][property];
                 return true;
             }
         };

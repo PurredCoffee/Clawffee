@@ -1,11 +1,11 @@
-const fs = require('fs');
-const pathModule = require('path');
+import fs from 'fs';
+import path from 'path';
 const crypto = require('crypto');
 
 const { setFunction } = require("../server");
 const { moduleByPath, moduleLoad, moduleUnload } = require("./ClawCallbacks");
 
-let loadTimeout = null;
+let loadTimeout: NodeJS.Timeout | null = null;
 setFunction('/internal/moduleLoad', (searchParams, res) => {
     if (loadTimeout) {
         return;
@@ -13,8 +13,8 @@ setFunction('/internal/moduleLoad', (searchParams, res) => {
     loadTimeout = setTimeout(() => {
         loadTimeout = null;
     }, 400);
-    let path = searchParams.get("path");
-    const module = moduleByPath[path];
+    let modulePath = searchParams.get("path");
+    const module = moduleByPath[modulePath];
     if (!module) return;
     module.conf.enabled = false;
     moduleLoad(module);
@@ -27,16 +27,16 @@ setFunction('/internal/moduleLoad', (searchParams, res) => {
     loadTimeout = setTimeout(() => {
         loadTimeout = null;
     }, 400);
-    let path = searchParams.get("path");
-    const module = moduleByPath[path];
+    let modulePath = searchParams.get("path");
+    const module = moduleByPath[modulePath];
     if (!module) return;
     module.conf.enabled = true;
-    moduleLoad(module);
+    moduleUnload(module);
 });
 
 setFunction('/internal/setModulePos', (searchParams, res) => {
-    let path = searchParams.get("path");
-    const module = moduleByPath[path];
+    let modulePath = searchParams.get("path");
+    const module = moduleByPath[modulePath];
     if (!module) return;
     module.conf.pos = {
         left: parseInt(searchParams.get("left")) ?? 1,
@@ -47,11 +47,11 @@ setFunction('/internal/setModulePos', (searchParams, res) => {
 });
 
 setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
-    let path = searchParams.get("path");
+    let modulePath = searchParams.get("path");
     let image = JSON.parse(body).image;
-    const module = moduleByPath[path];
+    const module = moduleByPath[modulePath];
     if (!module || !image) return;
-    const imagesDir = pathModule.resolve(__dirname, '../../../html/images');
+    const imagesDir = path.resolve(__dirname, '../../../html/images');
     if (!fs.existsSync(imagesDir)) {
         fs.mkdirSync(imagesDir, { recursive: true });
     }
@@ -66,13 +66,13 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
         : '.img';
 
     const randomName = crypto.randomBytes(16).toString('hex') + ext;
-    const filePath = pathModule.join(imagesDir, randomName);
+    const filePath = path.join(imagesDir, randomName);
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
     fs.writeFileSync(filePath, base64Data, { encoding: 'base64' });
 
     if (module.conf.img) {
-        const oldImagePath = pathModule.join(imagesDir, module.conf.img);
+        const oldImagePath = path.join(imagesDir, module.conf.img);
         if (fs.existsSync(oldImagePath)) {
             fs.unlinkSync(oldImagePath);
         }
@@ -81,9 +81,11 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
 });
 
 setFunction('/internal/setModuleName', (searchParams, res) => {
-    let path = searchParams.get("path");
+    let modulePath = searchParams.get("path");
     let name = searchParams.get("name");
-    const module = moduleByPath[path];
+    const module = moduleByPath[modulePath];
     if (!module) return;
     module.conf.name = name;
 });
+
+export {}

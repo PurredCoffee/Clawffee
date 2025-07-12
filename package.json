@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node --expose_gc index.js"
+    "start": "bun index.js"
   },
   "dependencies": {
     "@twurple/api": "^7.3.0",
@@ -13,5 +13,8 @@
     "#helpers": "./plugins/builtin/helpers.js",
     "#helper": "./plugins/builtin/helpers.js",
     "#plugins": "./plugins"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.18"
   }
 }

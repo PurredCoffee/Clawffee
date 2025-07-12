@@ -1,23 +1,20 @@
-const fs = require("node:fs");
-const path = require('path');
-const { moduleByPath } = require("./commandFSHooks");
+import fs from 'node:fs';
+import path from 'path';
+import { moduleByPath, loadedmodule } from './commandFSHooks';
 
 
 // load plugins first
 const { unavailablePlugins } = require("./pluginLoader");
-const { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+const { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.ts"));
 
-/**
- * @type {Dictionary<string, loadedmodule[]>}
- */
-const moduleDependers = {}
+
+const moduleDependers: {[file: string]: loadedmodule[]} = {}
 
 /**
  * Load selected Module and attached modules
- * @param {loadedmodule} curMod
  */
-function loadFile(curMod) {
-    if (curMod.module.errored) return false;
+function loadFile(curMod: loadedmodule) {
+    if (!curMod.module.parsedModulePath || curMod.module.errored) return false;
     moduleLoad(curMod.module.filePath);
     try {
         curMod.module.module = require(curMod.module.parsedModulePath);
@@ -34,10 +31,9 @@ function loadFile(curMod) {
 
 /**
  * Unload selected Module and attached modules
- * @param {loadedmodule} curMod
  */
-function unloadFile(curMod) {
-    if (curMod.module.module == null) return;
+function unloadFile(curMod: loadedmodule) {
+    if (!curMod.module.parsedModulePath || curMod.module.module == null) return;
 
     // unload self
     try {
@@ -49,8 +45,8 @@ function unloadFile(curMod) {
     console.log(`- ${curMod.module.name}`);
 
     // clear cache
-    if (global.gc) {
-        setTimeout(() => global.gc({
+    if (typeof global.gc !== 'undefined') {
+        setTimeout(() => global.gc?.({
             execution: "sync",
             flavor: "last-resort",
             type: "major"
@@ -236,7 +232,7 @@ onModuleUnload((filename) => {
     blockConn = false;
 })
 
-module.exports = {
+export {
     unloadModule,
     loadModule,
     reloadModule,

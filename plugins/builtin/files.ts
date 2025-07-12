@@ -1,17 +1,14 @@
-const fs = require('fs');
-const crypto = require('crypto');
-const path = require('node:path');
-const ini = require('ini');
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
+import ini from 'ini';
 
 const machineHash = crypto.createHash('md5').update(require("os").hostname()).digest('binary');
 
 /**
  * Encrypts data and saves it to a file.
- * @param {string} filePath - The file path to save the encrypted data.
- * @param {string} filePath - The data to encrypt.
- * @returns {void}
  */
-function encryptData(filePath, data) {
+function encryptData(filePath: string, data: string) {
     const iv = Buffer.alloc(16, 0); // 16 bytes of zeros
     const key = crypto.scryptSync(machineHash, 'salt', 32);
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -28,10 +25,8 @@ function encryptData(filePath, data) {
 
 /**
  * Decrypts data from a file.
- * @param {string} path - The file path to read and decrypt data from.
- * @returns {string|null} The decrypted data, or null if decryption fails.
  */
-function decryptData(filePath) {
+function decryptData(filePath: string) {
     if (!fs.existsSync(filePath)) {
         console.error("file does not exist", filePath)
         return null;
@@ -55,13 +50,13 @@ function decryptData(filePath) {
 }
 
 /**
- * 
- * @param {string} filePath 
- * @param {string} fallback 
- * @param {{encoding: string|undefined, flag: string|undefined}} options 
- * @returns {string}
+ * Read a file synchronously or create it with a default text
  */
-function readFileSyncDefault(filePath, fallback = "", options = {}) {
+function readFileSyncDefault(
+    filePath: string, 
+    fallback: string = "", 
+    options: {encoding?: null, flag?: string} = {}
+): string {
     if(!fallback) {
         fallback = "";
     }
@@ -80,15 +75,15 @@ function readFileSyncDefault(filePath, fallback = "", options = {}) {
 
 /**
  * Asynchronously read a file or create it with the given fallback if it doesnt exist
- * @param {string} filePath 
- * @param {string} fallback 
- * @param {{encoding: string|undefined, flag: string|undefined}} options 
- * @param {(err: NodeJS.ErrnoException | null, data: NonSharedBuffer) => void} callback
- * @returns {void}
  */
-function readFileDefault(filePath, fallback, options, callback) {
+function readFileDefault(
+    filePath: string, 
+    fallback: string, 
+    options: {encoding: null|undefined, flag: string|undefined}, 
+    callback: (err: NodeJS.ErrnoException | null, data: string) => void
+) {
     if (fs.existsSync(filePath)) {
-        return fs.readFile(filePath, options, callback);
+        return fs.readFile(filePath, options, (err, data) => {callback(err, data.toString())});
     }
     fs.mkdir(path.dirname(filePath), { recursive: true }, (err) => {
         if (err) {
@@ -100,7 +95,7 @@ function readFileDefault(filePath, fallback, options, callback) {
     callback(null, fallback);
 }
 
-function autoSavedJSON(filePath, fallback, options) {
+function autoSavedJSON(filePath: string, fallback: object, options: {encoding?: null|undefined, flag?: string|undefined} = {}) {
     let data = fallback;
     try {
         data = JSON.parse(readFileSyncDefault(filePath, JSON.stringify(data), options));
@@ -109,12 +104,12 @@ function autoSavedJSON(filePath, fallback, options) {
             if (err) console.error(err);
         });
     }
-    let timeout = null;
+    let timeout: NodeJS.Timeout | null = null;
     function createAutoSaveProxy(obj) {
         return new Proxy(obj, {
             set(target, prop, value) {
                 target[prop] = value;
-                clearTimeout(timeout);
+                timeout?.close();
                 timeout = setTimeout(() => {
                     fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
                 }, 500);
@@ -122,7 +117,7 @@ function autoSavedJSON(filePath, fallback, options) {
             },
             deleteProperty(target, prop) {
                 delete target[prop];
-                clearTimeout(timeout);
+                timeout?.close();
                 timeout = setTimeout(() => {
                     fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
                 }, 500);
@@ -140,7 +135,7 @@ function autoSavedJSON(filePath, fallback, options) {
     return createAutoSaveProxy(data);
 }
 
-function autoSavedINI(filePath, fallback, options) {
+function autoSavedINI(filePath: string, fallback: object, options: {encoding?: null|undefined, flag?: string|undefined} = {}) {
     let data = fallback;
     try {
         data = ini.parse(readFileSyncDefault(filePath, ini.stringify(data), options).toString());
@@ -149,12 +144,12 @@ function autoSavedINI(filePath, fallback, options) {
             if (err) console.error(err);
         });
     }
-    let timeout = null;
+    let timeout: NodeJS.Timeout | null = null;
     function createAutoSaveProxy(obj) {
         return new Proxy(obj, {
             set(target, prop, value) {
                 target[prop] = value;
-                clearTimeout(timeout);
+                timeout?.close();
                 timeout = setTimeout(() => {
                     fs.writeFileSync(filePath, ini.stringify(data), options);
                 }, 500);
@@ -162,7 +157,7 @@ function autoSavedINI(filePath, fallback, options) {
             },
             deleteProperty(target, prop) {
                 delete target[prop];
-                clearTimeout(timeout);
+                timeout?.close();
                 timeout = setTimeout(() => {
                     fs.writeFileSync(filePath, ini.stringify(data), options);
                 }, 500);
@@ -180,7 +175,7 @@ function autoSavedINI(filePath, fallback, options) {
     return createAutoSaveProxy(data);
 }
 
-module.exports = {
+export {
     autoSavedJSON,
     autoSavedINI,
     readFileSyncDefault,

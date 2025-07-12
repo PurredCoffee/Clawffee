@@ -1,3 +1,5 @@
+import { HelixCustomReward } from '@twurple/api';
+
 const fs = require('node:fs');
 const { ApiClient } = require('@twurple/api');
 const { ChatClient } = require('@twurple/chat');
@@ -31,28 +33,35 @@ const conf = autoSavedJSON(confPath + 'twitch.json', {
 const clientID = conf.clientID;
 const channels = conf.chats;
 
-
-/**
- * @typedef {Object} ConnectedBot
- * @property {number} id - The user ID of the bot.
- * @property {string} name - The user login of the bot.
- * @property {import('@twurple/api').ApiClient} api - The Twurple API client for the bot.
- * @property {import('@twurple/chat').ChatClient} chat - The Twurple Chat client for the bot.
- * @property {(channel: string, message: string) => Promise<void>} say - Function to send a message to a channel.
- * @property {(channel: string, message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void>} reply - Function to reply to a message in a channel.
- * @property {(callback: Function) => void} onWhisper - Function to register a whisper event callback.
- */
+type ConnectedBot = {
+    id: number // - The user ID of the bot.
+    name: string // - The user login of the bot.
+    api: import('@twurple/api').ApiClient // - The Twurple API client for the bot.
+    chat: import('@twurple/chat').ChatClient // - The Twurple Chat client for the bot.
+    say: (channel: string, message: string) => Promise<void> // - Function to send a message to a channel.
+    reply: (channel: string, message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void> // - Function to reply to a message in a channel.
+    onWhisper: (callback: Function) => void // - Function to register a whisper event callback.
+}
 
 /**
  * Stores connected bots by username.
  * @type {Object.<string, ConnectedBot>}
  */
-const connectedBots = {};
+const connectedBots: {[name: string]: ConnectedBot} = {};
 
+type ConnectedUser = {
+    id: number // - The user ID of the bot.
+    name: string // - The user login of the bot.
+    api: import('@twurple/api').ApiClient // - The Twurple API client for the bot.
+    chat: import('@twurple/chat').ChatClient // - The Twurple Chat client for the bot.
+    listener: import('@twurple/eventsub-ws').EventSubWsListener // - More verbose Twurple client for the bot.
+    say: (channel: string, message: string) => Promise<void> // - Function to send a message to a channel.
+    reply: (channel: string, message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void> // - Function to reply to a message in a channel.
+}
 /**
  * The main user connected to twitch. Main API object.
  */
-const connectedUser = {
+const connectedUser: ConnectedUser = {
     /**
      * @type number
      */
@@ -87,13 +96,13 @@ const connectedUser = {
      * @param {import('@twurple/chat').ChatMessage} replyTo - The message to reply to.
      * @returns {Promise<void>}
      */
-    reply: async (channel, message) => { },
+    reply: async (channel, message, replyTo) => { },
 };
 
 /* -------------------------- Connection Management ------------------------- */
 
-function saveToken(path, newTokenData) {
-    let data = JSON.stringify(decryptData(path));
+function saveToken(path: string, newTokenData) {
+    let data = JSON.parse(decryptData(path));
     data.tokenData = newTokenData;
     encryptData(path, JSON.stringify(data));
 }
@@ -110,7 +119,7 @@ async function addBot(tokenData, main = false) {
     if (clientSecret) {
         auth = new RefreshingAuthProvider({ clientId: clientID, clientSecret: clientSecret });
         auth.onRefresh(async (userID, newTokenData) => saveToken(`${oauthFilesPath}${userID}${(main ? ".main" : "")}.json.enc`, newTokenData));
-        userID = await auth.addUserForToken(tokenData, ['chat']);
+        await auth.addUserForToken(tokenData, ['chat']);
     } else {
         auth = new StaticAuthProvider(clientID, tokenData.accessToken || tokenData.access_token, tokenData.scopes || ['chat']);
         const tempApi = new ApiClient({ authProvider: auth });
@@ -158,7 +167,7 @@ function makeEventSubListenerEventable(object) {
     return new Proxy(object, {
         get(target, property, receiver) {
             const value = Reflect.get(target, property, receiver);
-            if (typeof value === 'function' && property.startsWith('on')) {
+            if (typeof value === 'function' && typeof property === 'string' && property.startsWith('on')) {
                 return (...args) => {
                     let callback = args.pop();
                     let argscopy = [...args, property];
@@ -208,7 +217,27 @@ async function connect() {
         connectedBots[key].chat.quit()
         delete connectedBots[key]
     });
-    const connectionInfo = {
+    const connectionInfo: {
+        main: ConnectedUser | {}
+        bots: {
+            id: any;
+            name: any;
+            pfp: any;
+            expiryDate: any;
+            listenTo: string[];
+        }[],
+        failed: {
+            id: any;
+            name: any;
+            pfp: any;
+            expiryDate: any;
+            listenTo: string[];
+        }[],
+        redeems: {[id: string]: {
+            img: string, 
+            managed: boolean,
+        } & HelixCustomReward}
+    } = {
         main: {},
         bots: [],
         failed: [],
@@ -237,7 +266,7 @@ async function connect() {
                             connectedUser.reply = connectedBots[name].reply;
                             try {
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
-                                    connectionInfo.redeems[val.id] = {...val, img: val.getImageUrl(2), managed: false};
+                                    connectionInfo.redeems[val.id] = Object.assign(val, {img: val.getImageUrl(2), managed: false});
                                 });
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, true)).forEach((val) => {
                                     connectionInfo.redeems[val.id].managed = true;
@@ -445,6 +474,7 @@ setFunction("/twitch/addListenTo", async (searchParams) => {
         const channelObj = await botEntry.api.users.getUserByName(channel);
         if(!channelObj || channelObj.name != channel) {
             console.error("cannot find user!", channel);
+            return;
         }
         extraData.IDs[channel] = parseInt(channelObj.id);
         fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
@@ -516,9 +546,9 @@ setFunction("/twitch/deleteRedeem", (searchParams) => {
     }
     (async () => {
         try {
-            const redeem = await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
-            delete sharedServerData.twitch.redeems[cloned.id];
-            console.log(`Deleted redeem ${redeem.title}`);
+            await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
+            delete sharedServerData.twitch.redeems[redeemId];
+            console.log(`Deleted redeem ${redeemId}`);
         } catch (err) {
             console.error(`Could not delete redeem ${redeemId}`);
         }
@@ -530,7 +560,7 @@ setFunction("/twitch/deleteRedeem", (searchParams) => {
 /* --------------------------------- Exports -------------------------------- */
 
 const debug_channel = conf.printChannel;
-let rateLimit = null;
+let rateLimit: NodeJS.Timeout | null = null;
 let cache = "";
 function print() {
     let text = "";
@@ -543,17 +573,17 @@ function print() {
         cache += " - " + text;
     }
     if (rateLimit == null && cache) {
-        rateLimit = setTimeout((200, () => {
+        rateLimit = setTimeout(() => {
             if (cache.length > 450) {
                 cache = cache.substring(0, 450) + " ... truncated (API issue)";
             }
             connectedUser.say(debug_channel, cache.substring(3).trim());
             cache = "";
-            rateLimit = setTimeout((1300, () => {
+            rateLimit = setTimeout(() => {
                 rateLimit = null;
                 print();
-            }));
-        }));
+            }, 1300);
+        }, 200);
     }
 }
 

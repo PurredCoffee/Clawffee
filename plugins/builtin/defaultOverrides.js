@@ -38,12 +38,12 @@ JSON.stringify = (value, replacer, space) => {
 let longestName = 28;
 function wrapConsoleFunction(name, copy) {
     return (...data) => {
-        let stack = {};
+        let stack = {stack: ""};
         Error.captureStackTrace(stack, console[name]);
-        stack = stack.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
-        if (stack?.[0]) {
-            longestName = Math.max(longestName, stack[0].length + 4);
-            copy(stack[0].padEnd(longestName, " ") + " |", ...data);
+        let regstack = stack.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
+        if (regstack?.[0]) {
+            longestName = Math.max(longestName, regstack[0].length + 4);
+            copy(regstack[0].padEnd(longestName, " ") + " |", ...data);
         } else {
             copy("@internal".padEnd(longestName, " ") + " |", ...data);
         }
@@ -108,6 +108,7 @@ function wrapFsMethod(methodName) {
 /* -------------------------------- Intervals ------------------------------- */
 
 const oldSetInterval = setInterval;
+
 setInterval = (...params) => {
     let callback = oldSetInterval(...params); 
     associateObjectWithFile({

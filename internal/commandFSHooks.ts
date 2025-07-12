@@ -1,30 +1,29 @@
-const fs = require("node:fs");
-const path = require('path');
-const { autoSavedJSON } = require("../plugins/builtin/files");
-const { registerModuleByPath  } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+import fs from 'node:fs';
+import path from 'path';
+import { autoSavedJSON } from '../plugins/builtin/files';
+
+const { registerModuleByPath  } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.ts"));
 const { sharedServerData, } = require(fs.realpathSync("./plugins/builtin/server.js"));
 
-/**
- * @typedef moduledata
- * 
- * @property {object} module
- * @property {string} filePath
- * @property {string} modulePath
- * @property {string} parsedModulePath
- * @property {string} name
- * @property {object} watcher
- * @property {errored} errored
- */
-/**
- * @typedef loadedmodule
- * 
- * @property {Map<string, loadedmodule>} children
- * @property {loadedmodule} parent
- * @property {string[]} dependencies
- * @property {{enabled: boolean}} conf
- * @property {boolean} active
- * @property {moduledata} module
- */
+type moduledata = {
+    module: any,
+    filePath: string,
+    confPath: string,
+    modulePath: string,
+    parsedModulePath: string | null,
+    name: string,
+    watcher: any,
+    errored: boolean,
+}
+type loadedmodule = {
+    children: {[file: string]: loadedmodule}
+    parent: loadedmodule | null
+    dependencies: string[]
+    conf: {enabled: boolean}
+    active: boolean
+    module: moduledata,
+    serverData: any
+}
 
 sharedServerData.internal.loadedmodules = {
     children: {},
@@ -34,10 +33,7 @@ sharedServerData.internal.loadedmodules = {
     conf: {}
 };
 
-/**
- * @type {loadedmodule}
- */
-const loadedmodules = {
+const loadedmodules: loadedmodule = {
     children: {},
     parent: null,
     dependencies: [],
@@ -50,23 +46,19 @@ const loadedmodules = {
         modulePath: fs.realpathSync("./commands"),
         parsedModulePath: null,
         name: "commands",
-        watcher: null
+        watcher: null,
+        errored: false
     },
     serverData: sharedServerData.internal.loadedmodules
 }
 
-/**
- * @type {Dictionary<string, loadedmodule>}
- */
-const moduleByPath = {}
+const moduleByPath: {[file: string]: loadedmodule} = {}
 registerModuleByPath(moduleByPath);
 
 /**
  * Consider which listener to use (File/Folder) and set up generics
- * @param {loadedmodule} curMod 
- * @param {string} file
  */
-function setupInner(curMod, file) {
+function setupInner(curMod: loadedmodule, file: string) {
     if (file.endsWith("._conf")) {
         return;
     }
@@ -87,10 +79,7 @@ function setupInner(curMod, file) {
         conf: conf
     };
 
-    /**
-     * @type {loadedmodule}
-     */
-    const newModule = {
+    const newModule: loadedmodule = {
         children: {},
         parent: curMod,
         dependencies: [],
@@ -103,7 +92,8 @@ function setupInner(curMod, file) {
             modulePath: curMod.module.modulePath + "/" + file,
             parsedModulePath: null,
             name: curMod.module.name + "/" + file,
-            watcher: null
+            watcher: null,
+            errored: false
         },
         serverData: curMod.serverData.children[file]
     }
@@ -118,11 +108,10 @@ function setupInner(curMod, file) {
 
 /**
  * Setup Hooks for File listening
- * @param {loadedmodule} curMod
  */
-function setupFile(curMod) {
+function setupFile(curMod: loadedmodule) {
     curMod.module.parsedModulePath = require.resolve(curMod.module.modulePath);
-    let timeout = null;
+    let timeout: NodeJS.Timeout | null = null;
     curMod.module.watcher = fs.watch(curMod.module.filePath, {}, (event) => {
         if (timeout) {
             return;
@@ -137,18 +126,15 @@ function setupFile(curMod) {
 
 /**
  * Setup Hooks for Folder listening
- * @param {loadedmodule} curMod
  */
-function setupFolder(curMod) {
+function setupFolder(curMod: loadedmodule) {
     const files = fs.readdirSync(curMod.module.filePath);
     files.forEach(file => {
         setupInner(curMod, file);
     });
     let timeout = {};
     curMod.module.watcher = fs.watch(curMod.module.filePath, {}, (event, file) => {
-        if (timeout[file]) {
-            return;
-        }
+        if(!file || timeout[file]) return;
         timeout[file] = setTimeout(() => {
             timeout[file] = null;
         }, 400);
@@ -169,7 +155,7 @@ function setupFolder(curMod) {
     });
 }
 
-function removeInner(curMod) {
+function removeInner(curMod: loadedmodule) {
     if (!curMod) return;
 
     curMod.module.watcher?.stop?.();
@@ -186,7 +172,8 @@ function removeInner(curMod) {
 
 setupFolder(loadedmodules);
 
-module.exports = {
+export {
     moduleByPath,
-    loadedmodules
+    loadedmodules,
+    loadedmodule
 }

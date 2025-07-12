@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('path');
-const { onBlockPlugin } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+const { onBlockPlugin } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.ts"));
 
 const unavailablePlugins = {};
 
@@ -10,7 +10,7 @@ function requirePluginsRecursively(dir) {
         const stat = fs.statSync(filePath);
         if (stat.isDirectory()) {
             requirePluginsRecursively(filePath);
-        } else if (stat.isFile() && file.endsWith('.js')) {
+        } else if (stat.isFile() && (file.endsWith('.js') || file.endsWith('.ts'))) {
             require(filePath);
         }
     });
@@ -19,7 +19,7 @@ onBlockPlugin((filename) => {
     unavailablePlugins[filename] = true;
 });
 
-module.exports = {
+export {
     unavailablePlugins,
     requirePluginsRecursively
 }
