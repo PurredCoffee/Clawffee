@@ -111,7 +111,7 @@ setInterval = (...params) => {
     associateObjectWithFile({
         callback: callback,
         disconnect: () => {
-            clearTimeout(callback);
+            clearInterval(callback);
         }
     }, "disconnect");
     return callback;
