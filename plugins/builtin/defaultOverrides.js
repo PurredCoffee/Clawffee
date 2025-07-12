@@ -43,14 +43,11 @@ function wrapConsoleFunction(name, copy) {
         stack = stack.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
         if (stack?.[0]) {
             longestName = Math.max(longestName, stack[0].length + 4);
-            copy(stack[0].padEnd(longestName, " "), "|", ...data);
+            copy(stack[0].padEnd(longestName, " ") + " |", ...data);
         } else {
-            copy(...data);
+            copy("@internal".padEnd(longestName, " ") + " |", ...data);
         }
-        sharedServerData.internal[name] = data.map(arg => typeof (arg) === 'object' || typeof (arg) === 'function' ? util.inspect(arg, {
-            maxStringLength: 80,
-            maxArrayLength: 5
-        }) : String(arg)).join(' ');
+        sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ');
     }
 }
 
@@ -71,7 +68,7 @@ console.error = wrapConsoleFunction("error", olderr);
 
 /* ------------------------------- FILE SAFETY ------------------------------ */
 
-const MAIN_FOLDER = path.resolve(__dirname, '../../'); // Adjust as needed
+const MAIN_FOLDER = path.resolve(__dirname, '../../');
 
 function isPathAllowed(targetPath) {
     const resolved = path.resolve(MAIN_FOLDER, targetPath);
@@ -112,7 +109,6 @@ function wrapFsMethod(methodName) {
 
 const oldSetInterval = setInterval;
 setInterval = (...params) => {
-    console.log("set Timeout");
     let callback = oldSetInterval(...params); 
     associateObjectWithFile({
         callback: callback,
@@ -141,9 +137,9 @@ process.on('uncaughtException', function(err) {
     let stack = err.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
-        olderr(stack[0].padEnd(longestName, " "), "|", err);
+        olderr(stack[0].padEnd(longestName, " ") + " |", err);
     } else {
-        olderr(...data);
+        olderr("@internal".padEnd(longestName, " ") + " |", err);
     }
     sharedServerData.internal.error = err.stack;
 });

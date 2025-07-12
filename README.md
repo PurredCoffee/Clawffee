@@ -113,9 +113,9 @@ Built-in plugins include:
 ### Create your own Plugin
 To create a new plugin, create a new JavaScript file in the `plugins` directory and export an object with the desired functionality.
 
-To reload plugins that depend on your plugin, you can use the `reloadPlugin` function from the `builtin/internal/pluginReg` plugin. This allows you to dynamically reload commands once your plugin is ready. Here's an example of how to do this in your script:
+To reload plugins that depend on your plugin, you can use the `reloadPlugin` function from the `builtin/internal/ClawCallbacks` plugin. This allows you to dynamically reload commands once your plugin is ready. Here's an example of how to do this in your script:
 ```javascript
-const { reloadPlugin } = require('./builtin/internal/pluginReg');
+const { reloadPlugin } = require('./builtin/internal/ClawCallbacks');
 // Reload all plugins and scripts
 reloadPlugin(__filename);
 ```

@@ -1,12 +1,11 @@
 const fs = require("node:fs");
 const path = require('path');
-const { deletePath, addPath } = require("../plugins/builtin/internal/codeBinder");
 const { moduleByPath } = require("./commandFSHooks");
 
 
 // load plugins first
 const { unavailablePlugins } = require("./pluginLoader");
-
+const { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
 
 /**
  * @type {Dictionary<string, loadedmodule[]>}
@@ -19,9 +18,7 @@ const moduleDependers = {}
  */
 function loadFile(curMod) {
     if (curMod.module.errored) return false;
-
-    deletePath(curMod.module.filePath);
-    addPath(curMod.module.filePath);
+    moduleLoad(curMod.module.filePath);
     try {
         curMod.module.module = require(curMod.module.parsedModulePath);
         console.log(`+ ${curMod.module.name}`);
@@ -29,7 +26,7 @@ function loadFile(curMod) {
     } catch (e) {
         console.error(e);
         curMod.module.errored = true;
-        deletePath(curMod.module.filePath);
+        moduleUnload(curMod.module.filePath);
         return false;
     }
     return true;
@@ -47,7 +44,7 @@ function unloadFile(curMod) {
         curMod.module.module?.unloadModule?.();
     } catch (e) { console.error(e); }
     curMod.module.module = null;
-    deletePath(curMod.module.filePath);
+    moduleUnload(curMod.module.filePath);
     delete require.cache[curMod.module.parsedModulePath];
     console.log(`- ${curMod.module.name}`);
 
@@ -84,7 +81,7 @@ function parseRequirements(absPath, requiredFiles = new Set()) {
         let resolvedPath;
         try {
             if (reqPath.startsWith(".")) {
-                resolvedPath = require.resolve("./" + path.relative(__dirname, path.join(path.dirname(absPath), reqPath)));
+                resolvedPath = require.resolve(path.join(path.dirname(absPath), reqPath));
             } else if (reqPath.startsWith("#")) {
                 resolvedPath = require.resolve(reqPath);
             } else {
@@ -95,6 +92,7 @@ function parseRequirements(absPath, requiredFiles = new Set()) {
                 parseRequirements(resolvedPath, requiredFiles);
             }
         } catch (e) {
+            console.log(e);
             // ignore resolution errors
         }
     }
@@ -135,6 +133,10 @@ function reloadDependency(filename) {
         loadModule(element);
     });
 }
+onReloadPlugin((filename) => {
+    unavailablePlugins[filename] = false;
+    reloadDependency(filename);
+})
 
 /**
  * Load selected Module and attached modules
@@ -191,6 +193,14 @@ function loadModule(curMod) {
     curMod.serverData.active = curMod.active;
     return curMod.active;
 }
+let blockConn = false;
+onModuleLoad((filename) => {
+    if(blockConn) return;
+    blockConn = true;
+    loadModule(moduleByPath[filename]);
+    blockConn = false;
+})
+
 
 /**
  * Unload selected Module and attached modules
@@ -219,6 +229,12 @@ function unloadModule(curMod) {
 
     // dont unload dependencies because they are loaded independently
 }
+onModuleUnload((filename) => {
+    if(blockConn) return;
+    blockConn = true;
+    unloadModule(moduleByPath[filename]);
+    blockConn = false;
+})
 
 module.exports = {
     unloadModule,

@@ -1,3 +1,5 @@
+const { onModuleLoad, onModuleUnload } = require("./ClawCallbacks");
+
 const associatedObjects = {};
 /**
  * make a function automatically unbind itself when it goes out of scope (and is GC'd)
@@ -76,9 +78,16 @@ function deletePath(path) {
     delete associatedObjects[path];
 }
 
+onModuleLoad((filePath) =>  {
+    deletePath(filePath);
+    addPath(filePath);
+});
+
+onModuleUnload((filePath) => {
+    deletePath(filePath);
+})
+
 module.exports = {
     associateObjectWithFile,
-    associateClassWithFile,
-    addPath,
-    deletePath
+    associateClassWithFile
 }

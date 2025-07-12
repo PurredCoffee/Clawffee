@@ -3,11 +3,10 @@ const pathModule = require('path');
 const crypto = require('crypto');
 
 const { setFunction } = require("../server");
-const { moduleByPath } = require("../../../internal/commandFSHooks");
-const { unloadModule, loadModule } = require("../../../internal/commandHotReloader");
+const { moduleByPath, moduleLoad, moduleUnload } = require("./ClawCallbacks");
 
 let loadTimeout = null;
-setFunction('/internal/unloadModule', (searchParams, res) => {
+setFunction('/internal/moduleLoad', (searchParams, res) => {
     if (loadTimeout) {
         return;
     }
@@ -18,10 +17,10 @@ setFunction('/internal/unloadModule', (searchParams, res) => {
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = false;
-    unloadModule(module);
+    moduleLoad(module);
 });
 
-setFunction('/internal/loadModule', (searchParams, res) => {
+setFunction('/internal/moduleLoad', (searchParams, res) => {
     if (loadTimeout) {
         return;
     }
@@ -29,15 +28,15 @@ setFunction('/internal/loadModule', (searchParams, res) => {
         loadTimeout = null;
     }, 400);
     let path = searchParams.get("path");
-    const module = require("../../../internal/commandFSHooks").moduleByPath[path];
+    const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = true;
-    loadModule(module);
+    moduleLoad(module);
 });
 
 setFunction('/internal/setModulePos', (searchParams, res) => {
     let path = searchParams.get("path");
-    const module = require("../../../internal/commandFSHooks").moduleByPath[path];
+    const module = moduleByPath[path];
     if (!module) return;
     module.conf.pos = {
         left: parseInt(searchParams.get("left")) ?? 1,

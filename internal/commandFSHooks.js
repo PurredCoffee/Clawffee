@@ -1,8 +1,8 @@
 const fs = require("node:fs");
 const path = require('path');
-const { sharedServerData, } = require("../plugins/builtin/server");
 const { autoSavedJSON } = require("../plugins/builtin/files");
-const { addPath } = require("../plugins/builtin/internal/codeBinder");
+const { registerModuleByPath  } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+const { sharedServerData, } = require(fs.realpathSync("./plugins/builtin/server.js"));
 
 /**
  * @typedef moduledata
@@ -28,7 +28,7 @@ const { addPath } = require("../plugins/builtin/internal/codeBinder");
 
 sharedServerData.internal.loadedmodules = {
     children: {},
-    path: path.join(__dirname, "../commands"),
+    path: fs.realpathSync("./commands"),
     name: "commands",
     active: false,
     conf: {}
@@ -59,6 +59,7 @@ const loadedmodules = {
  * @type {Dictionary<string, loadedmodule>}
  */
 const moduleByPath = {}
+registerModuleByPath(moduleByPath);
 
 /**
  * Consider which listener to use (File/Folder) and set up generics
@@ -121,7 +122,6 @@ function setupInner(curMod, file) {
  */
 function setupFile(curMod) {
     curMod.module.parsedModulePath = require.resolve(curMod.module.modulePath);
-    addPath(curMod.module.filePath);
     let timeout = null;
     curMod.module.watcher = fs.watch(curMod.module.filePath, {}, (event) => {
         if (timeout) {

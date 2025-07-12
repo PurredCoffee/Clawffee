@@ -1,4 +1,4 @@
-const { moduleByPath } = require("../../internal/commandFSHooks");
+const { moduleByPath } = require("./internal/ClawCallbacks");
 
 const fileData = {};
 persistent = new Proxy({}, {
