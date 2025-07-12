@@ -7,21 +7,51 @@ A simple Twitch bot tool for streamers!
 
 1. Download the latest release from [here](https://github.com/PurredCoffee/Clawffee/releases).
 
-2. Extract the zip and run `run.bat` (Windows) or `run.sh` (Linux/Mac) to start the bot.
+2. Extract the zip and run `clawffee.exe` (Windows) or `clawffee` (Linux/Mac) to start the bot.
 
-3. Use the dashboard to authenticate a bot account.
+3. Use the dashboard (at `html/dashboard.html`) to authenticate your account for use with clawffee.
 
-4. Write your first script in the `commands` directory. For example, create a file named `hello.js` with the following content:
-    ```javascript
-    const { twitch } = require('#helpers');
+4. Write your first script in the `commands` directory. 
+    1. For example, create a file named `hello.js` with the following content:
+        ```javascript
+        console.log("hello");
+        ```
+        save the file and you will notice a hello pop up in the console!
 
-    twitch.connectedUser.chat.onMessage((channel, user, text, message) => {
-        if(text == '!hello') {
-            twitch.connectedUser.say(channel, `Hello, ${user}!`);
-        }
-    });
-    ```
-    Check the `commands/examples` directory for more examples of how to create commands and scripts.
+    2. From here you can play around and see what happens. e.g. if we do
+        ```javascript
+        setTimeout(() => {
+            console.log("hello");
+        }, 5000);
+        ```
+        and save the file we will be able to see "hello" show up after 5 seconds (5000 miliseconds)
+
+    3. With a slight adjustment
+        ```javascript
+        setInterval(() => {
+            console.log("hello");
+        }, 5000);
+        ``` 
+        "hello" is shown every 5 seconds!
+
+    4. If you have an account tied to clawffee you can use
+        ```javascript
+        const { twitch } = require('#helpers');
+        ```
+        to get access to twitch related commands 
+
+        you would use them like this:
+        ```javascript
+        const { twitch } = require('#helpers');
+
+        twitch.connectedUser.chat.onMessage((channel, user, text, message) => {
+            if(text == '!hello') {
+                twitch.connectedUser.say(channel, `Hello, ${user}!`);
+            }
+        });
+        ```
+
+Check the `commands/examples` directory for more examples of how to create commands and scripts.
 
 
 ## Features
@@ -115,7 +145,7 @@ To create a new plugin, create a new JavaScript file in the `plugins` directory 
 
 To reload plugins that depend on your plugin, you can use the `reloadPlugin` function from the `builtin/internal/ClawCallbacks` plugin. This allows you to dynamically reload commands once your plugin is ready. Here's an example of how to do this in your script:
 ```javascript
-const { reloadPlugin } = require('./builtin/internal/ClawCallbacks');
+const { clawCallbacks: { reloadPlugin } } = require('../internal/internal);
 // Reload all plugins and scripts
 reloadPlugin(__filename);
 ```
@@ -139,12 +169,12 @@ reloadPlugin(__filename);
 
 2. Install dependencies:
     ```bash
-    npm install
+    bun install
     ```
 
 3. Start the bot:
     ```bash
-    npm start
+    bun index.js
     ```
 
 4. (Optional) Open the dashboard by opening `html/dashboard.html` in your web browser to authenticate a bot account.
