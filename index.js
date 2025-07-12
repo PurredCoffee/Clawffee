@@ -1,5 +1,6 @@
 const dependencyInstaller = require('./internal/dependencyInstaller');
 dependencyInstaller.checkDependenciesFile('./plugins').then(() => {
+    console.log("\n Clawffee Version 0.2.0");
     console.log("-".repeat(48));
     const { requirePluginsRecursively } = require("./internal/pluginLoader")
     const { loadedmodules } = require("./internal/commandFSHooks");

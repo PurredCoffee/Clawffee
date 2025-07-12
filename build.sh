@@ -11,7 +11,7 @@ git clone . build
 
 # delete unnecessary files
 cd build
-rm -rf build/.git
+rm -rf .git
 rm -r .vscode/
 rm .gitignore
 rm -r assets/
@@ -31,13 +31,19 @@ rm build.sh
 cd ..
 
 # linux export
-bun build index.js --target=bun-linux-x64 --compile --minify --bytecode --outfile build/clawffee
-zip -ll clawffee_linux.zip build/*
+bun build --compile --target=bun-linux-x64 index.js --minify --bytecode --outfile build/clawffee
+mv build clawffee_linux
+zip -r -ll clawffee_linux.zip clawffee_linux/*
+mv clawffee_linux build
 
 # windows export
-bun build index.js --target=bun-windows-x64 --compile --minify --windows-icon=assets/clawffee.ico --bytecode --outfile build/clawffee
-zip -l clawffee_windows.zip build/*
+bun build --compile --target=bun-windows-x64 --windows-icon=assets/clawffee.ico index.js --minify --bytecode --outfile build/clawffee
+mv build clawffee_windows
+zip -r -l clawffee_windows.zip clawffee_windows/*
+mv clawffee_windows build
 
 # macOS export
-bun build --compile --target=bun-darwin-arm64 ./path/to/my/app.ts --outfile build/clawffee
-zip -ll clawffee_darwin.zip build/*
+bun build --compile --target=bun-darwin-arm64 index.js --minify --bytecode --outfile build/clawffee
+mv build clawffee_darwin
+zip -r -ll clawffee_darwin.zip clawffee_darwin/*
+mv clawffee_darwin build
