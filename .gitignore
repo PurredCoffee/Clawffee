@@ -23,5 +23,6 @@ html/images/*
 
 node_modules
 package-lock.json
+bun.lock
 
 build
