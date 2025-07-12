@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 /**
  * parses a path and returns all dependencies of the file relative to the current project
  * @param {string} absPath 
