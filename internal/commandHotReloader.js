@@ -6,7 +6,7 @@ const { moduleByPath } = require("./commandFSHooks");
 // load plugins first
 const { unavailablePlugins } = require("./pluginLoader");
 const { clawCallbacks: { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } } = require("../plugins/internal/internal");
-
+const { parseRequirements } = require('./requirementParser');
 /**
  * @type {Dictionary<string, loadedmodule[]>}
  */
@@ -61,42 +61,6 @@ function unloadFile(curMod) {
         console.warn('Garbage collection unavailable.  Pass --expose_gc '
             + 'when launching node to enable forced garbage collection.');
     }
-}
-
-/**
- * parses a path and returns all dependencies of the file relative to the current project
- * @param {string} absPath 
- * @param {Set} requiredFiles
- * @returns {Array[string]} all dependencies
- */
-function parseRequirements(absPath, requiredFiles = new Set()) {
-    if (!fs.statSync(absPath).isFile())
-        return [];
-    var contents = fs.readFileSync(absPath).toString();
-    var re = /(?<=require\((?:'|"))(?:\.|#).*?(?=(?:'|")\))/g;
-
-    let matches = contents.matchAll(re);
-    for (const match of matches) {
-        let reqPath = match[0];
-        let resolvedPath;
-        try {
-            if (reqPath.startsWith(".")) {
-                resolvedPath = require.resolve(path.join(path.dirname(absPath), reqPath));
-            } else if (reqPath.startsWith("#")) {
-                resolvedPath = require.resolve(reqPath);
-            } else {
-                continue;
-            }
-            if (!requiredFiles.has(resolvedPath)) {
-                requiredFiles.add(resolvedPath);
-                parseRequirements(resolvedPath, requiredFiles);
-            }
-        } catch (e) {
-            console.log(e);
-            // ignore resolution errors
-        }
-    }
-    return Array.from(requiredFiles.keys());
 }
 
 /**
