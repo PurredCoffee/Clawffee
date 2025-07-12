@@ -26,8 +26,18 @@ echo "{
     \"#helper\": \"./plugins/builtin/helpers.js\"
   }
 }" > package.json
-# rm build.sh
+rm build.sh
 
 cd ..
 
-bun build index.js --compile --minify --bytecode --outfile build/clawffee
+# linux export
+bun build index.js --target=bun-linux-x64 --compile --minify --bytecode --outfile build/clawffee
+zip -ll clawffee_linux.zip build/*
+
+# windows export
+bun build index.js --target=bun-windows-x64 --compile --minify --windows-icon=assets/clawffee.ico --bytecode --outfile build/clawffee
+zip -l clawffee_windows.zip build/*
+
+# macOS export
+bun build --compile --target=bun-darwin-arm64 ./path/to/my/app.ts --outfile build/clawffee
+zip -ll clawffee_darwin.zip build/*
