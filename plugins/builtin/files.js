@@ -1,6 +1,6 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const path = require('node:path');
+const path = require('path');
 const ini = require('ini');
 
 const machineHash = crypto.createHash('md5').update(require("os").hostname()).digest('binary');

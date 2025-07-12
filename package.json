@@ -11,7 +11,6 @@
   },
   "imports": {
     "#helpers": "./plugins/builtin/helpers.js",
-    "#helper": "./plugins/builtin/helpers.js",
-    "#plugins": "./plugins"
+    "#helper": "./plugins/builtin/helpers.js"
   }
 }

@@ -2,8 +2,8 @@ const fs = require('fs');
 const pathModule = require('path');
 const crypto = require('crypto');
 
-const { setFunction } = require("../server");
-const { moduleByPath, moduleLoad, moduleUnload } = require("./ClawCallbacks");
+const { setFunction } = require("./server");
+const { clawCallbacks: { moduleByPath, moduleLoad, moduleUnload } } = require("../internal/internal");
 
 let loadTimeout = null;
 setFunction('/internal/moduleLoad', (searchParams, res) => {
@@ -17,7 +17,7 @@ setFunction('/internal/moduleLoad', (searchParams, res) => {
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = false;
-    moduleLoad(module);
+    moduleUnload(module);
 });
 
 setFunction('/internal/moduleLoad', (searchParams, res) => {
@@ -51,7 +51,7 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
     let image = JSON.parse(body).image;
     const module = moduleByPath[path];
     if (!module || !image) return;
-    const imagesDir = pathModule.resolve(__dirname, '../../../html/images');
+    const imagesDir = './html/images';
     if (!fs.existsSync(imagesDir)) {
         fs.mkdirSync(imagesDir, { recursive: true });
     }

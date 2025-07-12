@@ -6,7 +6,10 @@ const fs = require('fs');
 
 const pluginsDir = fs.realpathSync('./plugins');
 
-requirePluginsRecursively(pluginsDir + '/builtin');
+// Higher priority
+requirePluginsRecursively(path.join(pluginsDir + '/internal'));
+requirePluginsRecursively(path.join(pluginsDir + '/builtin'));
+
 requirePluginsRecursively(pluginsDir);
-// TODO: clean this up
+
 loadModule(loadedmodules);

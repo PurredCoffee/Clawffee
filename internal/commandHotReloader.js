@@ -5,7 +5,7 @@ const { moduleByPath } = require("./commandFSHooks");
 
 // load plugins first
 const { unavailablePlugins } = require("./pluginLoader");
-const { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+const { clawCallbacks: { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } } = require("../plugins/internal/internal");
 
 /**
  * @type {Dictionary<string, loadedmodule[]>}

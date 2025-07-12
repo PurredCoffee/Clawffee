@@ -1,8 +1,3 @@
-const path = require('path');
-const fs = require('node:fs');
-
-const working_dir = fs.realpathSync('./');
-
 const callbacks = {};
 let moduleByPath = {};
 

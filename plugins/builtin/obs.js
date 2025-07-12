@@ -1,8 +1,9 @@
 const obs = require('obs-websocket-js');
 const { autoSavedJSON } = require('./files');
-const { associateObjectWithFile } = require('./internal/codeBinder');
+
+const { codeBinder: { associateObjectWithFile }, clawCallbacks: { reloadPlugin } } = require("../internal/internal");
+
 const { createUnfailable } = require('./unfailable');
-const { reloadPlugin } = require('./internal/ClawCallbacks');
 
 const confPath = 'config/internal/';
 const conf = autoSavedJSON(confPath + 'obs.json', {

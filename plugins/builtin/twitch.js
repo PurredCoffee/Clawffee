@@ -1,15 +1,18 @@
-const fs = require('node:fs');
+const fs = require('fs');
 const { ApiClient } = require('@twurple/api');
 const { ChatClient } = require('@twurple/chat');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { RefreshingAuthProvider, StaticAuthProvider, exchangeCode } = require('@twurple/auth');
 const path = require("path");
 
+const {
+    codeBinder: { associateClassWithFile }, 
+    clawCallbacks: { reloadPlugin, blockPlugin }
+} = require('../internal/internal');
+
 const { autoSavedJSON, encryptData, decryptData, readFileSyncDefault } = require("./files");
-const { associateClassWithFile } = require('./internal/codeBinder');
 const { setFunction, sharedServerData } = require("./server");
 const { createUnfailable } = require("./unfailable");
-const { reloadPlugin, blockPlugin } = require('./internal/ClawCallbacks');
 
 if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
     fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify({

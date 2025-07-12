@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('path');
-const { onBlockPlugin } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
+const { clawCallbacks: { onBlockPlugin } } = require("../plugins/internal/internal");
 
 const unavailablePlugins = {};
 

@@ -4,7 +4,9 @@ const {
 } = require("./subscribable");
 const WebSocket = require('ws');
 const http = require('http');
-const { associateObjectWithFile } = require("./internal/codeBinder");
+
+const { codeBinder: { associateObjectWithFile } } = require("../internal/internal");
+
 const { autoSavedJSON } = require("./files");
 
 const sharedServerData = createServer({ internal: {} });

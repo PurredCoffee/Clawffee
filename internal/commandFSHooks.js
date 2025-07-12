@@ -1,8 +1,8 @@
 const fs = require("node:fs");
 const path = require('path');
 const { autoSavedJSON } = require("../plugins/builtin/files");
-const { registerModuleByPath  } = require(fs.realpathSync("./plugins/builtin/internal/ClawCallbacks.js"));
-const { sharedServerData, } = require(fs.realpathSync("./plugins/builtin/server.js"));
+const { clawCallbacks: { registerModuleByPath } } = require("../plugins/internal/internal");
+const { sharedServerData } = require(fs.realpathSync("./plugins/builtin/server.js")); // TODO: get this out of here
 
 /**
  * @typedef moduledata

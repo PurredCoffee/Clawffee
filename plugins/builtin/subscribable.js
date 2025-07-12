@@ -14,7 +14,7 @@
  * @property {boolean} disabled
  */
 
-const { associateObjectWithFile } = require("./internal/codeBinder");
+const { codeBinder: { associateObjectWithFile } } = require("../internal/internal");
 
 /**
  * @type {WeakMap<Proxy, ProxyObj>}

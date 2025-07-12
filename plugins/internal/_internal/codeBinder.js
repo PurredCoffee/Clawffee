@@ -1,4 +1,4 @@
-const { onModuleLoad, onModuleUnload } = require("./ClawCallbacks");
+const { onModuleLoad, onModuleUnload } = require("./clawCallbacks");
 
 const associatedObjects = {};
 /**

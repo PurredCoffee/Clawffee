@@ -1,4 +1,4 @@
-const { moduleByPath } = require("./internal/ClawCallbacks");
+const { clawCallbacks: { moduleByPath } } = require('../internal/internal');
 
 const fileData = {};
 persistent = new Proxy({}, {

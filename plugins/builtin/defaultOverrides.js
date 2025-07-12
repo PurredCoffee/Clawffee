@@ -1,9 +1,7 @@
 const { sharedServerData } = require("./server");
-var util = require('util');
 const path = require('path');
 const fs = require('fs');
-const { associateObjectWithFile } = require("./internal/codeBinder");
-
+const { codeBinder: { associateObjectWithFile } } = require('../internal/internal');
 /* ------------------------------- JSON SAFETY ------------------------------ */
 
 const oldJSONstringify = JSON.stringify;
