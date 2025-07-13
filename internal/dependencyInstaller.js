@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
-const readline = require('readline');
 
 function dryRun(modulelist) {
     return new Promise((resolve, reject) => {
@@ -32,7 +31,7 @@ function dryRun(modulelist) {
     });
 }
 
-async function update(modulelist) {
+function update(modulelist) {
     return new Promise((resolve, reject) => {
         const add = execFile(process.execPath, ["add", "--only-missing", "--", ...modulelist], {
             env: {
@@ -45,10 +44,23 @@ async function update(modulelist) {
     });
 }
 
+function install() {
+    return new Promise((resolve, reject) => {
+        if(!Bun) return resolve();
+        const add = execFile(process.execPath, ["install"], {
+            env: {
+                "BUN_BE_BUN": "1"
+            }
+        });
+        add.on('close', () => {
+            resolve();
+        });
+    })
+}
+
 function downloadDependencies(basePath) {
     return new Promise(async (resolve, reject) => {
-        if(!Bun) return resolve();
-
+        await install();
         const items = fs.readdirSync(basePath, { withFileTypes: true }).filter(item => item.isDirectory()).map(dir => dir.name);
         let modules = {};
         function getModules(subfolder) {
