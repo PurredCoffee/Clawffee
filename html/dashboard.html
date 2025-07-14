@@ -83,7 +83,6 @@
 </head>
 
 <body>
-    <i class="ph-duotone ph-play"></i>
     <div class="modules">
         <style>
             .modules {
@@ -214,6 +213,7 @@
                 border: none;
                 transition: --c 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
                 text-shadow: transparent 2px 2px 0px;
+                height: 24px;
                 padding: 0.2em;
                 margin-inline: 0em;
                 --c: #00000000;
@@ -320,7 +320,7 @@
         </div>
         <script>
             function lockButton(path, enable) {
-                let url = new URL(enable ? "internal/moduleLoad" : "internal/moduleUnload", 'http://localhost:4444/');
+                let url = new URL(enable ? "/internal/moduleLoad" : "/internal/moduleUnload", 'http://localhost:4444/');
                 url.searchParams.append("path", path);
                 fetch(url);
             }
@@ -330,7 +330,7 @@
                         if (map.has(`${r - 1},${c - 1}`)) return false;
                     }
                 }
-                let url = new URL("internal/setModulePos", 'http://localhost:4444/');
+                let url = new URL("/internal/setModulePos", 'http://localhost:4444/');
                 url.searchParams.append("path", path);
                 url.searchParams.append("left", left);
                 url.searchParams.append("top", top);
@@ -439,13 +439,13 @@
                         button.style.gridRow = `${row + 1} / span 1`;
                     }
                     moveFollower(event);
-                    document.addEventListener('mousemove', moveFollower);
+                    moduleParent.addEventListener('mousemove', moveFollower);
                     let mouseDown = (event) => {
                         event.stopPropagation();
                         button.classList.remove('move');
                         button.classList.add('resize');
-                        document.removeEventListener('mousemove', moveFollower);
-                        document.removeEventListener('mousedown', mouseDown);
+                        moduleParent.removeEventListener('mousemove', moveFollower);
+                        moduleParent.removeEventListener('mousedown', mouseDown);
                         let ncol = 1;
                         let nrow = 1;
                         moveFollower = (e) => {
@@ -460,12 +460,12 @@
                             button.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
                         }
                         moveFollower(event);
-                        document.addEventListener('mousemove', moveFollower);
+                        moduleParent.addEventListener('mousemove', moveFollower);
                         mouseDown = (e) => {
                             e.stopPropagation();
-                            document.removeEventListener('mousemove', moveFollower);
-                            document.removeEventListener('mouseup', mouseDown);
-                            moduleParent.removeEventListener('mousemove', mouseLeave);
+                            moduleParent.removeEventListener('mousemove', moveFollower);
+                            moduleParent.removeEventListener('mouseup', mouseDown);
+                            moduleParent.removeEventListener('mouseleave', mouseLeave);
                             button.classList.remove('move');
                             button.classList.remove('resize');
                             if (!moveButton(module.path, Math.min(col, ncol) + 1, Math.min(row, nrow) + 1, Math.abs(col - ncol) + 1, Math.abs(row - nrow) + 1)) {
@@ -480,12 +480,12 @@
                         }
                         document.addEventListener('mouseup', mouseDown);
                     }
-                    document.addEventListener('mousedown', mouseDown);
+                    moduleParent.addEventListener('mousedown', mouseDown);
                     let mouseLeave = () => {
-                        document.removeEventListener('mousemove', moveFollower);
-                        document.removeEventListener('mousedown', mouseDown);
-                        document.removeEventListener('mouseup', mouseDown);
-                        moduleParent.removeEventListener('mousemove', mouseLeave);
+                        moduleParent.removeEventListener('mousemove', moveFollower);
+                        moduleParent.removeEventListener('mousedown', mouseDown);
+                        moduleParent.removeEventListener('mouseup', mouseDown);
+                        moduleParent.removeEventListener('mouseleave', mouseLeave);
                         button.classList.remove('move');
                         button.classList.remove('resize');
                         button.style.gridColumn = `${left} / span ${w}`;
@@ -554,7 +554,7 @@
                 }
                 document.getElementById('btn-name').value = moduleName;
                 document.getElementById('btn-name').onblur = () => {
-                    let url = new URL('internal/setModuleName', 'http://localhost:4444/');
+                    let url = new URL('/internal/setModuleName', 'http://localhost:4444/');
                     url.searchParams.append('path', curPath);
                     url.searchParams.append('name', event.target.value);
                     fetch(url, {
@@ -571,7 +571,7 @@
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = function (e) {
-                            let url = new URL('internal/setModuleImage', 'http://localhost:4444/');
+                            let url = new URL('/internal/setModuleImage', 'http://localhost:4444/');
                             url.searchParams.append('path', curPath);
                             fetch(url, {
                                 method: 'POST',
@@ -606,10 +606,10 @@
             }
 
             onfirstSub((data) => {
-                updateModuleDisplay(data.internal.loadedmodules);
+                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
             })
             const modsL = katzComm.addListener(sharedServerData, "internal.loadedmodules", (path, newData, oldData) => {
-                updateModuleDisplay(sharedServerData.internal.loadedmodules);
+                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
             });
         </script>
     </div>
@@ -748,7 +748,7 @@
                                         <tr id="redeem-template" class="redeem" template>
                                             <td>
                                                 <div>
-                                                    <img style="margin-right: 1em;" src="images/3c4cec93bec49a9745eb147f604c1fbc.webp" alt="" redeem-template-img>
+                                                    <img style="margin-right: 1em;" src="" alt="" redeem-template-img>
                                                     <span redeem-template-name>Redeem Name</span>
                                                     &MediumSpace;(<span redeem-template-id secondary>A8734-3984-DFS3-349823</span>)
                                                 </div>
@@ -844,6 +844,7 @@
                             }
 
                             function update_twitch(data) {
+                                if(!data.internal?.twitch) return;
                                 twitchMainDiv.innerHTML = "";
                                 if (data.internal.twitch?.main?.name)
                                     addTwitchUserCard("Main User", data.internal.twitch.main);
@@ -876,7 +877,7 @@
                             }
 
                             onfirstSub((data) => {
-                                update_twitch(data);
+                                update_twitch(sharedServerData);
                             });
                             const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
                                 update_twitch(sharedServerData);
@@ -926,6 +927,7 @@
                 top: 12px;
                 right: 12px;
                 text-align: right;
+                z-index: 10000;
             }
 
             #log>* {
@@ -961,7 +963,7 @@
     </div>
     <div class="background"></div>
     <script>
-        let ws = new WebSocket("ws://localhost:4444");
+        let ws = new WebSocket("ws://localhost:4444/internal/");
         function reconnect() {
             let newWS = new WebSocket(ws.url);
             newWS.onmessage = ws.onmessage;
@@ -991,14 +993,13 @@
         }
         ws.onmessage = (message) => {
             let change = JSON.parse(message.data);
+            if(change.p?.[0] != 'internal' && change.p[0])
+                console.log(`data.${change.p?.join?.('.')} was set to ${JSON.stringify(change.v)}`);
+            katzComm.apply(sharedServerData, change.v, change.p);
             if (!firstmessage) {
                 firstmessage = change.v;
                 firstsubs.forEach((c) => c(firstmessage));
-            } else {
-                if(change.p?.[0] != 'internal')
-                    console.log(`data.${change.p?.join?.('.')} was set to ${JSON.stringify(change.v)}`);
             }
-            katzComm.apply(sharedServerData, change.v, change.p);
         }
 
         document.onkeydown = function(evt) {

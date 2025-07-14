@@ -34,35 +34,35 @@ JSON.stringify = (value, replacer, space) => {
 /* ---------------------------- CONSOLE FORWARDS ---------------------------- */
 
 let longestName = 28;
-function wrapConsoleFunction(name, copy) {
+function wrapConsoleFunction(name, copy, prefix = "") {
     return (...data) => {
         let stack = {};
         Error.captureStackTrace(stack, console[name]);
         stack = stack.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
         if (stack?.[0]) {
             longestName = Math.max(longestName, stack[0].length + 4);
-            copy(stack[0].padEnd(longestName, " ") + " |", ...data);
+            copy(prefix + stack[0].padEnd(longestName, " ") + " |", ...data);
         } else {
-            copy("@internal".padEnd(longestName, " ") + " |", ...data);
+            copy(prefix + "@internal".padEnd(longestName, " ") + " |", ...data);
         }
         sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ');
     }
 }
 
 const olddebug = console.debug;
-console.debug = wrapConsoleFunction("debug", olddebug);
+console.debug = wrapConsoleFunction("debug", olddebug, "\u001b[90m");
 
 const oldlog = console.log;
-console.log = wrapConsoleFunction("log", oldlog);
+console.log = wrapConsoleFunction("log", oldlog, "\u001b[0m");
 
 const oldinfo = console.info;
-console.info = wrapConsoleFunction("info", oldinfo);
+console.info = wrapConsoleFunction("info", oldinfo, "\u001b[96m");
 
 const oldwarn = console.warn;
-console.warn = wrapConsoleFunction("warn", oldwarn);
+console.warn = wrapConsoleFunction("warn", oldwarn, "\u001b[93m");
 
 const olderr = console.error;
-console.error = wrapConsoleFunction("error", olderr);
+console.error = wrapConsoleFunction("error", olderr, "\u001b[91m");
 
 /* ------------------------------- FILE SAFETY ------------------------------ */
 

@@ -19,7 +19,7 @@ function associateObjectWithFile(output, unbindfuncname, fn) {
             }
             fn();
         }
-        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*(?:\/|\\)[^\/\\]*\.js(?=:)/g) ?? [];
+        stack = stack.stack.match(/(?<=at |\()(?:\/|\w+:).*\.(?:js|ts|jsx|tsx)/g) ?? [];
         for (let x = 0; x < stack.length; x++) {
             let path = stack[x];
             if (associatedObjects[path]) {

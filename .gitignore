@@ -19,7 +19,7 @@ plugins/*
 !plugins/internal
 plugins/builtin/twitch_data.js
 
-html/images/*
+images/
 
 node_modules
 package-lock.json

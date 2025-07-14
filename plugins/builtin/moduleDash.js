@@ -6,49 +6,49 @@ const { setFunction } = require("./server");
 const { clawCallbacks: { moduleByPath, moduleLoad, moduleUnload } } = require("../internal/internal");
 
 let loadTimeout = null;
-setFunction('/internal/moduleUnload', (searchParams, res) => {
+setFunction('/internal/moduleUnload', (req, url) => {
     if (loadTimeout) {
         return;
     }
     loadTimeout = setTimeout(() => {
         loadTimeout = null;
     }, 400);
-    let path = searchParams.get("path");
+    let path = url.searchParams.get("path");
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = false;
     moduleUnload(path);
 });
 
-setFunction('/internal/moduleLoad', (searchParams, res) => {
+setFunction('/internal/moduleLoad', (req, url) => {
     if (loadTimeout) {
         return;
     }
     loadTimeout = setTimeout(() => {
         loadTimeout = null;
     }, 400);
-    let path = searchParams.get("path");
+    let path = url.searchParams.get("path");
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = true;
     moduleLoad(path);
 });
 
-setFunction('/internal/setModulePos', (searchParams, res) => {
-    let path = searchParams.get("path");
+setFunction('/internal/setModulePos', (req, url) => {
+    let path = url.searchParams.get("path");
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.pos = {
-        left: parseInt(searchParams.get("left")) ?? 1,
-        top: parseInt(searchParams.get("top")) ?? 1,
-        w: parseInt(searchParams.get("w")) ?? 1,
-        h: parseInt(searchParams.get("h")) ?? 1,
+        left: parseInt(url.searchParams.get("left")) ?? 1,
+        top: parseInt(url.searchParams.get("top")) ?? 1,
+        w: parseInt(url.searchParams.get("w")) ?? 1,
+        h: parseInt(url.searchParams.get("h")) ?? 1,
     }
 });
 
-setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
-    let path = searchParams.get("path");
-    let image = JSON.parse(body).image;
+setFunction('/internal/setModuleImage', async (req, url) => {
+    let path = url.searchParams.get("path");
+    let image = (await req.text()).image;
     const module = moduleByPath[path];
     if (!module || !image) return;
     const imagesDir = './html/images';
@@ -80,9 +80,9 @@ setFunction('/internal/setModuleImage', (searchParams, res, req, body) => {
     module.conf.img = `${randomName}`;
 });
 
-setFunction('/internal/setModuleName', (searchParams, res) => {
-    let path = searchParams.get("path");
-    let name = searchParams.get("name");
+setFunction('/internal/setModuleName', (req, url) => {
+    let path = url.searchParams.get("path");
+    let name = url.searchParams.get("name");
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.name = name;

@@ -13,6 +13,7 @@
  * @property {Listener} listener
  * @property {boolean} disabled
  */
+
 /**
  * @type {WeakMap<Proxy, ProxyObj>}
  */
@@ -43,6 +44,14 @@ function makeProxy(obj, parent, name, callback) {
             const result = Reflect.set(target, property, value, receiver);
             if (result) {
                 callback(proxy, property, [property], oldValue, newValue);
+            }
+            return result;
+        },
+        deleteProperty(target, property) {
+            const oldValue = target[property];
+            const result = Reflect.deleteProperty(target, property);
+            if (result) {
+                callback(proxy, property, [property], oldValue, undefined);
             }
             return result;
         }
@@ -91,7 +100,7 @@ function onChange(obj, property, fullPath, oldValue, newValue) {
     const trimPath = fullPath.slice(1);
 
     // call all eventlisteners
-    const eaten = ProxyObj.listener.ownListeners[property]?.reduce?.((eaten, listener) => listener(trimPath, newValue, oldValue, obj[property]) || eaten, false);
+    const eaten = ProxyObj.listener.ownListeners[property]?.reduce((eaten, listener) => listener(trimPath, newValue, oldValue, obj[property]) || eaten, false);
 
     // call parents onChange if output is not eaten yet
     if (ProxyObj.parent && !eaten)
@@ -102,11 +111,12 @@ function onChange(obj, property, fullPath, oldValue, newValue) {
 /**
  * Creates a server proxy object with the provided data.
  *
- * @param {Object} [data={}] - The initial data to be used for the server proxy.
- * @returns {Object} The proxy object representing the server.
+ * @template T
+ * @param {T} [data={}] - The initial data to be used for the server proxy.
+ * @returns {T} The proxy object representing the server.
  */
 function createServer(data = {}) {
-    return makeProxy({root: data}, null, null, onChange).root;
+    return makeProxy({ root: data }, null, null, onChange).root;
 }
 
 /**
@@ -120,8 +130,6 @@ function createServer(data = {}) {
  * @typedef ServerListener
  * @property {ServableListener} Callback - the callback that will be called when this object is run
  * @property {Function} removeSelf - function to stop the listener from listening
- * @private 
- * @property {WeakRef<Function>} _WeakRef - a reference to the weak reference used internally
  * @property {Listener} _AttachedListener - the child listener that is used internally
  */
 /**
@@ -187,7 +195,7 @@ function addListener(server, path, callback, ifChanged = false) {
     //get the listener object under `path`
     let name = ProxyObj.name;
     let childListener = ProxyObjDict.get(ProxyObj.parent).listener;
-    if(path.length > 0) {
+    if (path.length > 0) {
         name = path[path.length - 1];
         childListener = getChild(ProxyObj.listener, server, path);
     }
@@ -202,10 +210,10 @@ function addListener(server, path, callback, ifChanged = false) {
             if (!this._AttachedListener) {
                 return;
             }
-            this._AttachedListener.ownListeners[name] = this._AttachedListener.ownListeners[name].filter((val) => val != this.callback);
+            this._AttachedListener.ownListeners[name] = this._AttachedListener.ownListeners[name].filter((val) => val != callback);
             this._AttachedListener = null;
         }
-    }
+    };
 }
 
 /**
@@ -215,39 +223,33 @@ function addListener(server, path, callback, ifChanged = false) {
  * @param {string[]|string} path
  * @param {number} depth 
  */
-function apply(server, value, path = [], depth=0) {
-    if(!ProxyObjDict.has(server)) {
+function apply(server, value, path = [], depth = 0) {
+    if (!ProxyObjDict.has(server)) {
         throw new TypeError("`server` is not a registered Server Object");
     }
     const ProxyObj = ProxyObjDict.get(server);
-    if(typeof path == 'string') {
+    if (typeof path == 'string') {
         path = path.split('.').filter((val) => val.trim());
     }
-    if(!Array.isArray(path)) {
-        path = [];
-    }
-    if(typeof depth != 'number') {
-        depth = 0;
-    }
-    if(path.length == 0) {
-        depth += 1;
+    if (typeof depth != 'number') {
+        throw new TypeError("`depth` must be a number");
     }
 
     path.unshift(ProxyObj.name);
     let obj = ProxyObj.parent;
 
-    while(path.length > 1) {
+    while (path.length > 1) {
         const key = path.shift();
         ProxyObjDict.get(obj).disabled = true;
         if (!(key in obj)) obj[key] = {};
         ProxyObjDict.get(obj).disabled = false;
         obj = obj[key];
     }
-    value = {[path[0]]:value};
+    value = { [path[0]]: value };
 
 
     function innerApply(obj, copy, depth, dont_delete = false) {
-        if(!dont_delete)
+        if (!dont_delete)
             for (const key in obj) {
                 if (Object.prototype.hasOwnProperty.call(obj, key) && !Object.prototype.hasOwnProperty.call(copy, key)) {
                     delete obj[key];
@@ -255,28 +257,28 @@ function apply(server, value, path = [], depth=0) {
             }
         for (const key in copy) {
             if (Object.prototype.hasOwnProperty.call(copy, key)) {
-                if(depth <= 0 || typeof copy[key] != 'object') {
-                    obj[key] = copy[key];
-                } else { 
-                    if(obj[key] === copy[key]) {
+                if (depth <= 1 || typeof copy[key] != 'object') {
+                    obj[key] = copy;
+                } else {
+                    if (obj[key] === copy[key]) {
                         //prevent a crash
                         obj[key] = copy[key];
                     } else {
-                        if(!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] != 'object') {
+                        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] != 'object') {
                             ProxyObjDict.get(obj).disabled = true;
                             obj[key] = Object.getPrototypeOf(copy[key]);
                             ProxyObjDict.get(obj).disabled = false;
                         }
-                        innerApply(obj[key], copy[key], depth-1);
+                        innerApply(obj[key], copy[key], depth - 1);
                     }
                 }
             }
         }
     }
-    innerApply(obj, value, depth, true);
+    innerApply(obj, value, depth + 1, true);
 }
 
-window.katzComm = {
+module.exports = {
     createServer,
     addListener,
     apply

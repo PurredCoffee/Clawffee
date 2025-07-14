@@ -48,6 +48,12 @@
     initial-value: #FFFFFF;
 }
 
+@keyframes details-show {
+    from {
+        opacity:0;
+    }
+}
+
 :root {
     --c: #FFFFFF;
     --cr: 255, 255, 255;
@@ -76,6 +82,9 @@ body:has(:not(.no-css) menu.show) {
 }
 
 *:not(.no-css) {
+    user-select: none;
+    -webkit-user-select: none;
+
     [primary],.primary {
         --c: var(--p);
         --cr: var(--pr);
@@ -538,12 +547,6 @@ body:has(:not(.no-css) menu.show) {
         background-size: 24px;
     }
 
-    @keyframes details-show {
-    from {
-        opacity:0;
-    }
-    }
-
     details[open] > *:not(summary) {
     animation: details-show 1500ms ease-in-out;
     }
@@ -582,10 +585,10 @@ body:has(:not(.no-css) menu.show) {
             linear-gradient(40deg, #010101, #0d0b0b);
         content: "";
         position: fixed;
-        top:-32px;
-        bottom: -32px;
-        left: -32px;
-        right: -32px;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
         filter: blur(32px);
         z-index: -10000000;
         border-radius: 1em;

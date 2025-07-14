@@ -42,9 +42,9 @@ module.exports = {
             return moduleByPath[property];
         },
         ownKeys(target) {
-            return Object.keys(target);
+            return Object.keys(moduleByPath);
         }
-    }), registerModuleByPath,
+    }), "#registerModuleByPath": registerModuleByPath,
 
     onFileCreate,fileCreate,
     onFileChange,fileChange,

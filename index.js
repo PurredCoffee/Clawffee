@@ -1,12 +1,6 @@
 const dependencyInstaller = require('./internal/dependencyInstaller');
 
-const worker = new Worker('./internal/dashboard.js');
-
-worker.onmessage = (ev) => {
-    if(ev.data === 'exit') {
-        process.exit();
-    }
-}
+require('./internal/server');
 
 dependencyInstaller.downloadDependencies('./plugins').then(() => {
     console.log("\n Clawffee Version 0.2.1");
