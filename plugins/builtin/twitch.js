@@ -11,7 +11,7 @@ const {
 } = require('../internal/internal');
 
 const { autoSavedJSON, encryptData, decryptData, readFileSyncDefault } = require("./files");
-const { setFunction, sharedServerData } = require("./server");
+const { setFunction, sharedServerData, openURL } = require("./server");
 const { createUnfailable } = require("./unfailable");
 
 if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
@@ -345,16 +345,7 @@ function addNew(main, scopes) {
                 connect();
             });
         });
-        res.end(`
-            <html>
-                <head>
-                    <meta http-equiv="refresh" content="0; url=${oauthURL}" />
-                </head>
-                <body>
-                    <p>Redirecting to <a href="${oauthURL}">Twitch OAuth</a>...</p>
-                </body>
-            </html>
-        `);
+        openURL(oauthURL);
     }
 }
 setFunction("/twitch/add/main", addNew(true, [

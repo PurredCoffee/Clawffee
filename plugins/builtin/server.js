@@ -122,7 +122,13 @@ server.listen(conf.port, "localhost", () => {
     console.log(`created server on ${conf.port}`);
 });
 
+function openURL(url) {
+    var start = (process.platform == 'darwin'? 'open': process.platform == 'win32'? 'start': 'xdg-open');
+    require('child_process').execFileSync(start, [url]);
+}
+
 module.exports = {
     setFunction,
-    sharedServerData
+    sharedServerData,
+    openURL
 }

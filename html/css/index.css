@@ -369,8 +369,10 @@ body:has(:not(.no-css) menu.show) {
     }
 
     label {
-        position: absolute;
-        translate: -1em .5em;
+        width: 0;
+        display: inline-block;
+        text-wrap: nowrap;
+        translate: 1em -1.8em;
         font-size: small;
     }
     input, select, button, textarea {
@@ -553,28 +555,38 @@ body:has(:not(.no-css) menu.show) {
         bottom: 2em;
         left: 2em;
         right: 2em;
-        backdrop-filter: blur(32px);
-        background-color: rgba(var(--pr), 5%);
         z-index: 200;
-        border-radius: 1em;
-        border: var(--c) 1px solid;
-        border-bottom-width: 3px;
         padding: 0;
         margin: 0;
         &.show {
             display: block;
         }
+        overflow: hidden;
+    }
+    menu::after {
+        z-index: 200;
+        border-radius: 1em;
+        border: var(--c) 1px solid;
+        border-bottom-width: 3px;
+        content: "";
+        position: fixed;
+        top: 32px;
+        bottom: 32px;
+        left: 32px;
+        right: 32px;
     }
     menu::before {
         background: 
+            linear-gradient(0deg, rgba(var(--pr), 5%), rgba(var(--pr), 5%)),
             linear-gradient(120deg, #09090f99, transparent),
-            linear-gradient(40deg, #01010199, #0d0b0b99);
-        position: fixed;
+            linear-gradient(40deg, #010101, #0d0b0b);
         content: "";
-        top:0;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        position: fixed;
+        top:-32px;
+        bottom: -32px;
+        left: -32px;
+        right: -32px;
+        filter: blur(32px);
         z-index: -10000000;
         border-radius: 1em;
     }
@@ -616,6 +628,7 @@ body:has(:not(.no-css) menu.show) {
             white-space: nowrap;
             word-wrap: normal;
             direction: ltr;
+            font-feature-settings: 'liga';
             -moz-font-feature-settings: 'liga';
             -moz-osx-font-smoothing: grayscale;
             font-variation-settings:

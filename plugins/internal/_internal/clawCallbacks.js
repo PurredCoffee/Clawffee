@@ -37,7 +37,14 @@ function onBlockPlugin(callback) {registerCallback('pluginBlock', callback)}
 function blockPlugin(fileName) {callback('pluginBlock', fileName)}
 
 module.exports = {
-    moduleByPath, registerModuleByPath,
+    moduleByPath: new Proxy({}, {
+        get(target, property, receiver) {
+            return moduleByPath[property];
+        },
+        ownKeys(target) {
+            return Object.keys(target);
+        }
+    }), registerModuleByPath,
 
     onFileCreate,fileCreate,
     onFileChange,fileChange,

@@ -1,6 +1,6 @@
 const dependencyInstaller = require('./internal/dependencyInstaller');
 
-const worker = new Worker('./test.js');
+const worker = new Worker('./internal/dashboard.js');
 
 worker.onmessage = (ev) => {
     if(ev.data === 'exit') {

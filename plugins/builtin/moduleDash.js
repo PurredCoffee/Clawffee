@@ -6,7 +6,7 @@ const { setFunction } = require("./server");
 const { clawCallbacks: { moduleByPath, moduleLoad, moduleUnload } } = require("../internal/internal");
 
 let loadTimeout = null;
-setFunction('/internal/moduleLoad', (searchParams, res) => {
+setFunction('/internal/moduleUnload', (searchParams, res) => {
     if (loadTimeout) {
         return;
     }
@@ -17,7 +17,7 @@ setFunction('/internal/moduleLoad', (searchParams, res) => {
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = false;
-    moduleUnload(module);
+    moduleUnload(path);
 });
 
 setFunction('/internal/moduleLoad', (searchParams, res) => {
@@ -31,7 +31,7 @@ setFunction('/internal/moduleLoad', (searchParams, res) => {
     const module = moduleByPath[path];
     if (!module) return;
     module.conf.enabled = true;
-    moduleLoad(module);
+    moduleLoad(path);
 });
 
 setFunction('/internal/setModulePos', (searchParams, res) => {
