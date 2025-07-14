@@ -62,7 +62,6 @@ const server = Bun.serve({
         }
 
         function wrapIncorrectData(res) {
-            console.log(res);
             if(res instanceof Response) return res;
             if(typeof res == 'string') return new Response(res);
             if(typeof res == 'object') return new Response(JSON.stringify(res));
