@@ -8,7 +8,7 @@ function requirePluginsRecursively(dir) {
     fs.readdirSync(dir).forEach(file => {
         const filePath = path.join(dir, file);
         const stat = fs.statSync(filePath);
-        if (stat.isDirectory()) {
+        if (stat.isDirectory() && !file.startsWith("_")) {
             requirePluginsRecursively(filePath);
         } else if (stat.isFile() && file.endsWith('.js')) {
             require(filePath);

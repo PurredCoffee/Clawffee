@@ -10,25 +10,13 @@ let requirements = {
     css: null,
     js: null
 };
-function buildHTMl() {
-    if(!requirements.html || !requirements.css || !requirements.js) return;
-    bakedhtml = requirements.html
-        .replace('<link rel="stylesheet" href="css/index.css">', `<style>${requirements.css}</style>`)
-        .replace('<script src="js/communication.js"></script>', `<script>${requirements.js}</script>`)
-    awaiters.forEach((val) => val(bakedhtml));
-}
-import('../html/dashboard.html', { with: {type: 'text'} }).then((text => {
-    requirements.html = text.default;
-    buildHTMl()
-}));
-import('../html/css/index.css', { with: {type: 'text'} }).then((text => {
-    requirements.css = text.default;
-    buildHTMl()
-}));
-import('../html/js/communication.js', { with: {type: 'text'} }).then((text => {
-    requirements.js = text.default;
-    buildHTMl()
-}));
+
+import('./htmlbuilder.js').then((baked) => {
+    bakedhtml = baked.default;
+    awaiters.forEach(element => {
+        element(new Response(bakedhtml, {headers: { "Content-Type": "text/html" }}))
+    });
+})
 
 const server = Bun.serve({
     port: 4444,
@@ -105,11 +93,12 @@ const server = Bun.serve({
             });
         },
         "/internal/dashboard/images/:image": (req) => {
-            console.log(req.params.image);
             try {
                 return new Response(Bun.file(`./images/${req.params.image}`));
             } catch (e) {
-                return new Response("404 not found");
+                return new Response("404 not found", {
+                    status: 404
+                });
             }
         }
     }
@@ -134,14 +123,6 @@ ServerListener["#setFunctionsObj"](functions);
 ServerListener['#setSharedServerData'](sharedServerData);
 
 console.log(`server running on port ${server.port}`);
-
-const worker = new Worker('./internal/dashboard.js');
-
-worker.onmessage = (ev) => {
-    if(ev.data === 'exit') {
-        process.exit();
-    }
-}
 
 module.exports = {
     sharedServerData
