@@ -14,8 +14,10 @@ cd build
 rm -rf .git
 rm -r .vscode/
 rm .gitignore
+
 rm -r assets/
 rm -r internal/
+rm -r html
 rm index.js
 rm README.md
 echo "{
