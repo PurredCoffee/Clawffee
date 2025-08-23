@@ -325,7 +325,11 @@ function createServer(obj={}) {
  * @param {boolean} activateFromParent - Should the callback be run when the value is changed through its parent?
  * @returns {ServerListener} - Listener Object
  */
-function addListener(server, path, callback, activateIfUnchanged=true, activateFromParent=true, suppressInitialSet=false, multiple=false) {
+function addListener(server, path, callback, config={ activateIfUnchanged: true, activateFromParent: true, suppressInitialSet: false, multiple: false }) {
+    const activateIfUnchanged = config.activateIfUnchanged ?? true;
+    const activateFromParent = config.activateFromParent ?? true;
+    const suppressInitialSet = config.suppressInitialSet ?? false;
+    const multiple = config.multiple ?? false;
     const parentPaths = getAllParentPaths(server);
     path = splitString(path);
     if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
