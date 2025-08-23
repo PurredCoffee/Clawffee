@@ -561,10 +561,10 @@ body:has(:not(.no-css) menu.show) {
         z-index: 200;
         padding: 0;
         margin: 0;
+        overflow: scroll;
         &.show {
             display: block;
         }
-        overflow: hidden;
     }
     menu::after {
         z-index: 200;
@@ -577,6 +577,7 @@ body:has(:not(.no-css) menu.show) {
         bottom: 32px;
         left: 32px;
         right: 32px;
+        pointer-events: none;
     }
     menu::before {
         background: 
@@ -602,6 +603,10 @@ body:has(:not(.no-css) menu.show) {
         border-radius: 1em;
         padding-inline: 20px;
         padding-block: 0.5em;
+        background: 
+            linear-gradient(0deg, rgba(var(--pr), 5%), rgba(var(--pr), 5%)),
+            linear-gradient(120deg, #09090f99, transparent),
+            linear-gradient(40deg, #010101, #0d0b0b);
     }
     menu>div {
         padding: 1em;

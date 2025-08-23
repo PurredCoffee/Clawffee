@@ -753,8 +753,8 @@
                                                     &MediumSpace;(<span redeem-template-id secondary>A8734-3984-DFS3-349823</span>)
                                                 </div>
                                             </td>
-                                            <td secondary><span redeem-template-owned success>Owned</span></td>
-                                            <td><div><button redeem-template-action-button danger>Delete</button></div></td>
+                                            <td secondary><span redeem-template-owned>Owned</span></td>
+                                            <td><div><button redeem-template-action-button>Delete</button></div></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -836,6 +836,7 @@
                                     }
                                 } else {
                                     btn.innerText = "Clone";
+                                    card.querySelector("[redeem-template-owned]").classList.add("success");
                                     btn.onclick = () => {
                                         fetch(`http://localhost:4444/twitch/cloneRedeem?${id}`);
                                     }
@@ -928,11 +929,16 @@
                 right: 12px;
                 text-align: right;
                 z-index: 10000;
+                pointer-events: none;
             }
 
             #log>* {
                 animation: log 10s forwards;
                 white-space: pre-line;
+                background: linear-gradient(to right,rgba(var(--cr), 5%)), linear-gradient(to right,#01010144);
+                width: fit-content;
+                margin-left: auto;
+                padding-left: 8px;
             }
         </style>
         <div id="log"></div>

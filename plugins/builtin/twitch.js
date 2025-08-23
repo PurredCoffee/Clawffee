@@ -241,7 +241,6 @@ async function connect() {
                             connectedUser.reply = connectedBots[name].reply;
                             try {
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
-                                    console.log(JSON.stringify({id: val.id, title: val.title, img: val.getImageUrl(2), managed: false}))
                                     connectionInfo.redeems[val.id] = {id: val.id, title: val.title, img: val.getImageUrl(2), managed: false};
                                 });
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, true)).forEach((val) => {
@@ -268,7 +267,7 @@ async function connect() {
             }
         }
     }
-    sharedServerData.internal.twitch = connectionInfo
+    sharedServerData.internal.twitch = connectionInfo;
     console.log("Connected to Twitch API with Twurple.");
     reloadPlugin(__filename);
 }
