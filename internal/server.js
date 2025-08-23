@@ -20,6 +20,7 @@ import('./htmlbuilder.js').then((baked) => {
 
 const server = Bun.serve({
     port: 4444,
+    hostname: "localhost",
     websocket: {
         async message(ws, message) {
         },

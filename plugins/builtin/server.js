@@ -1,7 +1,11 @@
 function openURL(url) {
+    url = encodeURI(url)
+    console.log(url)
+    console.log(process.platform)
     if(process.platform == 'win32') {
         try {
-                require('child_process').execFileSync('start', ["",url]);
+            // windows does not want to be safe so we run unsafe commands here
+            proc = require('child_process').exec(`start "" "${url}"`)
         } catch(e) {
             // ignore the error since explorer always returns 1
         }
