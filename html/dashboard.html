@@ -870,7 +870,7 @@
                                 twitchRedeemDiv.innerHTML = "";
                                 if (data.internal.twitch?.redeems)
                                     Object.keys(data.internal.twitch.redeems).sort((a,b) => {
-                                        return data.internal.twitch.redeems[a].name.localeCompare(data.internal.twitch.redeems[b].name)
+                                        return (data.internal.twitch.redeems[a].name ?? "").localeCompare((data.internal.twitch.redeems[b].name ?? ""))
                                     }).forEach((key) => {
                                         addRedeem(data.internal.twitch.redeems[key]);
                                     });
