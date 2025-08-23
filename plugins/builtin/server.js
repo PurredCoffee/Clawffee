@@ -1,5 +1,5 @@
 function openURL(url) {
-    var start = (process.platform == 'darwin'? 'open': process.platform == 'win32'? 'start': 'xdg-open');
+    var start = (process.platform == 'darwin'? 'open': process.platform == 'win32'? 'explorer': 'xdg-open');
     require('child_process').execFileSync(start, [url]);
 }
 
