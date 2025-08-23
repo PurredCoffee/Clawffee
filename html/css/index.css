@@ -607,6 +607,7 @@ body:has(:not(.no-css) menu.show) {
             linear-gradient(0deg, rgba(var(--pr), 5%), rgba(var(--pr), 5%)),
             linear-gradient(120deg, #09090f99, transparent),
             linear-gradient(40deg, #010101, #0d0b0b);
+            z-index: 100;
     }
     menu>div {
         padding: 1em;
