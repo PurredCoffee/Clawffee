@@ -11,6 +11,7 @@ git clone . build
 
 # delete unnecessary files
 cd build
+
 rm -rf .git
 rm -r .vscode/
 rm .gitignore
@@ -21,15 +22,10 @@ rm -r html
 rm index.js
 rm dashboard.js
 rm README.md
-echo "{
-  \"dependencies\": {
-  },
-  \"imports\": {
-    \"#helpers\": \"./plugins/builtin/helpers.js\",
-    \"#helper\": \"./plugins/builtin/helpers.js\"
-  }
-}" > package.json
 rm build.sh
+
+cp ../build_overrides/* .
+cp -r ../plugins/builtin/node_modules plugins/builtin/ 
 
 cd ..
 
