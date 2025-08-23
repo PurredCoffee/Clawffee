@@ -93,6 +93,12 @@ const server = Bun.serve({
                 awaiters.push(resolve);
             });
         },
+        "/internal/dashboard/images/undefined": (req) => {
+            return new Response("data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==");
+        },
+        "/favicon.ico": (req) => {
+            return new Response(Bun.file("assets/clawffee.ico"))
+        },
         "/internal/dashboard/images/:image": (req) => {
             try {
                 return new Response(Bun.file(`./images/${req.params.image}`));
