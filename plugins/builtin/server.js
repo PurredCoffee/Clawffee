@@ -1,9 +1,12 @@
 function openURL(url) {
-    try {
-        var start = (process.platform == 'darwin'? 'open': process.platform == 'win32'? 'explorer': 'xdg-open');
-        require('child_process').execFileSync(start, [url]);
-    } catch(e) {
-        // ignore the error since explorer always returns 1
+    if(process.platform == 'win32') {
+        try {
+                require('child_process').execFileSync('start', ["",url]);
+        } catch(e) {
+            // ignore the error since explorer always returns 1
+        }
+    } else if([process.platform == 'darwin']) {
+        require('child_process').execFileSync('open', [url]);
     }
 }
 
