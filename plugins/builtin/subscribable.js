@@ -80,6 +80,17 @@ const ParentDict = new WeakMap();
  */
 const ListenerDict = new WeakMap();
 
+/**
+ * Splits a string into a path
+ * @param {string[]|string} path 
+ * @returns {string[]}
+ */
+function splitString(path) {
+    if(typeof path != "string") {
+        return path;
+    }
+    return path.split(/\.|\[|\]/).filter(Boolean);
+}
 
 /* ------------------------------- PARENTDICT ------------------------------- */
 
@@ -304,6 +315,7 @@ function createServer(obj) {
  */
 function addListener(server, path, callback, activateIfUnchanged=true, activateFromParent=true, multiple=false) {
     const parentPaths = getAllParentPaths(server);
+    path = splitString(path);
     if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
     if(!(callback instanceof Function)) throw TypeError(`callback is of type ${typeof callback} and not a function`);
 
@@ -372,6 +384,7 @@ function addListener(server, path, callback, activateIfUnchanged=true, activateF
  * @param {value} value - value to apply on the server
  */
 function apply(server, path, value) {
+    path = splitString(path);
     if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
     if(path.length > 0) {
         // find the object we need to edit

@@ -18,4 +18,4 @@ w.onReady(() => {
   w.navigate('http://localhost:4444/internal/dashboard/');
   w.run();
   postMessage("exit");
-})
+});
