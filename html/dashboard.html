@@ -696,6 +696,9 @@
                                 justify-content: flex-end;
                                 align-items: center;
                             }
+                            .redeem [redeem-template-id] {
+                                -webkit-user-select: text;
+                            }
                         </style>
                         <button onclick="fetch('http://localhost:4444/twitch/add/main')">Set main user</button><button onclick="fetch('http://localhost:4444/twitch/add/bot')">Add new bot</button>
                         <div class="usergrid" id="twitch-usergrid">
