@@ -54,12 +54,14 @@ server.a.a = 5
  * @property {ServableListener} callback
  * @property {Boolean} activateFromParent
  * @property {Boolean} activateIfUnchanged
+ * @property {Boolean} suppressInitialSet
  */
 /**
  * @typedef ListenerData
  * 
  * @property {Map<string, Listener[]>} ownListeners
  * @property {Map<string, ListenerData>} childListeners
+ * @property {boolean?} initialSet
  */
 
 /**
@@ -156,12 +158,16 @@ function getAllParentPaths(value, traveled=new WeakSet()) {
  * @param {ListenerData} listener 
  * @param {any} value 
  */
-function callChildren(listener, value, oldValue) {
+function callChildren(listener, value, oldValue, initiallyset) {
     listener.ownListeners.forEach((v, key) => {
         const nV = typeof value == 'object'?value[key]:undefined;
         const oV = typeof oldValue == 'object'?oldValue[key]:undefined;
         v.forEach(v => {
-            if(!v.activateFromParent || !v.activateIfUnchanged && oV === nV) return;
+            if(
+                !v.activateFromParent 
+                || (!v.activateIfUnchanged && oV === nV)
+                || (v.suppressInitialSet && initiallyset)
+            ) return;
             v.callback([], nV, oV, nV);
         });
     });
@@ -188,6 +194,8 @@ function callAllAffected(obj, property=null, originalValue) {
     parentPaths.forEach((value) => {
         let server = value[0];
         let listener = ListenerDict.get(server);
+        const initiallyset = listener.initialSet;
+        listener.initialSet = false;
         let path = value[1];
         if(property)
             path.push(property);
@@ -195,14 +203,17 @@ function callAllAffected(obj, property=null, originalValue) {
             const curpath = path.shift();
             // call parents that a child at path has changed
             (listener.ownListeners.get(curpath) ?? []).forEach(v => {
-                if(!v.activateIfUnchanged && originalValue === newValue) return;
+                if(
+                    !v.activateIfUnchanged && originalValue === newValue
+                    || v.suppressInitialSet && initiallyset
+                ) return;
                 v.callback(path, newValue, originalValue, server[curpath]);
             });
             listener = listener.childListeners.get(curpath)
             server = server[curpath];
         }
         if(listener) {
-            callChildren(listener, server, originalValue);
+            callChildren(listener, server, originalValue, initiallyset);
         }
     });
 }
@@ -286,11 +297,12 @@ function createProxy(obj) {
  * @param {T} obj - The initial data to be used for the server proxy.
  * @returns {T} The proxy object representing the server.
  */
-function createServer(obj) {
+function createServer(obj={}) {
     const proxy = createProxy(obj);
     const root = {root: proxy};
     ParentDict.get(proxy).push([root, "root"])
     ListenerDict.set(root, createEmptyListener())
+    ListenerDict.get(root).initialSet = true;
     return proxy;
 }
 
@@ -311,7 +323,7 @@ function createServer(obj) {
  * @param {boolean} activateFromParent - Should the callback be run when the value is changed through its parent?
  * @returns {ServerListener} - Listener Object
  */
-function addListener(server, path, callback, activateIfUnchanged=true, activateFromParent=true, multiple=false) {
+function addListener(server, path, callback, activateIfUnchanged=true, activateFromParent=true, suppressInitialSet=false, multiple=false) {
     const parentPaths = getAllParentPaths(server);
     path = splitString(path);
     if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
@@ -350,6 +362,7 @@ function addListener(server, path, callback, activateIfUnchanged=true, activateF
             callback: callback,
             activateIfUnchanged: activateIfUnchanged,
             activateFromParent: activateFromParent,
+            suppressInitialSet: suppressInitialSet
         }
         listener.ownListeners.get(abspath[0]).push(callbackObj);
         const callbackRetObj = {
