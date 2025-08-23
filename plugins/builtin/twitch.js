@@ -268,40 +268,6 @@ async function connect() {
             }
         }
     }
-
-    connectionInfo.redeems = {
-        "0748ce7c-a1b9-4510-874d-953c7c4dbe70": {"id":"0748ce7c-a1b9-4510-874d-953c7c4dbe70","title":"Feed the Dragon","img":"https://static-cdn.jtvnw.net/custom-reward-images/default-2.png","managed":false},
-        "3a78b9fe-7fa5-4a07-a9f3-cb402b138c0d": {"id":"3a78b9fe-7fa5-4a07-a9f3-cb402b138c0d","title":"Suggest a Poll","img":"https://static-cdn.jtvnw.net/custom-reward-images/bulb-2.png","managed":false},
-        "1c47f2c1-9a55-4c4f-9feb-242a00b3b194": {"id":"1c47f2c1-9a55-4c4f-9feb-242a00b3b194","title":"Fireworks!","img":"https://static-cdn.jtvnw.net/custom-reward-images/default-2.png","managed":false},
-        "1c868368-df29-4c70-aaf1-9626d3fcb01c": {"id":"1c868368-df29-4c70-aaf1-9626d3fcb01c","title":"Let's Make a Level","img":"https://static-cdn.jtvnw.net/custom-reward-images/default-2.png","managed":false},
-        "2a591ee0-76c3-42de-afb1-508d91ac9cd8": {"id":"2a591ee0-76c3-42de-afb1-508d91ac9cd8","title":"Super Expert","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/2a591ee0-76c3-42de-afb1-508d91ac9cd8/49893aca-91ba-48bb-8319-6af03a367080/custom-2.png","managed":false},
-        "32b3f7bc-7e2d-43a9-92c8-73e70bf55eac": {"id":"32b3f7bc-7e2d-43a9-92c8-73e70bf55eac","title":"FaxonZeta 's VIP","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/32b3f7bc-7e2d-43a9-92c8-73e70bf55eac/3bee4498-78c2-431f-8598-10645e85d7d9/custom-2.png","managed":false},
-        "35297971-8bdf-4f0d-b5db-1ca9d5aa35e8": {"id":"35297971-8bdf-4f0d-b5db-1ca9d5aa35e8","title":"Throw Something","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/35297971-8bdf-4f0d-b5db-1ca9d5aa35e8/0588cd38-890b-4e9a-a21b-f766f7ec4420/custom-2.png","managed":false},
-        "3a78b9fe-7fa5-4a07-a9f3-cb402b138c0d": {"id":"3a78b9fe-7fa5-4a07-a9f3-cb402b138c0d","title":"Suggest a Poll","img":"https://static-cdn.jtvnw.net/custom-reward-images/bulb-2.png","managed":false},
-        "47014161-05e4-4dd7-abf1-e70299bd3468": {"id":"47014161-05e4-4dd7-abf1-e70299bd3468","title":"Gift Sub","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/47014161-05e4-4dd7-abf1-e70299bd3468/abd63474-8346-424a-b5cb-2dfb30f0843c/custom-2.png","managed":false},
-        "5d7cd6bf-ddf9-4d66-836f-642f58e4d51f": {"id":"5d7cd6bf-ddf9-4d66-836f-642f58e4d51f","title":"Change Character","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/5d7cd6bf-ddf9-4d66-836f-642f58e4d51f/633efcc4-7e3d-41c7-9adb-47beaae67dc6/custom-2.png","managed":false},
-        "657dc93f-f766-41fc-85e5-7bf4fa5b28d6": {"id":"657dc93f-f766-41fc-85e5-7bf4fa5b28d6","title":"Emote Only Mode","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/657dc93f-f766-41fc-85e5-7bf4fa5b28d6/8f14d2c1-d4c5-440c-b362-7dfc7878f0dc/custom-2.png","managed":false},
-        "660e4e71-e4b8-4311-aa1f-3270ba8742cf": {"id":"660e4e71-e4b8-4311-aa1f-3270ba8742cf","title":"Bad fox, bad!","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/660e4e71-e4b8-4311-aa1f-3270ba8742cf/9b949843-6615-4c6d-9c85-ba0e338ae73d/custom-2.png","managed":false},
-        "6de870a1-42dd-4f72-8b4b-f04945af8f46": {"id":"6de870a1-42dd-4f72-8b4b-f04945af8f46","title":"Play My Level(s)!","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/6de870a1-42dd-4f72-8b4b-f04945af8f46/a87e9cae-08db-483d-87bb-52ba0e8808d9/custom-2.png","managed":false},
-        "75ab4d39-508c-43fa-ab00-1364f5a4e330": {"id":"75ab4d39-508c-43fa-ab00-1364f5a4e330","title":"Pet the Foxes","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/75ab4d39-508c-43fa-ab00-1364f5a4e330/5d897f39-fdc6-41b3-bf6e-7b45d03adb19/custom-2.png","managed":false},
-        "7a319179-d235-4d6f-b48f-bea5510c696f": {"id":"7a319179-d235-4d6f-b48f-bea5510c696f","title":"Gift Sub-old","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/7a319179-d235-4d6f-b48f-bea5510c696f/ab9d330e-3e01-4507-b99c-efb8696dee90/custom-2.png","managed":false},
-        "7e58ceb9-80c7-4410-a447-283d2bc869f7": {"id":"7e58ceb9-80c7-4410-a447-283d2bc869f7","title":"Water the Foxes","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/7e58ceb9-80c7-4410-a447-283d2bc869f7/876ce77c-14fb-46f7-bd97-36d4adfe5dbb/custom-2.png","managed":false},
-        "89793a59-1d11-4ff8-9e0f-7158ffc532ab": {"id":"89793a59-1d11-4ff8-9e0f-7158ffc532ab","title":"FaxonZeta 's VIPCOPY","img":"https://static-cdn.jtvnw.net/custom-reward-images/default-2.png","managed":false},
-        "950c67b7-d606-41b1-9b47-0fc719b9bed1": {"id":"950c67b7-d606-41b1-9b47-0fc719b9bed1","title":"1st: LavFox","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/950c67b7-d606-41b1-9b47-0fc719b9bed1/023557c7-2d95-404d-9cb6-b1c03f99267a/custom-2.png","managed":false},
-        "a33d36b3-53ba-4a2d-97b8-a15f525ec822": {"id":"a33d36b3-53ba-4a2d-97b8-a15f525ec822","title":"Comments On/Off","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/a33d36b3-53ba-4a2d-97b8-a15f525ec822/7f1b7be1-f8fe-42b4-85d8-fbc0b57d3c4d/custom-2.png","managed":false},
-        "b221b55f-ab1b-409b-a536-5551b9295e49": {"id":"b221b55f-ab1b-409b-a536-5551b9295e49","title":"New Arrivals","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/b221b55f-ab1b-409b-a536-5551b9295e49/5a179046-1052-45bf-b7be-1168db1dd1d1/custom-2.png","managed":false},
-        "b4db4bd0-1fe4-45ac-86ff-0db523d5debe": {"id":"b4db4bd0-1fe4-45ac-86ff-0db523d5debe","title":"Eat your Blueberries","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/b4db4bd0-1fe4-45ac-86ff-0db523d5debe/e071a7d9-764d-49b7-9133-b598b9631c56/custom-2.png","managed":false},
-        "c3033f3d-a644-42c8-a6f5-f7c46363d977": {"id":"c3033f3d-a644-42c8-a6f5-f7c46363d977","title":"Draw a comment!","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/c3033f3d-a644-42c8-a6f5-f7c46363d977/5649104d-a75a-49f8-896d-203688e5ee47/custom-2.png","managed":false},
-        "c317d9b3-3592-480e-a89a-5357eb6043a1": {"id":"c317d9b3-3592-480e-a89a-5357eb6043a1","title":"I'll draw you actual art","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/c317d9b3-3592-480e-a89a-5357eb6043a1/fd9859ff-a876-4421-b621-3bd8be09b8a7/custom-2.png","managed":false},
-        "c49936b8-eec5-484c-8376-702cc01e8790": {"id":"c49936b8-eec5-484c-8376-702cc01e8790","title":"Highlight a Moment","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/c49936b8-eec5-484c-8376-702cc01e8790/ff847955-537b-4953-bedb-76e279d72c0d/custom-2.png","managed":false},
-        "cb2436a4-d2d2-4631-83df-290bd91b51dc": {"id":"cb2436a4-d2d2-4631-83df-290bd91b51dc","title":"Play Balatro","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/cb2436a4-d2d2-4631-83df-290bd91b51dc/b6bad27a-3264-4804-8143-1bd595aff362/custom-2.png","managed":false},
-        "cbf5d992-1e21-48ce-9d8d-982e77a74ff2": {"id":"cbf5d992-1e21-48ce-9d8d-982e77a74ff2","title":"Change Avatar","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/cbf5d992-1e21-48ce-9d8d-982e77a74ff2/ac5f5db4-8711-4d8b-9b53-ead14cae1c95/custom-2.png","managed":false},
-        "d9dc4683-52a8-4855-bae8-8fca4760d86a": {"id":"d9dc4683-52a8-4855-bae8-8fca4760d86a","title":"Dodge, quick!","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/d9dc4683-52a8-4855-bae8-8fca4760d86a/95b00eed-c685-4b31-8400-65036dd256a9/custom-2.png","managed":false},
-        "dc5822bc-4268-4416-be00-562ea158d9ca": {"id":"dc5822bc-4268-4416-be00-562ea158d9ca","title":"Endless Expert","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/dc5822bc-4268-4416-be00-562ea158d9ca/f23d94b1-3335-49b0-a49c-c191f2c7cb08/custom-2.png","managed":false},
-        "e05143f2-48cb-4eb9-8416-7fae63aa7168": {"id":"e05143f2-48cb-4eb9-8416-7fae63aa7168","title":"It's time to D‑D‑DUEL!","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/e05143f2-48cb-4eb9-8416-7fae63aa7168/548d3270-76b9-4f7e-bb9a-32676208328c/custom-2.png","managed":false},
-        "e3e84800-0cbe-4e9f-90d8-7a377efc8e65": {"id":"e3e84800-0cbe-4e9f-90d8-7a377efc8e65","title":"Choose Next Jackbox Game!","img":"https://static-cdn.jtvnw.net/custom-reward-images/default-2.png","managed":false},
-        "e9de8b54-a956-49b0-8073-5b8ebbcdd0e2": {"id":"e9de8b54-a956-49b0-8073-5b8ebbcdd0e2","title":"Smooch the Foxes","img":"https://static-cdn.jtvnw.net/custom-reward-images/23425107/e9de8b54-a956-49b0-8073-5b8ebbcdd0e2/61f4afe6-f769-4a1a-92e3-07ea53b5ae40/custom-2.png","managed":false},
-    };
     sharedServerData.internal.twitch = connectionInfo;
     console.log("Connected to Twitch API with Twurple.");
     reloadPlugin(__filename);
@@ -523,7 +489,7 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
                 maxRedemptionsPerUserPerStream: redeem.maxRedemptionsPerUserPerStream,
                 userInputRequired: redeem.userInputRequired
             });
-            sharedServerData.twitch.redeems[cloned.id] = {...cloned, img: undefined};
+            sharedServerData.internal.twitch.redeems[cloned.id] = {...cloned, img: undefined};
 
             let redeemName = redeem.title;
             redeemName.replaceAll(" ", "_");
