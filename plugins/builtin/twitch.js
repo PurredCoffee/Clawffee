@@ -505,14 +505,11 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
     }
     (async () => {
         try {
-            console.log("bark")
             const redeem = await connectedUser.api.channelPoints.getCustomRewardById(connectedUser.id, redeemId);
-            console.log("bark")
             if (!redeem) {
                 console.error(`Could not get redeem ${redeemId}`);
                 return;
             }
-            console.log("bark")
             const cloned = await connectedUser.api.channelPoints.createCustomReward(connectedUser.id, {
                 title: redeem.title + " (Clone)",
                 cost: redeem.cost,
@@ -525,12 +522,9 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
                 maxRedemptionsPerUserPerStream: redeem.maxRedemptionsPerUserPerStream,
                 userInputRequired: redeem.userInputRequired
             });
-            console.log("bark")
             sharedServerData.twitch.redeems[cloned.id] = {...cloned, img: undefined};
-            console.log("bark")
 
             let redeemName = redeem.title;
-            console.log("bark")
             redeemName.replaceAll(" ", "_");
             redeemName.replaceAll(/[^a-zA-Z0-9_$]+/g,"");
             if(redeemName.match(/^[0-9]/)) {
@@ -539,10 +533,8 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
             if(redeemName == "") {
                 redeemName = "$" + redeem.id;
             }
-            console.log("bark")
             extraData.redeems[redeemName] = redeem.id;
-            fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData))
-            console.log("bark")
+            fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
             console.log(`Cloned redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not clone redeem ${redeemId}`);

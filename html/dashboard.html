@@ -832,13 +832,13 @@
                                     btn.innerText = "Delete";
                                     btn.classList.add("danger");
                                     btn.onclick = () => {
-                                        fetch(`http://localhost:4444/twitch/deleteRedeem?${id}`);
+                                        fetch(`http://localhost:4444/twitch/deleteRedeem?redeemId=${id}`);
                                     }
                                 } else {
                                     btn.innerText = "Clone";
                                     card.querySelector("[redeem-template-owned]").classList.add("success");
                                     btn.onclick = () => {
-                                        fetch(`http://localhost:4444/twitch/cloneRedeem?${id}`);
+                                        fetch(`http://localhost:4444/twitch/cloneRedeem?redeemId=${id}`);
                                     }
                                 }
                                 twitchRedeemDiv.appendChild(card);
