@@ -380,10 +380,10 @@ function addListener(server, path, callback, activateIfUnchanged=true, activateF
 /**
  * Apply a value to a server object at a given path
  * @param {object} server - server object to be set 
- * @param {string[]|string} path - path at which to apply the value
  * @param {value} value - value to apply on the server
+ * @param {string[]|string} path - path at which to apply the value
  */
-function apply(server, path, value) {
+function apply(server, value, path) {
     path = splitString(path);
     if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
     if(path.length > 0) {
