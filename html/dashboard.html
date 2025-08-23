@@ -5,8 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clawffee</title>
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none"><defs>
+        <symbol id="move-icon" viewBox="0 0 256 256">
+            <rect width="256" height="256" fill="none"/><rect x="54.46" y="54.46" width="147.08" height="147.08" transform="translate(-53.02 128) rotate(-45)" opacity="0.2"/><line x1="128" y1="160" x2="128" y2="232" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="128" y1="96" x2="128" y2="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="96 56 128 24 160 56" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="96 200 128 232 160 200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="96" y1="128" x2="24" y2="128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="160" y1="128" x2="232" y2="128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="200 96 232 128 200 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="56 96 24 128 56 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
+        </symbol>
+        <symbol id="pause-icon" viewBox="0 0 256 256">
+            <rect width="256" height="256" fill="none"/><rect x="152" y="40" width="56" height="176" rx="8" opacity="0.2"/><rect x="48" y="40" width="56" height="176" rx="8" opacity="0.2"/><rect x="152" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><rect x="48" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
+        </symbol>
+        <symbol id="play-icon" viewBox="0 0 256 256">
+            <rect width="256" height="256" fill="none"/><path d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z" opacity="0.2"/><path d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
+        </symbol>
+        <symbol id="close-icon" viewBox="0 0 256 256">
+            <rect width="256" height="256" fill="none"/><line x1="200" y1="56" x2="56" y2="200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="200" y1="200" x2="56" y2="56" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
+        </symbol>
+    </defs></svg>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
     <link rel="stylesheet" href="css/index.css">
     <style>
         .material-symbols-outlined {
@@ -29,6 +42,34 @@
             return div.children[0];
         }
         const sharedServerData = katzComm.createServer({ internal: {} });
+        function wrapConsoleFunction(name, copy) {
+            return (...data) => {
+                copy(...data);
+                sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ').replace('\n', '\r\n');
+            }
+        }
+
+        const olddebug = console.debug;
+        console.debug = wrapConsoleFunction("debug", olddebug);
+
+        const oldlog = console.log;
+        console.log = wrapConsoleFunction("log", oldlog);
+
+        const oldinfo = console.info;
+        console.info = wrapConsoleFunction("info", oldinfo);
+
+        const oldwarn = console.warn;
+        console.warn = wrapConsoleFunction("warn", oldwarn);
+
+        const olderr = console.error;
+        console.error = wrapConsoleFunction("error", olderr);
+        window.onunhandledrejection = event => {
+            console.error(`${event.reason}`);
+        };
+
+        window.onerror = function(message, source, lineNumber, colno, error) {
+            console.error(`${message}\n${error.stack}`);
+        };
         let firstmessage = null;
         let firstsubs = [];
         function onfirstSub(callback) {
@@ -172,6 +213,7 @@
                 border: none;
                 transition: --c 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
                 text-shadow: transparent 2px 2px 0px;
+                height: 24px;
                 padding: 0.2em;
                 margin-inline: 0em;
                 --c: #00000000;
@@ -248,7 +290,20 @@
             }
         </style>
         <h3 style="margin-top: 0;">Commands<span id="commandpath"></span></h3>
-        <div id="sub-modules"></div>
+        <div id="sub-modules">
+            <div id="module-template" template>
+                <div class="btn-text" template-name></div>
+                <div class="btn-action">
+                    <button template-move><span class="material-symbols-outlined"><svg width="24" height="24" version="2.0">
+                        <use href="#move-icon" />
+                    </svg></span></button>
+                    <button template-pause><span class="material-symbols-outlined"><svg width="24" height="24" version="2.0">
+                        <use href="#pause-icon" template-pause-icon/>
+                    </svg></span></button>
+                </div>
+                <div class="btn-bg" template-background></div>
+            </div>
+        </div>
         <div id="cur-module" style="display: none;">
             <hr info>
             <span>
@@ -265,7 +320,7 @@
         </div>
         <script>
             function lockButton(path, enable) {
-                let url = new URL(enable ? "internal/loadModule" : "internal/unloadModule", 'http://localhost:4444/');
+                let url = new URL(enable ? "/internal/moduleLoad" : "/internal/moduleUnload", 'http://localhost:4444/');
                 url.searchParams.append("path", path);
                 fetch(url);
             }
@@ -275,7 +330,7 @@
                         if (map.has(`${r - 1},${c - 1}`)) return false;
                     }
                 }
-                let url = new URL("internal/setModulePos", 'http://localhost:4444/');
+                let url = new URL("/internal/setModulePos", 'http://localhost:4444/');
                 url.searchParams.append("path", path);
                 url.searchParams.append("left", left);
                 url.searchParams.append("top", top);
@@ -311,6 +366,10 @@
                 }
             }
 
+            const module_template = document.getElementById('module-template');
+            module_template.removeAttribute('template');
+            module_template.remove();
+
             function addModule(name, module, left, top, w, h) {
                 let moduleName = module.conf.name;
                 if (!moduleName) {
@@ -318,22 +377,16 @@
                     moduleName = moduleName.replace(/[_\.\-]/g, ' ');
                     moduleName = moduleName.replace(/\b\w/g, c => c.toUpperCase());
                 }
-                let divider = createDiv(`<div><div class="btn-text">${Object.keys(module.children).length ? `&gt; <span>${moduleName}</span>` : moduleName}</div>
-                    <div class="btn-action"><button><span class="material-symbols-outlined">
-                        open_with
-                    </span></button>
-                    <button><span class="material-symbols-outlined">
-                        lock
-                    </span></button></div>
-                    <div class="btn-bg"></div>
-                </div>`);
-                divider.classList = `${module.active ? '' : 'inactive '}${Object.keys(module.children).length ? 'folder ' : ''}`;
-                divider.style.gridColumn = `${left} / span ${w}`;
-                divider.style.gridRow = `${top} / span ${h}`;
-                divider.children[1].children[1].classList = (module.conf.enabled ? '' : 'disabled ');
+                let button = module_template.cloneNode(true);
+                button.classList = `${module.active ? '' : 'inactive '}${Object.keys(module.children).length ? 'folder ' : ''}`;
+                button.style.gridColumn = `${left} / span ${w}`;
+                button.style.gridRow = `${top} / span ${h}`;
+                button.querySelector('[template-pause]').classList = (module.conf.enabled ? '' : 'disabled ');
+                button.querySelector('[template-pause-icon]').href.baseVal = (module.conf.enabled ? '#pause-icon' : '#play-icon');
+                button.querySelector('[template-background]').style.backgroundImage = `url("images/${module.conf.img}")`;
+
                 let path = module.path;
                 let enabled = !module.conf.enabled;
-                divider.children[2].style.backgroundImage = `url("images/${module.conf.img}")`;
                 let disabled = false;
 
                 let clickListener;
@@ -366,12 +419,12 @@
                     }
                 }
 
-                divider.children[1].children[1].addEventListener('click', (event) => { lockButton(path, enabled); event.stopPropagation(); });
-                divider.children[1].children[0].addEventListener('click', (event) => {
+                button.querySelector('[template-pause]').addEventListener('click', (event) => { lockButton(path, enabled); event.stopPropagation(); });
+                button.querySelector('[template-move]').addEventListener('click', (event) => {
                     deleteModule(module);
-                    divider.removeEventListener('click', clickListener);
+                    button.removeEventListener('click', clickListener);
                     event.stopPropagation();
-                    divider.classList.add('move');
+                    button.classList.add('move');
                     let col = 1;
                     let row = 1;
                     let moveFollower = (e) => {
@@ -382,17 +435,17 @@
                         const rowHeight = 140;
                         col = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
                         row = Math.max(0, Math.floor(y / rowHeight));
-                        divider.style.gridColumn = `${col + 1} / span 1`;
-                        divider.style.gridRow = `${row + 1} / span 1`;
+                        button.style.gridColumn = `${col + 1} / span 1`;
+                        button.style.gridRow = `${row + 1} / span 1`;
                     }
                     moveFollower(event);
-                    document.addEventListener('mousemove', moveFollower);
+                    moduleParent.addEventListener('mousemove', moveFollower);
                     let mouseDown = (event) => {
                         event.stopPropagation();
-                        divider.classList.remove('move');
-                        divider.classList.add('resize');
-                        document.removeEventListener('mousemove', moveFollower);
-                        document.removeEventListener('mousedown', mouseDown);
+                        button.classList.remove('move');
+                        button.classList.add('resize');
+                        moduleParent.removeEventListener('mousemove', moveFollower);
+                        moduleParent.removeEventListener('mousedown', mouseDown);
                         let ncol = 1;
                         let nrow = 1;
                         moveFollower = (e) => {
@@ -403,48 +456,49 @@
                             const rowHeight = 140;
                             ncol = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
                             nrow = Math.max(0, Math.floor(y / rowHeight));
-                            divider.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                            divider.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
+                            button.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
+                            button.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
                         }
                         moveFollower(event);
-                        document.addEventListener('mousemove', moveFollower);
+                        moduleParent.addEventListener('mousemove', moveFollower);
                         mouseDown = (e) => {
                             e.stopPropagation();
-                            document.removeEventListener('mousemove', moveFollower);
-                            document.removeEventListener('mouseup', mouseDown);
-                            moduleParent.removeEventListener('mousemove', mouseLeave);
-                            divider.classList.remove('move');
-                            divider.classList.remove('resize');
+                            moduleParent.removeEventListener('mousemove', moveFollower);
+                            moduleParent.removeEventListener('mouseup', mouseDown);
+                            moduleParent.removeEventListener('mouseleave', mouseLeave);
+                            button.classList.remove('move');
+                            button.classList.remove('resize');
                             if (!moveButton(module.path, Math.min(col, ncol) + 1, Math.min(row, nrow) + 1, Math.abs(col - ncol) + 1, Math.abs(row - nrow) + 1)) {
-                                divider.style.gridColumn = `${left} / span ${w}`;
-                                divider.style.gridRow = `${top} / span ${h}`;
+                                button.style.gridColumn = `${left} / span ${w}`;
+                                button.style.gridRow = `${top} / span ${h}`;
                                 placeModule(module);
                             } else {
-                                divider.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                                divider.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
+                                button.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
+                                button.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
                             }
-                            setTimeout(() => divider.addEventListener('click', clickListener), 500);
+                            setTimeout(() => button.addEventListener('click', clickListener), 500);
                         }
                         document.addEventListener('mouseup', mouseDown);
                     }
-                    document.addEventListener('mousedown', mouseDown);
+                    moduleParent.addEventListener('mousedown', mouseDown);
                     let mouseLeave = () => {
-                        document.removeEventListener('mousemove', moveFollower);
-                        document.removeEventListener('mousedown', mouseDown);
-                        document.removeEventListener('mouseup', mouseDown);
-                        moduleParent.removeEventListener('mousemove', mouseLeave);
-                        divider.classList.remove('move');
-                        divider.classList.remove('resize');
-                        divider.style.gridColumn = `${left} / span ${w}`;
-                        divider.style.gridRow = `${top} / span ${h}`;
+                        moduleParent.removeEventListener('mousemove', moveFollower);
+                        moduleParent.removeEventListener('mousedown', mouseDown);
+                        moduleParent.removeEventListener('mouseup', mouseDown);
+                        moduleParent.removeEventListener('mouseleave', mouseLeave);
+                        button.classList.remove('move');
+                        button.classList.remove('resize');
+                        button.style.gridColumn = `${left} / span ${w}`;
+                        button.style.gridRow = `${top} / span ${h}`;
                         placeModule(module);
-                        divider.addEventListener('click', clickListener);
+                        button.addEventListener('click', clickListener);
                     }
                     moduleParent.addEventListener('mouseleave', mouseLeave);
                 });
-                divider.addEventListener('click', clickListener);
-                moduleParent.appendChild(divider);
-                divider.children[0].style.scale = Math.min(1, (divider.clientWidth - 40) / divider.children[0].clientWidth);
+                button.addEventListener('click', clickListener);
+                moduleParent.appendChild(button);
+                button.querySelector('[template-name]').innerText = Object.keys(module.children).length ? `&gt; <span>${moduleName}</span>` : moduleName;
+                button.querySelector('[template-name]').style.scale = Math.min(1, (button.clientWidth - 40) / button.children[0].clientWidth);
             }
 
             function printModules(data) {
@@ -457,7 +511,7 @@
                         if (!module) {
                             continue;
                         }
-                        if (module.conf.pos && !module.conf.hide) {
+                        if (module.conf?.pos && !module.conf?.hide) {
                             let left = Math.min(8, module.conf.pos.left ?? 1);
                             let w = Math.min(9 - left, module.conf.pos.w ?? 1);
                             let top = module.conf.pos.top ?? 1;
@@ -473,13 +527,15 @@
                         if (!module) {
                             continue;
                         }
-                        let moduleName = `${Object.keys(module.children).length ? ">&NonBreakingSpace;" : ""}${name.split('.js')[0]}`;
+                        let moduleName = `${Object.keys(module.children ?? {}).length ? ">&NonBreakingSpace;" : ""}${name.split('.js')[0]}`;
                         let style = '';
-                        if (!module.conf.pos) {
+                        if (!module.conf?.pos && !module.conf?.hide) {
+                            console.log(module);
                             while (map.has(`${Math.trunc(firstfree / 8)},${firstfree % 8}`)) {
                                 firstfree++;
                             }
                             moveButton(module.path, Math.trunc(firstfree % 8) + 1, Math.trunc(firstfree / 8) + 1, 1, 1);
+                            console.log(module);
                             return
                         }
                     }
@@ -498,7 +554,7 @@
                 }
                 document.getElementById('btn-name').value = moduleName;
                 document.getElementById('btn-name').onblur = () => {
-                    let url = new URL('internal/setModuleName', 'http://localhost:4444/');
+                    let url = new URL('/internal/setModuleName', 'http://localhost:4444/');
                     url.searchParams.append('path', curPath);
                     url.searchParams.append('name', event.target.value);
                     fetch(url, {
@@ -515,7 +571,7 @@
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = function (e) {
-                            let url = new URL('internal/setModuleImage', 'http://localhost:4444/');
+                            let url = new URL('/internal/setModuleImage', 'http://localhost:4444/');
                             url.searchParams.append('path', curPath);
                             fetch(url, {
                                 method: 'POST',
@@ -532,8 +588,8 @@
             let modpath = [];
             let active = "";
             let curPath = "";
-            function updateModuleDisplay() {
-                let root = sharedServerData.internal.loadedmodules;
+            function updateModuleDisplay(root) {
+                if(root == undefined) return;
                 modpath.forEach(e => {
                     root = root.children[e] ?? root;
                 });
@@ -550,10 +606,10 @@
             }
 
             onfirstSub((data) => {
-                printModules(data.internal.loadedmodules.children);
+                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
             })
             const modsL = katzComm.addListener(sharedServerData, "internal.loadedmodules", (path, newData, oldData) => {
-                updateModuleDisplay();
+                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
             });
         </script>
     </div>
@@ -641,7 +697,7 @@
                                 align-items: center;
                             }
                         </style>
-                        <a href="http://localhost:4444/twitch/add/main"><button>Set main user</button></a><a href="http://localhost:4444/twitch/add/bot"><button>Add new bot</button></a>
+                        <button onclick="fetch('http://localhost:4444/twitch/add/main')">Set main user</button><button onclick="fetch('http://localhost:4444/twitch/add/bot')">Add new bot</button>
                         <div class="usergrid" id="twitch-usergrid">
                             <div id="card-template" template>
                                 <h4 card-template-header></h4>
@@ -692,7 +748,7 @@
                                         <tr id="redeem-template" class="redeem" template>
                                             <td>
                                                 <div>
-                                                    <img style="margin-right: 1em;" src="images/3c4cec93bec49a9745eb147f604c1fbc.webp" alt="" redeem-template-img>
+                                                    <img style="margin-right: 1em;" src="" alt="" redeem-template-img>
                                                     <span redeem-template-name>Redeem Name</span>
                                                     &MediumSpace;(<span redeem-template-id secondary>A8734-3984-DFS3-349823</span>)
                                                 </div>
@@ -788,6 +844,7 @@
                             }
 
                             function update_twitch(data) {
+                                if(!data.internal?.twitch) return;
                                 twitchMainDiv.innerHTML = "";
                                 if (data.internal.twitch?.main?.name)
                                     addTwitchUserCard("Main User", data.internal.twitch.main);
@@ -820,7 +877,7 @@
                             }
 
                             onfirstSub((data) => {
-                                update_twitch(data);
+                                update_twitch(sharedServerData);
                             });
                             const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
                                 update_twitch(sharedServerData);
@@ -867,12 +924,15 @@
 
             #log {
                 position: fixed;
-                bottom: 12px;
-                left: 12px;
+                top: 12px;
+                right: 12px;
+                text-align: right;
+                z-index: 10000;
             }
 
             #log>* {
                 animation: log 10s forwards;
+                white-space: pre-line;
             }
         </style>
         <div id="log"></div>
@@ -903,7 +963,7 @@
     </div>
     <div class="background"></div>
     <script>
-        let ws = new WebSocket("ws://localhost:4444");
+        let ws = new WebSocket("ws://localhost:4444/internal/");
         function reconnect() {
             let newWS = new WebSocket(ws.url);
             newWS.onmessage = ws.onmessage;
@@ -933,13 +993,13 @@
         }
         ws.onmessage = (message) => {
             let change = JSON.parse(message.data);
+            if(change.p?.[0] != 'internal' && change.p[0])
+                console.log(`data.${change.p?.join?.('.')} was set to ${JSON.stringify(change.v)}`);
+            katzComm.apply(sharedServerData, change.v, change.p);
             if (!firstmessage) {
                 firstmessage = change.v;
                 firstsubs.forEach((c) => c(firstmessage));
-            } else {
-                console.log(`data.${change.p?.join?.('.')} was set to ${JSON.stringify(change.v)}`);
             }
-            katzComm.apply(sharedServerData, change.v, change.p);
         }
 
         document.onkeydown = function(evt) {

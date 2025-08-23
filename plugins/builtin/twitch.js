@@ -11,7 +11,7 @@ const {
 } = require('../internal/internal');
 
 const { autoSavedJSON, encryptData, decryptData, readFileSyncDefault } = require("./files");
-const { setFunction, sharedServerData } = require("./server");
+const { setFunction, sharedServerData, openURL } = require("./server");
 const { createUnfailable } = require("./unfailable");
 
 if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
@@ -92,6 +92,7 @@ const connectedUser = {
      */
     reply: async (channel, message) => { },
 };
+
 
 /* -------------------------- Connection Management ------------------------- */
 
@@ -273,31 +274,33 @@ async function connect() {
 blockPlugin(__filename);
 connect()
 
+
 /* ------------------------ Websites to add accounts ------------------------ */
 
 function addNew(main, scopes) {
-    return (searchParams, res) => {
+    return (req, url) => {
         const redirectURL = "http://localhost:4444/twitch";
         const twitchURL = "https://id.twitch.tv/oauth2/authorize";
         const oauthURL = `${twitchURL}?response_type=${clientSecret ? 'code' : 'token'}&force_verify=true&client_id=${clientID}&redirect_uri=${redirectURL}&scope=${scopes.join("+")}`
 
-        setFunction("/twitch", async (searchParams, res, req) => {
+        setFunction("/twitch", async (req, url) => {
             // Save the code to a file
             let tokenData;
 
             //depending on the grant flow, work differently
             if (clientSecret) {
-                const code = searchParams.get("code");
+                const code = url.searchParams.get("code");
                 if (!code) {
-                    res.end("Missing code for grant flow.");
-                    return;
+                    return new Response("Missing code for grant flow.", {
+                        status: 402
+                    });
                 }
                 tokenData = await exchangeCode(clientID, clientSecret, code, redirectURL);
             } else {
                 let accessToken = null;
-                accessToken = searchParams.get("access_token");
+                accessToken = url.searchParams.get("access_token");
                 if (!accessToken) {
-                    res.end(`
+                    return new Response(`
                         <html>
                             <body>
                                 <script>
@@ -309,52 +312,43 @@ function addNew(main, scopes) {
                                             url.hash = '';
                                             url.search = params.toString();
                                             window.location.replace(url.toString());
-                                        }
+                                        } else {}
                                     }
                                 </script>
                                 <p>Processing Twitch OAuth...</p>
                             </body>
                         </html>
-                    `);
-                    return;
+                    `, {
+                        headers: { "Content-Type": "text/html" }
+                    });
                 }
                 tokenData = {
                     accessToken,
-                    scopes: (searchParams.get("scope") || "").split(" ").filter(Boolean)
+                    scopes: (url.searchParams.get("scope") || "").split(" ").filter(Boolean)
                 };
             }
-            const oldMainPath = `${oauthFilesPath}${tokenData.userId || tokenData.id}.main.json.enc`;
-            addBot(tokenData, main).then((value) => {
-                if (main) {
-                    if (main && fs.existsSync(oldMainPath)) {
-                        fs.unlinkSync(oldMainPath);
-                    }
-                    encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify({
-                        userInfo: value,
-                        tokenData: tokenData
-                    }))
-                } else {
-                    encryptData(`${oauthFilesPath}${value.id}.main.enc`, JSON.stringify({
-                        userInfo: value,
-                        tokenData: tokenData
-                    }))
+            const oldMainPath = `${oauthFilesPath}${connectedUser.id}.main.json.enc`;
+            const value = await addBot(tokenData, main);
+            if (main) {
+                if (fs.existsSync(oldMainPath)) {
+                    fs.unlinkSync(oldMainPath);
                 }
-                extraData.IDs[value.name] = parseInt(value.id);
-                fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
-                res.end(`Code for ${value.id} saved and encrypted.`);
-                connect();
-            });
+                encryptData(`${oauthFilesPath}${value.id}.main.json.enc`, JSON.stringify({
+                    userInfo: value,
+                    tokenData: tokenData
+                }))
+            } else {
+                encryptData(`${oauthFilesPath}${value.id}.main.enc`, JSON.stringify({
+                    userInfo: value,
+                    tokenData: tokenData
+                }))
+            }
+            extraData.IDs[value.name] = parseInt(value.id);
+            fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
+            connect();
+            return new Response(`Code for ${value.id} saved and encrypted.`);
         });
-        res.end(`
-            <html>
-                <head>
-                    <meta http-equiv="refresh" content="0; url=${oauthURL}" />
-                </head>
-                <body>
-                    <p>Redirecting to <a href="${oauthURL}">Twitch OAuth</a>...</p>
-                </body>
-            </html>
-        `);
+        openURL(oauthURL);
     }
 }
 setFunction("/twitch/add/main", addNew(true, [
@@ -427,9 +421,9 @@ setFunction("/twitch/add/bot", addNew(false, [
     "whispers:read",
     "whispers:edit"
 ]));
-setFunction("/twitch/setSecret", (searchParams) => {
-    const clientID = searchParams.get("clientID");
-    const secret = searchParams.get("secret");
+setFunction("/twitch/setSecret", (req, url) => {
+    const clientID = url.searchParams.get("clientID");
+    const secret = url.searchParams.get("secret");
     if (clientID) {
         encryptData(confPath + 'twitch/secret.enc', secret);
         clientSecret = secret;
@@ -437,9 +431,9 @@ setFunction("/twitch/setSecret", (searchParams) => {
         connect();
     }
 })
-setFunction("/twitch/addListenTo", async (searchParams) => {
-    const user = searchParams.get("id");
-    const channel = searchParams.get("user");
+setFunction("/twitch/addListenTo", async (req, url) => {
+    const user = url.searchParams.get("id");
+    const channel = url.searchParams.get("user");
     if (!user || !channel) {
         return;
     }
@@ -455,9 +449,9 @@ setFunction("/twitch/addListenTo", async (searchParams) => {
     }
     connect();
 });
-setFunction("/twitch/removeListenTo", (searchParams) => {
-    const bot = searchParams.get("id");
-    const channel = searchParams.get("user");
+setFunction("/twitch/removeListenTo", (req, url) => {
+    const bot = url.searchParams.get("id");
+    const channel = url.searchParams.get("user");
     if (!bot || !channel) {
         return;
     }
@@ -467,8 +461,8 @@ setFunction("/twitch/removeListenTo", (searchParams) => {
     }
     connect();
 });
-setFunction("/twitch/cloneRedeem", (searchParams) => {
-    const redeemId = searchParams.get("redeemId");
+setFunction("/twitch/cloneRedeem", (req, url) => {
+    const redeemId = url.searchParams.get("redeemId");
 
     if (!redeemId) {
         return;
@@ -511,8 +505,8 @@ setFunction("/twitch/cloneRedeem", (searchParams) => {
         }
     })();
 });
-setFunction("/twitch/deleteRedeem", (searchParams) => {
-    const redeemId = searchParams.get("redeemId");
+setFunction("/twitch/deleteRedeem", (req, url) => {
+    const redeemId = url.searchParams.get("redeemId");
 
     if (!redeemId) {
         return;
@@ -527,7 +521,6 @@ setFunction("/twitch/deleteRedeem", (searchParams) => {
         }
     })();
 });
-
 
 
 /* --------------------------------- Exports -------------------------------- */

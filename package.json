@@ -3,11 +3,7 @@
     "start": "node --expose_gc index.js"
   },
   "dependencies": {
-    "@twurple/api": "^7.3.0",
-    "@twurple/chat": "^7.3.0",
-    "@twurple/eventsub-ws": "^7.3.0",
-    "ini": "^5.0.0",
-    "obs-websocket-js": "^5.0.6"
+    "webview-bun": "https://github.com/PurredCoffee/webview-bun-bytecode.git"
   },
   "imports": {
     "#helpers": "./plugins/builtin/helpers.js",

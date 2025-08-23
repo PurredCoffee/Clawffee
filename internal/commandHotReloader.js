@@ -12,6 +12,7 @@ const { parseRequirements } = require('./requirementParser');
  */
 const moduleDependers = {}
 
+let GCTimeout = null;
 /**
  * Load selected Module and attached modules
  * @param {loadedmodule} curMod
@@ -28,6 +29,20 @@ function loadFile(curMod) {
         curMod.module.errored = true;
         moduleUnload(curMod.module.filePath);
         return false;
+    }
+    clearTimeout(GCTimeout);
+    // clear cache
+    if (global.gc) {
+        GCTimeout = setTimeout(() => global.gc({
+            execution: "sync",
+            flavor: "last-resort",
+            type: "major"
+        }), 200);
+    } else if(Bun?.gc) {
+        GCTimeout = setTimeout(() => Bun.gc(true), 200);
+    } else {
+        console.warn('Garbage collection unavailable.  Pass --expose_gc '
+            + 'when launching node to enable forced garbage collection.');
     }
     return true;
 }
@@ -47,20 +62,6 @@ function unloadFile(curMod) {
     moduleUnload(curMod.module.filePath);
     delete require.cache[curMod.module.parsedModulePath];
     console.log(`- ${curMod.module.name}`);
-
-    // clear cache
-    if (global.gc) {
-        setTimeout(() => global.gc({
-            execution: "sync",
-            flavor: "last-resort",
-            type: "major"
-        }), 200);
-    } else if(Bun?.gc) {
-        setTimeout(() => Bun.gc(true), 200);
-    } else {
-        console.warn('Garbage collection unavailable.  Pass --expose_gc '
-            + 'when launching node to enable forced garbage collection.');
-    }
 }
 
 /**

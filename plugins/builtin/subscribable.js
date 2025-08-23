@@ -1,128 +1,48 @@
-/**
- * @typedef Listener
- * 
- * @property {Map<string, WeakRef<Function>[]>} ownListeners
- * @property {Map<string, Listener>} childListeners
- */
-/**
- * @typedef ProxyObj
- * 
- * @property {ProxyObj} parent
- * @property {string} name
- * @property {object} original
- * @property {Listener} listener
- * @property {boolean} disabled
- */
+/*
+server: {                                               
+┌►"a": {                                        
+│   "a": 2                                      
+│ },                                            
+│ "b": {                                        
+│                                               
+│ },                                            
+└─"c": ["Reference to a"]                       
+}                                               
+        │                                       
+        ▼                                       
+parentListeners: {                              
+  "Reference to self": [],                      
+  "Reference to a": [                           
+    [["Reference to self"], "a"],               
+    [["Reference to self"], "c"]                
+  ],                                            
+  "Reference to b": [["Reference to self"], "b"]
+}                                               
+        │                                       
+        ▼                                       
+listenerTree: {                                 
+  "ownListeners": {                             
+    "b": []                                     
+  },                                            
+  "childListeners": {                           
+    "c": {                                      
+      "ownListeners": {"a": []},                
+      "childListeners": {}                      
+    }                                           
+  }                                             
+}                                               
+                                                
+ ────────────                                   
+                                                
+server.a.a = 5                                  
+  => server.a changed a from 2 to 5             
+    => server changed a.a from 2 to 5           
+  => server.c changed a from 2 to 5             
+    => server changed c.a from 2 to 5           
+  Repeat upwards too!!                          
+*/
 
 const { codeBinder: { associateObjectWithFile } } = require("../internal/internal");
-
-/**
- * @type {WeakMap<Proxy, ProxyObj>}
- */
-const ProxyObjDict = new WeakMap();
-
-/**
- * Creates a proxy for the given object that listens for property changes and invokes a callback.
- *
- * @template T
- * @param {T} obj - The target object to observe for property changes.
- * @param {Array} path - The current path (and subpaths) for the property.
- * @param {(property: keyof T, newValue: T[keyof T], oldValue: T[keyof T]) => void} func - 
- *        Callback function invoked when a property value changes. 
- *        Receives the property name, new value, and old value as arguments.
- * @returns {T} A proxy object that behaves like the original but triggers the callback on property changes.
- */
-function makeProxy(obj, parent, name, callback) {
-    if (ProxyObjDict.has(obj)) {
-        obj = ProxyObjDict.get(obj).original;
-    }
-    const proxy = new Proxy(obj, {
-        set(target, property, value, receiver) {
-            const oldValue = target[property];
-            let newValue = value;
-            if (typeof value === "object" && value !== null) {
-                value = makeProxy(value, proxy, property, callback);
-            }
-            const result = Reflect.set(target, property, value, receiver);
-            if (result) {
-                callback(proxy, property, [property], oldValue, newValue);
-            }
-            return result;
-        },
-        deleteProperty(target, property) {
-            const oldValue = target[property];
-            const result = Reflect.deleteProperty(target, property);
-            if (result) {
-                callback(proxy, property, [property], oldValue, undefined);
-            }
-            return result;
-        }
-    });
-    let listenerObj = {
-        ownListeners: {},
-        childListeners: {}
-    };
-    if (ProxyObjDict.has(parent)) {
-        let parentProxy = ProxyObjDict.get(parent);
-        listenerObj = parentProxy.listener.childListeners[name] ?? listenerObj;
-    }
-    ProxyObjDict.set(proxy, {
-        parent: parent,
-        name: name,
-        original: obj,
-        listener: listenerObj,
-        disabled: true
-    });
-    for (const property in proxy) {
-        if (Object.prototype.hasOwnProperty.call(proxy, property)) {
-            const value = proxy[property];
-            if (typeof value === "object" && value !== null) {
-                proxy[property] = makeProxy(value, proxy, property, callback);
-            }
-        }
-    }
-    ProxyObjDict.get(proxy).disabled = false;
-    return proxy;
-}
-
-/**
- * 
- * @param {object} obj 
- * @param {string} property 
- * @param {string[]} fullPath 
- * @param {object} oldValue 
- * @param {object} newValue 
- * @returns 
- */
-function onChange(obj, property, fullPath, oldValue, newValue) {
-    const ProxyObj = ProxyObjDict.get(obj);
-    if (ProxyObj.disabled) {
-        return;
-    }
-    const trimPath = fullPath.slice(1);
-
-    // call all eventlisteners
-    const eaten = ProxyObj.listener.ownListeners[property]?.reduce((eaten, listener) => listener.deref()?.(trimPath, newValue, oldValue, obj[property]) || eaten, false);
-
-    // clear GC functions
-    if (ProxyObj.listener.ownListeners[property])
-        ProxyObj.listener.ownListeners[property] = ProxyObj.listener.ownListeners[property].filter((val) => val.deref());
-
-    // call parents onChange if output is not eaten yet
-    if (ProxyObj.parent && !eaten)
-        onChange(ProxyObj.parent, ProxyObj.name, [ProxyObj.name, ...fullPath], oldValue, newValue);
-}
-
-
-/**
- * Creates a server proxy object with the provided data.
- *
- * @param {Object} [data={}] - The initial data to be used for the server proxy.
- * @returns {Object} The proxy object representing the server.
- */
-function createServer(data = {}) {
-    return makeProxy({ root: data }, null, null, onChange).root;
-}
 
 /**
  * @callback ServableListener
@@ -132,165 +52,369 @@ function createServer(data = {}) {
  * @param {object} self the value at the path
  */
 /**
+ * @typedef Listener
+ * @property {ServableListener} callback
+ * @property {Boolean} activateFromParent
+ * @property {Boolean} activateIfUnchanged
+ */
+/**
+ * @typedef ListenerData
+ * 
+ * @property {Map<string, Listener[]>} ownListeners
+ * @property {Map<string, ListenerData>} childListeners
+ */
+
+/**
+ * Link between objects and their corresponding Proxy, used to get the Proxy when setting values on the original object
+ * @type {WeakMap<any, Proxy>}
+ */
+const ProxyObjDict = new WeakMap();
+/**
+ * References from objects to their parent Servers
+ * @type {WeakMap<Proxy, [Proxy, string][]>}
+ */
+const ParentDict = new WeakMap();
+/**
+ * References from server objects to their Listener trees
+ * @type {WeakMap<Proxy, ListenerData>}
+ */
+const ListenerDict = new WeakMap();
+
+
+/* ------------------------------- PARENTDICT ------------------------------- */
+
+/**
+ * Remove the link to a parent from a value in ProxyObjDict
+ * @param {Proxy} value 
+ * @param {Proxy} parent 
+ * @param {string} property 
+ */
+function removeParent(value, parent, property) {
+    if(ParentDict.has(value)) {
+        ParentDict.set(value, ParentDict.get(value).filter(v => v[0] != parent || v[1] != property));
+    }
+}
+/**
+ * Add a link to a parent for a value in ProxyObjDict
+ * @param {Proxy} value 
+ * @param {Proxy} parent 
+ * @param {string} property 
+ */
+function addParent(value, parent, property) {
+    ParentDict.get(value)?.push([parent, property]);
+}
+
+/**
+ * Get all the shortest path (if recursive) from an object to a server object
+ * @param {Proxy} value 
+ * @param {WeakSet} traveled
+ * @returns {[any, string[]][]}
+ */
+function getAllParentPaths(value, traveled=new WeakSet()) {
+    // anti infinite recursion
+    if(traveled.has(value)) {
+        return [];
+    }
+    // reached endpoint
+    if(!ParentDict.has(value)) {
+        return [[
+            value,
+            []
+        ]];
+    }
+    traveled.add(value);
+
+    //recurse through parents and append their paths
+    const parents = ParentDict.get(value) ?? [];
+    let result = [];
+    parents.forEach(element => {
+        const obj = element[0];
+        const key = element[1];
+        result = result.concat(
+            getAllParentPaths(obj, traveled).map(
+                v => [v[0], v[1].concat([key])] // [object, "path of parent + relativepath"]
+            ));
+    });
+
+    traveled.delete(value);
+    return result;
+}
+
+/* ------------------------------ LISTENERDICT ------------------------------ */
+
+/**
+ * 
+ * @param {ListenerData} listener 
+ * @param {any} value 
+ */
+function callChildren(listener, value, oldValue) {
+    listener.ownListeners.forEach((v, key) => {
+        const nV = typeof value == 'object'?value[key]:undefined;
+        const oV = typeof oldValue == 'object'?oldValue[key]:undefined;
+        v.forEach(v => {
+            if(!v.activateFromParent || !v.activateIfUnchanged && oV === nV) return;
+            v.callback([], nV, oV, nV);
+        });
+    });
+    listener.childListeners.forEach((v, key) => {
+        callChildren(
+            v,
+            typeof value == 'object'?value[key]:undefined,
+            typeof oldValue == 'object'?oldValue[key]:undefined
+        );
+    });
+}
+
+let suppressAffected = false;
+/**
+ * 
+ * @param {any} obj 
+ */
+function callAllAffected(obj, property=null, originalValue) {
+    if(suppressAffected) {
+        return;
+    }
+    const newValue = property == null?obj:obj[property];
+    const parentPaths = getAllParentPaths(obj);
+    parentPaths.forEach((value) => {
+        let server = value[0];
+        let listener = ListenerDict.get(server);
+        let path = value[1];
+        if(property)
+            path.push(property);
+        while(listener && path.length) {
+            const curpath = path.shift();
+            // call parents that a child at path has changed
+            (listener.ownListeners.get(curpath) ?? []).forEach(v => {
+                if(!v.activateIfUnchanged && originalValue === newValue) return;
+                v.callback(path, newValue, originalValue, server[curpath]);
+            });
+            listener = listener.childListeners.get(curpath)
+            server = server[curpath];
+        }
+        if(listener) {
+            callChildren(listener, server, originalValue);
+        }
+    });
+}
+
+/**
+ * 
+ * @returns {ListenerData}
+ */
+function createEmptyListener() {
+    return {
+        ownListeners: new Map(),
+        childListeners: new Map()
+    }
+}
+
+/* ---------------------------------- PROXY --------------------------------- */
+
+function setter(target, property, value, receiver) {
+    const proxy = ProxyObjDict.get(target);
+    const oldValue = target[property];
+    value = createProxy(value);
+    const result = Reflect.set(target, property, value, receiver);
+    if(result) {
+        removeParent(oldValue, proxy, property);
+        addParent(value, proxy, property);
+        callAllAffected(proxy, property, oldValue);
+    }
+    return result;
+}
+function deleteProperty(target, property) {
+    const proxy = ProxyObjDict.get(target);
+    const oldValue = target[property];
+    const result = Reflect.deleteProperty(target, property);
+    if(result) {
+        removeParent(oldValue, proxy, property);
+        callAllAffected(proxy, property, oldValue);
+    }
+    return result;
+}
+
+/**
+ * 
+ * @template T
+ * @param {T} obj c
+ * @returns {T}
+ */
+function createProxy(obj) {
+    if (typeof obj !== "object" || obj === null) {
+        return obj
+    }
+    if (ProxyObjDict.has(obj)) {
+        return ProxyObjDict.get(obj);
+    }
+    const proxy = new Proxy(obj, {
+        set: setter,
+        deleteProperty: deleteProperty,
+    });
+
+    ProxyObjDict.set(obj, proxy).set(proxy, proxy);
+    ParentDict.set(proxy, []);
+
+    for (const property in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, property)) {
+            const value = obj[property];
+            if (typeof value === "object" && value !== null) {
+                const child = createProxy(value);
+                obj[property] = child; 
+                ParentDict.get(child)?.push([proxy, property]);
+            }
+        }
+    }
+
+    return proxy;
+}
+
+/* ---------------------------- EXPOSED FUNCTIONS --------------------------- */
+
+/**
+ * Creates a server proxy object with the provided data.
+ * @template T
+ * @param {T} obj - The initial data to be used for the server proxy.
+ * @returns {T} The proxy object representing the server.
+ */
+function createServer(obj) {
+    const proxy = createProxy(obj);
+    const root = {root: proxy};
+    ParentDict.get(proxy).push([root, "root"])
+    ListenerDict.set(root, createEmptyListener())
+    return proxy;
+}
+
+/**
  * @typedef ServerListener
  * @property {ServableListener} Callback - the callback that will be called when this object is run
  * @property {Function} removeSelf - function to stop the listener from listening
  * @private 
  * @property {WeakRef<Function>} _WeakRef - a reference to the weak reference used internally
- * @property {Listener} _AttachedListener - the child listener that is used internally
+ * @property {ListenerData} _AttachedListener - the child listener that is used internally
  */
 /**
  * add a listener to a Servable object
  * @param {object} server - Server to attach to
  * @param {string} path - Path to listen to
- * @param {ServableListener} callback - 
- *        Callback function invoked when a property value changes. 
- *        Receives the property name, new value, and old value as arguments.
- * @param {boolean} [ifChanged=false] - should the callback only be called if the argument changed
- * @returns {ServerListener} - Listener object that can be garbage collected
+ * @param {ServableListener} callback - Callback to be called when the value changes
+ * @param {boolean} activateIfUnchanged - Should the callback be run when the value was set to itself?
+ * @param {boolean} activateFromParent - Should the callback be run when the value is changed through its parent?
+ * @returns {ServerListener} - Listener Object
  */
-function addListener(server, path, callback, ifChanged = false) {
-    if (!ProxyObjDict.has(server)) {
-        throw new TypeError("`server` is not a registered Server Object");
-    }
-    const ProxyObj = ProxyObjDict.get(server);
+function addListener(server, path, callback, activateIfUnchanged=true, activateFromParent=true, multiple=false) {
+    const parentPaths = getAllParentPaths(server);
+    if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
+    if(!(callback instanceof Function)) throw TypeError(`callback is of type ${typeof callback} and not a function`);
 
-    if (typeof path == 'string') {
-        path = path.split('.').filter((val) => val.trim());
+    if(!multiple && parentPaths.length > 1) {
+        console.warn("Creating multiple callbacks with one call, set `multiple` to true to suppress warning " +
+            "and expect an array instead of a single callback object");
     }
-    if (!Array.isArray(path)) {
-        throw new TypeError("`path` must be an array or a dot-separated string");
-    }
-
-    if (typeof callback != 'function') {
-        throw new TypeError("`callback` is not a function");
-    }
-
-    // adjust callback if ifChanged is defined
-    if (ifChanged) {
-        const originalCallback = callback;
-        callback = (a, b, c, d) => {
-            if (b !== c) {
-                originalCallback(a, b, c, d);
+    
+    const callbackarr = [];
+    parentPaths.forEach((value) => {
+        let server = value[0];
+        let listener = ListenerDict.get(server);
+        if(listener == undefined) {
+            throw TypeError("Object is not listenable");
+        }
+        // abspath will always at least contain "root"
+        let abspath = value[1].concat(path);
+        // create all the paths up to the path we need
+        while(abspath.length > 1) {
+            const curpath = abspath.shift();
+            if(!listener.childListeners.has(curpath)) {
+                listener.childListeners.set(curpath, createEmptyListener())
             }
+            listener = listener.childListeners.get(curpath)
         }
-    }
-
-
-    /**
-     * 
-     * @param {Listener} childListener 
-     * @param {Array} rpath 
-     */
-    function getChild(childListener, obj, rpath) {
-        let name = rpath.shift();
-        if (!rpath[0]) {
-            return childListener;
+        if(listener == undefined) {
+            throw EvalError("Could not correctly create listener");
         }
-        if (!childListener.childListeners[name]) {
-            childListener.childListeners[name] = {
-                ownListeners: {},
-                childListeners: {}
-            };
-            if (obj && ProxyObjDict.has(obj[name])) {
-                ProxyObjDict.get(obj[name]).listener = childListener.childListeners[name];
+        // add the callback to the list
+        if(!listener.ownListeners.has(abspath[0])) {
+            listener.ownListeners.set(abspath[0], [])
+        };
+        const callbackObj = {
+            callback: callback,
+            activateIfUnchanged: activateIfUnchanged,
+            activateFromParent: activateFromParent,
+        }
+        listener.ownListeners.get(abspath[0]).push(callbackObj);
+        const callbackRetObj = associateObjectWithFile({
+            callback: callbackObj,
+            _AttachedListener: listener,
+            _Property: abspath[0],
+            removeSelf: () => {
+                if (!this._AttachedListener) {
+                    return;
+                }
+                this._AttachedListener.ownListeners.set(
+                    this._Property, 
+                    this._AttachedListener.ownListeners.get(this._Property).filter((val) => val != this.callback)
+                );
+                this._AttachedListener = null;
             }
+        }, "removeSelf");
+        if(!multiple) {
+            return callbackRetObj
         }
-        return getChild(childListener.childListeners[name], obj?.[name], rpath);
-    }
-
-    //get the listener object under `path`
-    let name = ProxyObj.name;
-    let childListener = ProxyObjDict.get(ProxyObj.parent).listener;
-    if (path.length > 0) {
-        name = path[path.length - 1];
-        childListener = getChild(ProxyObj.listener, server, path);
-    }
-    const weakRef = new WeakRef(callback);
-    childListener.ownListeners[name] = childListener.ownListeners[name] ?? [];
-    childListener.ownListeners[name].push(weakRef);
-
-    //create Listener Object
-    return associateObjectWithFile({
-        callback: callback,
-        _WeakRef: weakRef,
-        _AttachedListener: childListener,
-        removeSelf() {
-            if (!this._AttachedListener) {
-                return;
-            }
-            this._AttachedListener.ownListeners[name] = this._AttachedListener.ownListeners[name].filter((val) => val != this._WeakRef);
-            this._AttachedListener = null;
-        }
-    }, "removeSelf");
+        callbackarr.push(callbackRetObj);
+    });
+    return callbackarr;
 }
 
 /**
  * Apply a value to a server object at a given path
- * @param {object} server - server object to be set
- * @param {value} value - server 
- * @param {string[]|string} path
- * @param {number} depth 
+ * @param {object} server - server object to be set 
+ * @param {string[]|string} path - path at which to apply the value
+ * @param {value} value - value to apply on the server
  */
-function apply(server, value, path = [], depth = 0) {
-    if (!ProxyObjDict.has(server)) {
-        throw new TypeError("`server` is not a registered Server Object");
-    }
-    const ProxyObj = ProxyObjDict.get(server);
-    if (typeof path == 'string') {
-        path = path.split('.').filter((val) => val.trim());
-    }
-    if (typeof depth != 'number') {
-        throw new TypeError("`depth` must be a number");
-    }
-
-    path.unshift(ProxyObj.name);
-    let obj = ProxyObj.parent;
-
-    while (path.length > 1) {
-        const key = path.shift();
-        ProxyObjDict.get(obj).disabled = true;
-        if (!(key in obj)) obj[key] = {};
-        ProxyObjDict.get(obj).disabled = false;
-        obj = obj[key];
-    }
-    value = { [path[0]]: value };
-
-
-    function innerApply(obj, copy, depth, dont_delete = false) {
-        if (!dont_delete)
-            for (const key in obj) {
-                if (Object.prototype.hasOwnProperty.call(obj, key) && !Object.prototype.hasOwnProperty.call(copy, key)) {
-                    delete obj[key];
+function apply(server, path, value) {
+    if(!(path instanceof Array)) throw TypeError(`path is of type ${typeof path} and not an array or string`);
+    if(path.length > 0) {
+        // find the object we need to edit
+        while(path.length > 1) {
+            const currentPath = path.shift();
+            // if the object doesnt exist create it (this can definitely cause jank)
+            if(typeof server[currentPath] != "object" || server[currentPath] === null) {
+                if(/^[0-9]$/.test(currentPath)) {
+                    server[currentPath] = [];
+                } else {
+                    server[currentPath] = {};
                 }
             }
-        for (const key in copy) {
-            if (Object.prototype.hasOwnProperty.call(copy, key)) {
-                if (depth <= 1 || typeof copy[key] != 'object') {
-                    obj[key] = copy;
-                } else {
-                    if (obj[key] === copy[key]) {
-                        //prevent a crash
-                        obj[key] = copy[key];
-                    } else {
-                        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] != 'object') {
-                            ProxyObjDict.get(obj).disabled = true;
-                            obj[key] = Object.getPrototypeOf(copy[key]);
-                            ProxyObjDict.get(obj).disabled = false;
-                        }
-                        innerApply(obj[key], copy[key], depth - 1);
-                    }
-                }
+            server = server[currentPath];
+        }
+        // edit the object
+        server[path[0]] = value;
+        return;
+    }
+    if(typeof value != "object" || value === null) {
+        throw TypeError("value cannot be non object if path is empty")
+    }
+    const originalValue = {};
+    { // block where no changes will be made public
+        suppressAffected = true;
+        for (const key in server) {
+            if (Object.prototype.hasOwnProperty.call(server, key)) {
+                originalValue[key] = server[key];
+                delete server[key];
             }
         }
+        for (const key in value) {
+            if (Object.prototype.hasOwnProperty.call(value, key)) {
+                server[key] = value[key];
+            }
+        }
+        suppressAffected = false;
     }
-    innerApply(obj, value, depth + 1, true);
+    callAllAffected(server, null, originalValue);
 }
 
-if (typeof module != 'undefined') {
-    module.exports = {
-        createServer,
-        addListener,
-        apply
-    };
-}
+module.exports = {
+    createServer,
+    addListener,
+    apply
+};

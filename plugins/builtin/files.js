@@ -21,7 +21,7 @@ function encryptData(filePath, data) {
     // Save the encrypted code and IV
     let encryptedData = "DO NOT SHARE THIS FILE EVER!" + "\n".repeat(400) + encrypted;
 
-    if(fs.existsSync(path.dirname(filePath)))
+    if(!fs.existsSync(path.dirname(filePath)))
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, encryptedData);
 }
@@ -33,7 +33,6 @@ function encryptData(filePath, data) {
  */
 function decryptData(filePath) {
     if (!fs.existsSync(filePath)) {
-        console.error("file does not exist", filePath)
         return null;
     }
 

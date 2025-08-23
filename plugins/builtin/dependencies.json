@@ -1,7 +1,0 @@
-[
-    "@twurple/api",
-    "@twurple/chat",
-    "@twurple/eventsub-ws",
-    "ini",
-    "obs-websocket-js"
-]
