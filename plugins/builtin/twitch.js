@@ -496,6 +496,7 @@ setFunction("/twitch/removeListenTo", (req, url) => {
     connect();
 });
 setFunction("/twitch/cloneRedeem", (req, url) => {
+    console.log(url);
     const redeemId = url.searchParams.get("redeemId");
 
     console.log("meow")
