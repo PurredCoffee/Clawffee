@@ -491,16 +491,14 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
             });
             sharedServerData.internal.twitch.redeems[cloned.id] = {id: cloned.id, title: cloned.title, img: cloned.getImageUrl(2), managed: true};
 
-            let redeemName = redeem.title;
-            redeemName.replaceAll(" ", "_");
-            redeemName.replaceAll(/[^a-zA-Z0-9_$]+/g,"");
+            let redeemName = redeem.title.replaceAll(" ", "_").replaceAll(/[^a-zA-Z0-9_$]+/g,"");
             if(redeemName.match(/^[0-9]/)) {
                 redeemName = "_" + redeemName;
             }
             if(redeemName == "") {
-                redeemName = "$" + redeem.id;
+                redeemName = "$" + cloned.id;
             }
-            extraData.redeems[redeemName] = redeem.id;
+            extraData.redeems[redeemName] = cloned.id;
             fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
             console.log(`Cloned redeem ${redeem.title}`);
         } catch (err) {
@@ -517,7 +515,12 @@ setFunction("/twitch/deleteRedeem", (req, url) => {
     (async () => {
         try {
             const redeem = await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
-            delete sharedServerData.internal.twitch.redeems[redeemId];
+
+            const redeemName = Object.keys(extraData.redeems).find(key => extraData.redeems[key] === redeemId);
+            delete extraData.redeems[redeemName];
+            fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
+
+            sharedServerData.internal.twitch.redeems[redeemId] = {}; // TODO fix this
             console.log(`Deleted redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not delete redeem ${redeemId}`);
