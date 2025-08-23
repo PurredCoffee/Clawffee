@@ -537,7 +537,7 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
             fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
             console.log(`Cloned redeem ${redeem.title}`);
         } catch (err) {
-            console.error(`Could not clone redeem ${redeemId}`);
+            console.error(`Could not clone redeem ${redeemId}`, err);
         }
     })();
 });
