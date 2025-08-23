@@ -517,7 +517,7 @@ setFunction("/twitch/deleteRedeem", (req, url) => {
     (async () => {
         try {
             const redeem = await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
-            delete sharedServerData.twitch.redeems[redeemId];
+            delete sharedServerData.internal.twitch.redeems[redeemId];
             console.log(`Deleted redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not delete redeem ${redeemId}`);
