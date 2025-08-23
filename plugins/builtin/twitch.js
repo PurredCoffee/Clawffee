@@ -241,6 +241,7 @@ async function connect() {
                             connectedUser.reply = connectedBots[name].reply;
                             try {
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
+                                    console.log(val);
                                     connectionInfo.redeems[val.id] = {...val, img: val.getImageUrl(2), managed: false};
                                 });
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, true)).forEach((val) => {
