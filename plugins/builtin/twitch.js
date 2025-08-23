@@ -230,6 +230,7 @@ async function connect() {
                         if (file.endsWith('.main.json.enc')) {
                             let user = (await addBot(tokenData.tokenData, true));
                             let name = user.name;
+                            connectedUser.id = userId;
                             connectedUser.api = connectedBots[name].api;
                             connectedUser.chat = connectedBots[name].chat;
                             connectedUser.listener = associateClassWithFile(
