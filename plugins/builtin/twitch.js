@@ -489,7 +489,7 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
                 maxRedemptionsPerUserPerStream: redeem.maxRedemptionsPerUserPerStream,
                 userInputRequired: redeem.userInputRequired
             });
-            sharedServerData.internal.twitch.redeems[cloned.id] = {...cloned, img: undefined};
+            sharedServerData.internal.twitch.redeems[cloned.id] = {id: cloned.id, title: cloned.title, img: cloned.getImageUrl(2), managed: true};
 
             let redeemName = redeem.title;
             redeemName.replaceAll(" ", "_");
@@ -517,7 +517,7 @@ setFunction("/twitch/deleteRedeem", (req, url) => {
     (async () => {
         try {
             const redeem = await connectedUser.api.channelPoints.deleteCustomReward(connectedUser.id, redeemId);
-            delete sharedServerData.twitch.redeems[cloned.id];
+            delete sharedServerData.twitch.redeems[redeemId];
             console.log(`Deleted redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not delete redeem ${redeemId}`);
