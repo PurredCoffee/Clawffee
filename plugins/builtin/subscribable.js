@@ -418,6 +418,12 @@ function apply(server, value, path) {
             server = server[currentPath];
         }
         // edit the object
+        // edit the object
+        if(value == undefined) {
+            delete server[path[0]];
+        } else {
+            server[path[0]] = value;
+        }
         server[path[0]] = value;
         return;
     }

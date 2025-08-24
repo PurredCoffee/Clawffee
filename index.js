@@ -1,7 +1,6 @@
 const path = require('path');
 require('./internal/server');
 
-try {
 const worker = new Worker(new URL("./dashboard.js", import.meta.url), {
     smol: true,
 });
@@ -26,6 +25,3 @@ requirePluginsRecursively(path.join(pluginsDir + '/builtin'));
 requirePluginsRecursively(pluginsDir);
 
 loadModule(loadedmodules);
-} catch(e) {
-    console.error(e);
-}
