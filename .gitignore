@@ -18,6 +18,7 @@ plugins/*
 !plugins/builtin
 !plugins/internal
 plugins/builtin/twitch_data.js
+plugins/internal/_dashboard
 
 images/
 
