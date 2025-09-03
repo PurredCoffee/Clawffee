@@ -2,9 +2,7 @@ const path = require('path');
 require('./internal/server');
 
 const worker = new Worker(
-    (process.platform == 'win32')
-        ? "./plugins/internal/_dashboard/dashboard.js"
-        : new URL("./dashboard.js", import.meta.url).href, 
+    require.resolve("./dashboard.js"), 
     {
         smol: true,
     }
