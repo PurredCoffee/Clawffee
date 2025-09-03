@@ -9,8 +9,10 @@ function openURL(url) {
         } catch(e) {
             // ignore the error since explorer always returns 1
         }
-    } else if([process.platform == 'darwin']) {
+    } else if(process.platform == 'darwin') {
         require('child_process').execFileSync('open', [url]);
+    } else {
+        require('child_process').execFileSync('xdg-open', [url]);
     }
 }
 
