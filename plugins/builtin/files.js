@@ -99,7 +99,19 @@ function readFileDefault(filePath, fallback, options, callback) {
     callback(null, fallback);
 }
 
+/**
+ * @type {Map<string, WeakRef<object>>}
+ */
+const openJSONFiles = Map();
+
 function autoSavedJSON(filePath, fallback, options) {
+    if(openJSONFiles.has(filePath)) {
+        const ref = openJSONFiles.get(filePath);
+        const obj = ref.deref();
+        if(obj) {
+            return obj;
+        }
+    }
     let data = fallback ?? {};
     try {
         data = JSON.parse(readFileSyncDefault(filePath, JSON.stringify(data), options));
@@ -136,10 +148,21 @@ function autoSavedJSON(filePath, fallback, options) {
             }
         });
     }
-    return createAutoSaveProxy(data);
+    const proxied = createAutoSaveProxy(data);
+    openJSONFiles.set(filePath, new WeakRef(proxied));
+    return proxied;
 }
 
+openINIFiles = new Map();
+
 function autoSavedINI(filePath, fallback, options) {
+    if(openINIFiles.has(filePath)) {
+        const ref = openINIFiles.get(filePath);
+        const obj = ref.deref();
+        if(obj) {
+            return obj;
+        }
+    }
     let data = fallback;
     try {
         data = ini.parse(readFileSyncDefault(filePath, ini.stringify(data), options).toString());
@@ -176,7 +199,9 @@ function autoSavedINI(filePath, fallback, options) {
             }
         });
     }
-    return createAutoSaveProxy(data);
+    const proxied = createAutoSaveProxy(data);
+    openINIFiles.set(filePath, new WeakRef(proxied));
+    return proxied;
 }
 
 module.exports = {
