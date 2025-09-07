@@ -100,7 +100,7 @@ function readFileDefault(filePath, fallback, options, callback) {
 }
 
 function autoSavedJSON(filePath, fallback, options) {
-    let data = fallback;
+    let data = fallback ?? {};
     try {
         data = JSON.parse(readFileSyncDefault(filePath, JSON.stringify(data), options));
     } catch (e) {
