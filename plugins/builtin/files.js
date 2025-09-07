@@ -99,6 +99,20 @@ function readFileDefault(filePath, fallback, options, callback) {
     callback(null, fallback);
 }
 
+function stringifyJSON(obj) {
+    // if the object has getters, we need to convert them to regular properties
+    return JSON.stringify(obj, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            const newObj = {};
+            for (const k in value) {
+                newObj[k] = value[k];
+            }
+            return newObj;
+        }
+        return value;
+    }, 4);
+}
+
 /**
  * @type {Map<string, WeakRef<object>>}
  */
@@ -114,9 +128,9 @@ function autoSavedJSON(filePath, fallback, options) {
     }
     let data = fallback ?? {};
     try {
-        data = JSON.parse(readFileSyncDefault(filePath, JSON.stringify(data), options));
+        data = JSON.parse(readFileSyncDefault(filePath, stringifyJSON(data), options));
     } catch (e) {
-        fs.writeFile(filePath, JSON.stringify(data), options, (err) => {
+        fs.writeFile(filePath, stringifyJSON(data), options, (err) => {
             if (err) console.error(err);
         });
     }
@@ -127,7 +141,7 @@ function autoSavedJSON(filePath, fallback, options) {
                 target[prop] = value;
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
+                    fs.writeFileSync(filePath, stringifyJSON(data, null, 4), options);
                 }, 500);
                 return true;
             },
@@ -135,7 +149,7 @@ function autoSavedJSON(filePath, fallback, options) {
                 delete target[prop];
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    fs.writeFileSync(filePath, JSON.stringify(data, null, 4), options);
+                    fs.writeFileSync(filePath, stringifyJSON(data, null, 4), options);
                 }, 500);
                 return true;
             },
@@ -153,6 +167,9 @@ function autoSavedJSON(filePath, fallback, options) {
     return proxied;
 }
 
+/**
+ * @type {Map<string, WeakRef<object>>}
+ */
 openINIFiles = new Map();
 
 function autoSavedINI(filePath, fallback, options) {
