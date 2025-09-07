@@ -102,7 +102,7 @@ function readFileDefault(filePath, fallback, options, callback) {
 /**
  * @type {Map<string, WeakRef<object>>}
  */
-const openJSONFiles = Map();
+const openJSONFiles = new Map();
 
 function autoSavedJSON(filePath, fallback, options) {
     if(openJSONFiles.has(filePath)) {
