@@ -25,7 +25,7 @@ function loadFile(curMod) {
         console.log(`+ ${curMod.module.name}`);
         curMod.module.errored = false;
     } catch (e) {
-        console.error(e);
+                console.deepError(e);
         curMod.module.errored = true;
         moduleUnload(curMod.module.filePath);
         return false;

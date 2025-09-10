@@ -146,6 +146,7 @@
                 border-bottom-width: 3px;
                 border-radius: 20px;
                 z-index: -3;
+                pointer-events: none;
             }
 
             #sub-modules>*::after {
@@ -162,6 +163,7 @@
                 background-attachment: fixed;
                 filter: brightness(1000%) contrast(200%) blur(15px);
                 z-index: -5;
+                pointer-events: none;
             }
 
             #sub-modules>.inactive {
@@ -230,6 +232,7 @@
                 background-size: cover;
                 background-position: 50% 50%;
                 --c: #fff;
+                pointer-events: none;
             }
 
             #sub-modules>.inactive>.btn-bg {
@@ -370,6 +373,10 @@
             module_template.removeAttribute('template');
             module_template.remove();
 
+            function selectModule(name, module) {
+                
+            }
+
             function addModule(name, module, left, top, w, h) {
                 let moduleName = module.conf.name;
                 if (!moduleName) {
@@ -392,30 +399,11 @@
                 let clickListener;
                 if (Object.keys(module.children).length) {
                     clickListener = (e) => {
-                        if (disabled) return;
-                        modpath.push(name);
-                        curPath = module.path;
-                        active = "";
-                        let btn = document.createElement('a');
-                        let len = modpath.length - 1;
-                        btn.onclick = () => {
-                            modpath.length = len;
-                            active = name;
-                            updateModuleDisplay();
-                            while (btn.parentElement.lastChild != btn) {
-                                btn.parentElement.removeChild(btn.parentElement.lastChild);
-                            }
-                            btn.parentElement.removeChild(btn.parentElement.lastChild);
-                        };
-                        btn.innerHTML = "/" + `<span>${moduleName}</span>`;
-                        document.getElementById('commandpath').appendChild(btn);
-                        updateModuleDisplay();
+                        selectModule(name, module);
                     }
                 } else {
                     clickListener = (e) => {
-                        active = name;
-                        curPath = module.path;
-                        updateModuleDisplay();
+                        selectModule(name, module);
                     }
                 }
 

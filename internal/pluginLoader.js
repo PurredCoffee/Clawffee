@@ -14,7 +14,7 @@ function requirePluginsRecursively(dir) {
             try {
                 require(filePath);
             } catch(e) {
-                console.error(e);
+                console.deepError(e);
             }
         }
     });

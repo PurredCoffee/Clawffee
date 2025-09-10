@@ -102,6 +102,7 @@ function readFileDefault(filePath, fallback, options, callback) {
 function stringifyJSON(obj) {
     // if the object has getters, we need to convert them to regular properties
     return JSON.stringify(obj, (key, value) => {
+        if (Array.isArray(value)) return value;
         if (typeof value === 'object' && value !== null) {
             const newObj = {};
             for (const k in value) {

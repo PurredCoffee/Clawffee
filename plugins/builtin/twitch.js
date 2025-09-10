@@ -102,6 +102,49 @@ function saveToken(path, newTokenData) {
     encryptData(path, JSON.stringify(data));
 }
 
+function flatten_inheritance(e) {
+    var o = Object.create(null),
+        c = e, i, prop;
+    do {
+        if(c.__proto__ && e.__lookupGetter__ && c.__defineGetter__) {
+            prop = Object.getOwnPropertyNames(c).filter(v => !v.startsWith("_"));
+        } else {
+            prop = Object.getOwnPropertyNames(c);
+        }
+        for (i = 0; i < prop.length; ++i)
+            try {
+                if (!(prop[i] in o))
+                    o[prop[i]] = e[prop[i]];
+            } catch (ex) {}
+    } while (c = (c.__proto__ || Object.getPrototypeOf(c)));
+    return o;
+}
+
+function deepCleanTwitchData(value, seen = new Map()) {
+    if (seen.has(value)) {
+        return seen.get(value);
+    }
+    seen.set(value, value);
+    if (typeof value !== 'object' || value === null) return value;
+    if(value.toJSON) return value;
+    if(Array.isArray(value)) return value.forEach(v => deepCleanTwitchData(v, seen));
+
+    var o = flatten_inheritance(value);
+    var r = Object.create(null);
+    for (const key in o) {
+        r[key] = deepCleanTwitchData(o[key], seen);
+    }
+    seen.set(value, r);
+    return new Proxy(r, {
+        get(target, prop, receiver) {
+            if(target[prop] !== undefined) {
+                return Reflect.get(target, prop, receiver);
+            }
+            return value[prop];
+        }
+    });
+}
+
 /**
  * Adds a new bot using the provided token data.
  * @param {object} tokenData - The OAuth token data for the bot.
@@ -179,7 +222,13 @@ function makeEventSubListenerEventable(object) {
                     el[argscopy[0]].push(callback);
                     if (!al[argscopy[0]]) {
                         args.push((...newargs) => {
-                            el[argscopy[0]].forEach((call) => call(...newargs));
+                            el[argscopy[0]].forEach((call) => {
+                                try {
+                                    call(...newargs.map(v => deepCleanTwitchData(v)))
+                                } catch (ex) {
+                                    console.deepError(ex);
+                                }
+                            });
                         });
                         al[argscopy[0]] = value.apply(object, args);
                     }
@@ -200,6 +249,31 @@ function makeEventSubListenerEventable(object) {
             return value;
         }
     });
+}
+
+function cleanChatListenerOutput(object) {
+    return new Proxy(object, {
+        get(target, property, receiver) {
+            const value = Reflect.get(target, property, receiver);
+            if (typeof value === 'function' && property.startsWith('on')) {
+                return (...args) => {
+                    args = args.map(v => {
+                        if(typeof v === 'function') 
+                            return (...newargs) => {
+                                try {
+                                    v(...newargs.map(vv => deepCleanTwitchData(vv)));
+                                } catch (ex) {
+                                    console.deepError(ex);
+                                }
+                            }; 
+                        return v;
+                    });
+                    return value.apply(object, args);
+                };
+            }
+            return value;
+        }
+    });            
 }
 
 /**
@@ -232,7 +306,7 @@ async function connect() {
                             let name = user.name;
                             connectedUser.id = user.id;
                             connectedUser.api = connectedBots[name].api;
-                            connectedUser.chat = connectedBots[name].chat;
+                            connectedUser.chat = cleanChatListenerOutput(connectedBots[name].chat);
                             connectedUser.listener = associateClassWithFile(
                                 makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
                                 "stop"

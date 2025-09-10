@@ -1,6 +1,23 @@
 const path = require('path');
 require('./internal/server');
 
+/* ----------------------------- ERROR HANDLING ----------------------------- */
+
+let longestName = 28;
+console.deepError = function(err) {
+    let stack = err.stack?.match(/[^\/\\]*.js:\d*(?=:)/g) ?? [];
+    if (stack?.[0]) {
+        longestName = Math.max(longestName, stack[0].length + 4);
+        olderr(stack[0].padEnd(longestName, " ") + " |", err);
+    } else {
+        olderr("@internal".padEnd(longestName, " ") + " |", err);
+    }
+    sharedServerData.internal.error = err.stack;
+}
+process.on('uncaughtException', console.deepError);
+
+/* -------------------------------- UI THREAD ------------------------------- */
+
 const worker = new Worker(
     require.resolve("./dashboard.js"), 
     {

@@ -131,7 +131,7 @@ setTimeout = (...params) => {
 
 /* ----------------------------- ERROR HANDLING ----------------------------- */
 
-process.on('uncaughtException', function(err) {
+console.deepError = function(err) {
     let stack = err.stack?.match(/[^\/\\]*.js:\d*(?=:)/g) ?? [];
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
@@ -140,4 +140,5 @@ process.on('uncaughtException', function(err) {
         olderr("@internal".padEnd(longestName, " ") + " |", err);
     }
     sharedServerData.internal.error = err.stack;
-});
+}
+process.on('uncaughtException', console.deepError);
