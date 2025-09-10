@@ -14,8 +14,12 @@ JSON.stringify = (value, replacer, space) => {
             }
             set.add(value);
             let result = {};
-            if (Array.isArray(value)) {
+            if (value.toJSON) {
+                result = value.toJSON();
+            } else if (Array.isArray(value)) {
                 result = value.map(replace);
+            } else if (value instanceof Map) {
+                result = Object.fromEntries(value);
             } else {
                 for (const key in value) {
                     if (Object.prototype.hasOwnProperty.call(value, key)) {
