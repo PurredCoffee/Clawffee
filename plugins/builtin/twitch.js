@@ -109,7 +109,7 @@ function flatten_inheritance(e) {
         prop = Object.getOwnPropertyNames(c).filter(v => !v.startsWith("_"));
         for (i = 0; i < prop.length; ++i)
             try {
-                if (!(prop[i] in o) && typeof prop[i] != 'function')
+                if (!(prop[i] in o) && typeof e[prop[i]] != 'function')
                     o[prop[i]] = e[prop[i]];
             } catch (ex) {}
     } while (c = c.__proto__);
