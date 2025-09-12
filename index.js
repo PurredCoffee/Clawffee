@@ -1,12 +1,17 @@
 const path = require('path');
 const fs = require('fs');
 
-console.log("\n Clawffee Version 0.2.1");
-console.log("-".repeat(33) + "\\");
+console.log("\n Clawffee Version 0.2.5 🐾");
+console.log("╴".repeat(32) + "╮");
 const pluginsDir = fs.realpathSync('./plugins');
 
 require(path.join(pluginsDir, 'builtin', 'defaultOverrides.js'));
 require('./internal/server');
+
+
+const { requirePluginsRecursively } = require("./internal/pluginLoader")
+const { loadedmodules } = require("./internal/commandFSHooks");
+const { loadModule } = require("./internal/commandHotReloader");
 
 /* -------------------------------- UI THREAD ------------------------------- */
 
@@ -20,11 +25,6 @@ worker.addEventListener("close", event => {
     console.log("exiting...")
     process.exit();
 });
-
-const { requirePluginsRecursively } = require("./internal/pluginLoader")
-const { loadedmodules } = require("./internal/commandFSHooks");
-const { loadModule } = require("./internal/commandHotReloader");
-
 
 // Higher priority
 requirePluginsRecursively(path.join(pluginsDir, 'internal'));
