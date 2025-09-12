@@ -1,7 +1,42 @@
 const { sharedServerData } = require("./server");
 const path = require('path');
 const fs = require('fs');
-const { codeBinder: { associateObjectWithFile } } = require('../internal/internal');
+const { codeBinder: { associateObjectWithFile }, clawCallbacks: { moduleByPath } } = require('../internal/internal');
+const util = require('util');
+
+util.getCallSites = () => {
+    const oldPrepareStack = Error.prepareStackTrace;
+    Error.prepareStackTrace = (err, stack) => {
+        return stack.map((v) => { return {
+            this: v.getThis(), // always undefined
+            function: v.getFunction(), // always undefined
+            functionName: v.getFunctionName(), // "" instead of null
+            LineNumber: v.getLineNumber(),
+            ColumnNumber: v.getColumnNumber(),
+            EvalOrigin: v.getEvalOrigin(), // undefined
+            FileName: v.getFileName(),
+            MethodName: v.getMethodName(), // "" instead of null
+            PromiseIndex: v.getPromiseIndex(),
+            ScriptNameOrSourceURL: v.getScriptNameOrSourceURL(),
+            TypeName: v.getTypeName(), // "undefined" instead of null
+            Async: v.isAsync(), // always false
+            Constructor: v.isConstructor(),
+            Eval: v.isEval(),
+            PromiseAll: v.isPromiseAll(),
+            Native: v.isNative(),
+            Toplevel: v.isToplevel() // always true??
+            // console.log(v.getEnclosingColumnNumber()); NOT SUPPORTED
+            // console.log(v.getEnclosingLineNumber()); NOT SUPPORTED
+            // console.log(v.getScriptHash()); NOT SUPPORTED
+            // console.log(v.getPosition()); NOT SUPPORTED
+        }});
+    }
+    const err = {};
+    Error.captureStackTrace(err, util.getCallSites);
+    const stack = err.stack;
+    Error.prepareStackTrace = oldPrepareStack;
+    return stack;
+}
 /* ------------------------------- JSON SAFETY ------------------------------ */
 
 const oldJSONstringify = JSON.stringify;
@@ -37,18 +72,53 @@ JSON.stringify = (value, replacer, space) => {
 
 /* ---------------------------- CONSOLE FORWARDS ---------------------------- */
 
-let longestName = 28;
+function cleanData(data) {
+    let str = "";
+    data.forEach(v => {
+        str += " ";
+        switch(typeof v) {
+            case 'string':
+                str += v;
+                break;
+            default:
+                str += Bun.inspect(v, { colors: true, depth: 2 });
+                break;
+        }
+    });
+    str = str.substring(1);
+    return str
+        .split("\n")
+        .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "  | " + v);
+}
+
+let ownPrefix = __dirname.substring(0, __dirname.length - 7).length;
+let longestName = 32;
+
+
 function wrapConsoleFunction(name, copy, prefix = "") {
     return (...data) => {
-        let stack = {};
-        Error.captureStackTrace(stack, console[name]);
-        stack = stack.stack.match(/[^\/\\]*.js:\d*(?=:)/g);
-        if (stack?.[0]) {
-            longestName = Math.max(longestName, stack[0].length + 4);
-            copy(prefix + stack[0].padEnd(longestName, " ") + " |", ...data);
-        } else {
-            copy(prefix + "@internal".padEnd(longestName, " ") + " |", ...data);
+        const callSites = util.getCallSites(10, {
+            sourceMap: true
+        }).filter(v => v.FileName);
+        const firstOwn = callSites.find(v => moduleByPath[v.FileName]);
+        let renderedText = "@internal";
+        if (firstOwn) {
+            renderedText = `${firstOwn.FileName.substring(ownPrefix + 1)}:${firstOwn.LineNumber}:${firstOwn.ColumnNumber}`;
+            longestName = Math.max(longestName, renderedText.length + 4);
+        } else if(callSites[1].FileName.includes("node_modules")) {
+            renderedText = `#${
+                callSites[1].FileName.substring(
+                    Math.max(
+                        callSites[1].FileName.lastIndexOf("/"),
+                        callSites[1].FileName.lastIndexOf("\\")
+                    ) + 1
+                )}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
+            longestName = Math.max(longestName, renderedText.length + 4);
+        } else if(callSites[1].FileName != Bun.main) {
+            renderedText = `#${callSites[1].FileName.substring(ownPrefix)}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
+            longestName = Math.max(longestName, renderedText.length + 4);
         }
+        copy(prefix + renderedText.padEnd(longestName, " ") + " | " + cleanData(data));
         sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ');
     }
 }
@@ -139,9 +209,9 @@ console.deepError = function(err) {
     let stack = err.stack?.match(/[^\/\\]*.js:\d*(?=:)/g) ?? [];
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
-        olderr(stack[0].padEnd(longestName, " ") + " |", err);
+        olderr(stack[0].padEnd(longestName, " ") + " | " + cleanData([err]));
     } else {
-        olderr("@internal".padEnd(longestName, " ") + " |", err);
+        olderr("@internal".padEnd(longestName, " ") + " | " + cleanData([err]));
     }
     sharedServerData.internal.error = err.stack;
 }

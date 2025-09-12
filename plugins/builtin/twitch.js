@@ -202,7 +202,7 @@ async function addBot(tokenData, main = false) {
         }),
         onWhisper: (callback) => chat.onWhisper(callback)
     };
-    console.log(`added token for ${userInfo.id} (${ownName}) and connected to [${ownedChannels}]`);
+    console.debug(`added token for ${userInfo.id} (${ownName}) and connected to [${ownedChannels}]`);
     return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url, expiryDate: TokenInfo.expiryDate.getTime() };
 }
 
@@ -355,7 +355,7 @@ async function connect() {
         }
     }
     sharedServerData.internal.twitch = connectionInfo;
-    console.log("Connected to Twitch API with Twurple.");
+    console.debug("Connected to Twitch API with Twurple.");
     reloadPlugin(__filename);
 }
 blockPlugin(__filename);
@@ -549,10 +549,7 @@ setFunction("/twitch/removeListenTo", (req, url) => {
     connect();
 });
 setFunction("/twitch/cloneRedeem", (req, url) => {
-    console.log(url);
     const redeemId = url.searchParams.get("redeemId");
-
-    console.log("meow")
     if (!redeemId) {
         return;
     }
@@ -586,7 +583,7 @@ setFunction("/twitch/cloneRedeem", (req, url) => {
             }
             extraData.redeems[redeemName] = cloned.id;
             fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
-            console.log(`Cloned redeem ${redeem.title}`);
+            console.debug(`Cloned redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not clone redeem ${redeemId}`, err);
         }
@@ -607,7 +604,7 @@ setFunction("/twitch/deleteRedeem", (req, url) => {
             fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify(extraData));
 
             sharedServerData.internal.twitch.redeems[redeemId] = {}; // TODO fix this
-            console.log(`Deleted redeem ${redeem.title}`);
+            console.debug(`Deleted redeem ${redeem.title}`);
         } catch (err) {
             console.error(`Could not delete redeem ${redeemId}`);
         }

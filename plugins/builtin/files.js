@@ -171,7 +171,7 @@ function autoSavedJSON(filePath, fallback, options) {
 /**
  * @type {Map<string, WeakRef<object>>}
  */
-openINIFiles = new Map();
+const openINIFiles = new Map();
 
 function autoSavedINI(filePath, fallback, options) {
     if(openINIFiles.has(filePath)) {
