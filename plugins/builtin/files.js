@@ -119,6 +119,8 @@ function stringifyJSON(obj) {
  */
 const openJSONFiles = new Map();
 
+const cachedProxies = new WeakMap();
+
 function autoSavedJSON(filePath, fallback, options) {
     if(openJSONFiles.has(filePath)) {
         const ref = openJSONFiles.get(filePath);
@@ -137,7 +139,10 @@ function autoSavedJSON(filePath, fallback, options) {
     }
     let timeout = null;
     function createAutoSaveProxy(obj) {
-        return new Proxy(obj, {
+        if(cachedProxies.has(obj)) {
+            return cachedProxies.get(obj);
+        }
+        const proxy = new Proxy(obj, {
             set(target, prop, value) {
                 target[prop] = value;
                 clearTimeout(timeout);
@@ -162,6 +167,9 @@ function autoSavedJSON(filePath, fallback, options) {
                 return val;
             }
         });
+        cachedProxies.set(obj, proxy);
+        cachedProxies.set(proxy, proxy);
+        return proxy;
     }
     const proxied = createAutoSaveProxy(data);
     openJSONFiles.set(filePath, new WeakRef(proxied));

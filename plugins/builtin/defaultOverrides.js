@@ -118,7 +118,7 @@ function wrapConsoleFunction(name, copy, prefix = "") {
             renderedText = `#${callSites[1].FileName.substring(ownPrefix)}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
             longestName = Math.max(longestName, renderedText.length + 4);
         }
-        copy(prefix + renderedText.padEnd(longestName, " ") + " | " + cleanData(data));
+        copy(prefix + renderedText.padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData(data));
         sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ');
     }
 }
@@ -206,12 +206,13 @@ setTimeout = (...params) => {
 /* ----------------------------- ERROR HANDLING ----------------------------- */
 
 console.deepError = function(err) {
+    const prefix = "\u001b[91m";
     let stack = err.stack?.match(/[^\/\\]*.js:\d*(?=:)/g) ?? [];
     if (stack?.[0]) {
         longestName = Math.max(longestName, stack[0].length + 4);
-        olderr(stack[0].padEnd(longestName, " ") + " | " + cleanData([err]));
+        olderr(prefix + stack[0].padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData([err]));
     } else {
-        olderr("@internal".padEnd(longestName, " ") + " | " + cleanData([err]));
+        olderr(prefix + "@internal".padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData([err]));
     }
     sharedServerData.internal.error = err.stack;
 }
