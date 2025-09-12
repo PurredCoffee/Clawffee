@@ -91,7 +91,7 @@ function cleanData(data) {
         .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "  | " + v);
 }
 
-let ownPrefix = __dirname.substring(0, __dirname.length - 7).length;
+let ownPrefix = __dirname.substring(0, __dirname.length - 14).length;
 let longestName = 32;
 
 
@@ -103,7 +103,8 @@ function wrapConsoleFunction(name, copy, prefix = "") {
         const firstOwn = callSites.find(v => moduleByPath[v.FileName]);
         let renderedText = "@internal";
         if (firstOwn) {
-            renderedText = `${firstOwn.FileName.substring(ownPrefix + 1)}:${firstOwn.LineNumber}:${firstOwn.ColumnNumber}`;
+            const name = firstOwn.FileName.substring(ownPrefix);
+            renderedText = `${name.substring(Math.max(name.indexOf("/"), name.indexOf("\\")) + 1)}:${firstOwn.LineNumber}:${firstOwn.ColumnNumber}`;
             longestName = Math.max(longestName, renderedText.length + 4);
         } else if(callSites[1].FileName.includes("node_modules")) {
             renderedText = `#${
@@ -115,7 +116,8 @@ function wrapConsoleFunction(name, copy, prefix = "") {
                 )}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
             longestName = Math.max(longestName, renderedText.length + 4);
         } else if(callSites[1].FileName != Bun.main) {
-            renderedText = `#${callSites[1].FileName.substring(ownPrefix)}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
+            const name = callSites[1].FileName.substring(ownPrefix);
+            renderedText = `#${name.substring(Math.max(name.indexOf("/"), name.indexOf("\\")) + 1)}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
             longestName = Math.max(longestName, renderedText.length + 4);
         }
         copy(prefix + renderedText.padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData(data));
