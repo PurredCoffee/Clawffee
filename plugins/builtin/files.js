@@ -199,7 +199,10 @@ function autoSavedINI(filePath, fallback, options) {
     }
     let timeout = null;
     function createAutoSaveProxy(obj) {
-        return new Proxy(obj, {
+        if(cachedProxies.has(obj)) {
+            return cachedProxies.get(obj);
+        }
+        const proxy = new Proxy(obj, {
             set(target, prop, value) {
                 target[prop] = value;
                 clearTimeout(timeout);
@@ -224,6 +227,9 @@ function autoSavedINI(filePath, fallback, options) {
                 return val;
             }
         });
+        cachedProxies.set(obj, proxy);
+        cachedProxies.set(proxy, proxy);
+        return proxy;
     }
     const proxied = createAutoSaveProxy(data);
     openINIFiles.set(filePath, new WeakRef(proxied));
