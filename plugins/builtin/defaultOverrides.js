@@ -88,11 +88,11 @@ function cleanData(data) {
     str = str.substring(1);
     return str
         .split("\n")
-        .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "  | " + v);
+        .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "   ╎ " + v);
 }
 
 let ownPrefix = __dirname.substring(0, __dirname.length - 14).length;
-let longestName = 32;
+let longestName = 30;
 
 
 function wrapConsoleFunction(name, copy, prefix = "") {
@@ -105,7 +105,6 @@ function wrapConsoleFunction(name, copy, prefix = "") {
         if (firstOwn) {
             const name = firstOwn.FileName.substring(ownPrefix);
             renderedText = `${name.substring(Math.max(name.indexOf("/"), name.indexOf("\\")) + 1)}:${firstOwn.LineNumber}:${firstOwn.ColumnNumber}`;
-            longestName = Math.max(longestName, renderedText.length + 4);
         } else if(callSites[1].FileName.includes("node_modules")) {
             renderedText = `#${
                 callSites[1].FileName.substring(
@@ -114,13 +113,12 @@ function wrapConsoleFunction(name, copy, prefix = "") {
                         callSites[1].FileName.lastIndexOf("\\")
                     ) + 1
                 )}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
-            longestName = Math.max(longestName, renderedText.length + 4);
         } else if(callSites[1].FileName != Bun.main) {
             const name = callSites[1].FileName.substring(ownPrefix);
             renderedText = `#${name.substring(Math.max(name.indexOf("/"), name.indexOf("\\")) + 1)}:${callSites[1].LineNumber}:${callSites[1].ColumnNumber}`;
-            longestName = Math.max(longestName, renderedText.length + 4);
         }
-        copy(prefix + renderedText.padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData(data));
+        longestName = Math.max(longestName, renderedText.length + 2);
+        copy(prefix + renderedText.padEnd(longestName, " ") + "╶╶\u001b[0m┝╸" + prefix + cleanData(data));
         sharedServerData.internal[name] = data.map(arg => String(arg)).join(' ');
     }
 }
@@ -211,10 +209,10 @@ console.deepError = function(err) {
     const prefix = "\u001b[91m";
     let stack = err.stack?.match(/[^\/\\]*.js:\d*(?=:)/g) ?? [];
     if (stack?.[0]) {
-        longestName = Math.max(longestName, stack[0].length + 4);
-        olderr(prefix + stack[0].padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData([err]));
+        longestName = Math.max(longestName, stack[0].length + 2);
+        olderr(prefix + stack[0].padEnd(longestName, " ") + "╶╶\u001b[0m┝╸" + prefix + cleanData([err]));
     } else {
-        olderr(prefix + "@internal".padEnd(longestName, " ") + " \u001b[0m| " + prefix + cleanData([err]));
+        olderr(prefix + "@internal".padEnd(longestName, " ") + "╶╶\u001b[0m┝╸" + prefix + cleanData([err]));
     }
     sharedServerData.internal.error = err.stack;
 }
