@@ -5,7 +5,7 @@ console.log("\n Clawffee Version 0.2.5 🐾");
 console.log("╴".repeat(32) + "╮");
 const pluginsDir = fs.realpathSync('./plugins');
 
-require(path.join(pluginsDir, 'builtin', 'defaultOverrides.js'));
+require('./internal/defaultOverrides');
 require('./internal/server');
 
 

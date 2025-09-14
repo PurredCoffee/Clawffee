@@ -5,11 +5,6 @@
 config/*
 
 # i do not know why this is required but :3
-!config/internal
-config/internal/*
-!config/internal/commands_conf
-config/internal/commands_conf/*
-!config/internal/commands_conf/examples._conf
 
 commands/*
 !commands/examples
@@ -26,4 +21,5 @@ node_modules
 package-lock.json
 bun.lock
 
-build
+!build/**/*
+build/**/node_modules/*

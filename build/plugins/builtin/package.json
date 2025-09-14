@@ -1,0 +1,17 @@
+{
+  "name": "builtin",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@twurple/api": "npm:@twurple/api@^7.4.0",
+    "@twurple/chat": "npm:@twurple/chat@^7.4.0",
+    "@twurple/eventsub-ws": "npm:@twurple/eventsub-ws@^7.4.0",
+    "ini": "npm:ini@^5.0.0",
+    "obs-websocket-js": "npm:obs-websocket-js@^5.0.6"
+  }
+}

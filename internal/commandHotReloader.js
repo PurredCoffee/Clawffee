@@ -5,7 +5,7 @@ const { moduleByPath } = require("./commandFSHooks");
 
 // load plugins first
 const { unavailablePlugins } = require("./pluginLoader");
-const { clawCallbacks: { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } } = require("../plugins/internal/internal");
+const { clawCallbacks: { moduleLoad, onReloadPlugin, onModuleUnload, onModuleLoad, moduleUnload } } = require("../plugins_bak/internal/internal");
 const { parseRequirements } = require('./requirementParser');
 /**
  * @type {Dictionary<string, loadedmodule[]>}

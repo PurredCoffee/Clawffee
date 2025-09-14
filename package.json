@@ -3,6 +3,8 @@
     "start": "node --expose_gc index.js"
   },
   "dependencies": {
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
     "webview-bun": "https://github.com/PurredCoffee/webview-bun-bytecode.git"
   },
   "imports": {
