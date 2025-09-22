@@ -3,6 +3,9 @@ const fs = require('fs');
 
 console.log("\n Clawffee Version 0.2.5 🐾");
 console.log("╴".repeat(32) + "╮");
+
+globalThis.clawffee = {};
+
 const pluginsDir = fs.realpathSync('./plugins');
 
 require('./internal/defaultOverrides');
