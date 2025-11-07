@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('path');
-const { clawCallbacks: { onBlockPlugin } } = require("../plugins_bak/internal/internal");
+const { clawCallbacks: { onBlockPlugin } } = require("../plugins/internal/internal");
 
 const unavailablePlugins = {};
 

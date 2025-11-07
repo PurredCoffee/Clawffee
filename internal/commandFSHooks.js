@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require('path');
-const { autoSavedJSON } = require("../plugins_bak/builtin/files");
-const { clawCallbacks: { "#registerModuleByPath": registerModuleByPath } } = require("../plugins_bak/internal/internal");
+const { autoSavedJSON } = require("../plugins/builtin/files");
+const { clawCallbacks: { "#registerModuleByPath": registerModuleByPath } } = require("../plugins/internal/internal");
 const { sharedServerData } = require('./server');
 
 /**

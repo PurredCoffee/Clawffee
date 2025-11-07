@@ -121,6 +121,14 @@ const openJSONFiles = new Map();
 
 const cachedProxies = new WeakMap();
 
+
+/**
+ * @template {string} T
+ * @param {T} filePath 
+ * @param {*} fallback 
+ * @param {*} options 
+ * @returns {require(T)}
+ */
 function autoSavedJSON(filePath, fallback, options) {
     if(openJSONFiles.has(filePath)) {
         const ref = openJSONFiles.get(filePath);

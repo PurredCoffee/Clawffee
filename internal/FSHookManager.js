@@ -9,18 +9,14 @@ const chokidar = require('chokidar');
  * @param {(event: EventName, path: string, stats?: Stats | undefined)} fileUpdateCallback 
  */
 function hookToFolder(folder, fileUpdateCallback) {
-    chokidar.watch(folder, {
-        usePolling: true,
-        awaitWriteFinish: true
-    }).on('all', (event, path, stat) => {
+    chokidar.watch(folder).on('all', (event, path, stat) => {
         if(event == 'unlink') {
             fileUpdateCallback(event, path, null);
         } else if(stat.isFile() && path.endsWith('.js')) {
             fileUpdateCallback(event, path, stat);
         } 
-    })
+    });
 }
-
 module.exports = {
     hookToFolder
 }

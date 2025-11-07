@@ -1,14 +1,5 @@
 const { associateObjectWithFile } = require("./codeBinder");
 
-let functions = {}
-function setFunctionsObj(functions_obj) {
-    functions = functions_obj;
-}
-
-let sharedServerData = {}
-function setSharedServerData(ssd_obj) {
-    sharedServerData = ssd_obj;
-}
 
 /**
  * @callback URLCallback
@@ -16,7 +7,6 @@ function setSharedServerData(ssd_obj) {
  * @param {import("bun").BunRequest} request
  * @param {URL} url
  */
-
 /**
  * 
  * @param {string} path 
@@ -24,7 +14,7 @@ function setSharedServerData(ssd_obj) {
  * @returns 
  */
 function setFunction(path, callback) {
-    functions[path] = callback;
+    globalThis.clawffee.serverFunctions[path] = callback;
     return associateObjectWithFile({
         path: path,
         callback: callback,
@@ -36,22 +26,5 @@ function setFunction(path, callback) {
 }
 
 module.exports = {
-    sharedServerData: new Proxy({}, {
-        get(target, property, receiver) {
-            return sharedServerData[property];
-        },
-        set(target, property, newValue, receiver) {
-            Reflect.set(sharedServerData, property, newValue, sharedServerData);
-        },
-        ownKeys(target) {
-            return Object.keys(sharedServerData);
-        },
-        has(target, property) {
-            return property in sharedServerData;
-        },
-        deleteProperty(target, property) {
-            delete sharedServerData[property];
-        }
-    }), setFunction,
-    "#setFunctionsObj": setFunctionsObj, "#setSharedServerData": setSharedServerData
+    sharedServerData: clawffee.sharedServerData, setFunction
 }

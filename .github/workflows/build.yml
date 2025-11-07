@@ -1,0 +1,30 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: iwr https://bun.sh/install.ps1 -UseBasicParsing | iex
+      
+      - name: run build.bat
+        run: ./build.bat
+
+      - name: Commit clawffee_windows.zip
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add clawffee_windows.zip
+          git commit -m "Add clawffee_windows.zip"
+          git push

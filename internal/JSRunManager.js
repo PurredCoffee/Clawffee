@@ -40,6 +40,9 @@
 
 const fs = require('fs');
 const { hookToFolder } = require('./FSHookManager');
+const { basename, join } = require('path')
+const { commandFolders } = require('./JSRunnerGlobals');
+const { runAsFile } = require('./ModuleHelpers');
 
 /**
  * Unloads a commands at a given path
@@ -49,14 +52,21 @@ function unloadCommand(path) {
     console.log(`- ${path}`);
 }
 
+let workingDirectory = process.cwd();
 /**
  * Loads the commands at a given path
  * @param {string} path 
  * @param {string} str 
  */
 function loadCommand(path, str) {
+    const fullPath = join(workingDirectory, path);
     console.log(`+ ${path}`);
-    console.log(str);
+    try {
+        runAsFile(fullPath, str, true);
+    } catch(err) {
+        console.error(err);
+        console.log(`- ${path}`);
+    }
 }
 
 /**
@@ -64,8 +74,9 @@ function loadCommand(path, str) {
  * @param {string} folder folder to load commands from
  */
 function runCommands(folder) {
+    commandFolders.push(folder);
     hookToFolder(folder, (type, path, stats) => {
-        if(type == 'unlink') {2
+        if(type == 'unlink') {
             unloadCommand(path);
             return;
         }

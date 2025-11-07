@@ -1,5 +1,5 @@
-const { createServer, addListener } = require('../plugins_bak/internal/_internal/subscribable.js');
-const { server: ServerListener } = require('../plugins_bak/internal/internal.js');
+const { createServer, addListener } = require('../plugins/internal/_internal/subscribable.js');
+const { server: ServerListener } = require('../plugins/internal/internal.js');
 const sharedServerData = createServer({internal: {}});
 
 let bakedhtml;
