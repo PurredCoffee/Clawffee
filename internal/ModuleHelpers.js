@@ -47,6 +47,7 @@ function isRelative(dir, parent) {
 function createRequire(basePath, module) {
     return function(modulePath) {
         let fullpath = "";
+        // BUG: Required due to Bun bug where require.resolve(path, {paths: []}) has been removed by an AI generated PR
         try {
             fullpath = require.resolve(path.join(path.dirname(basePath), modulePath));
         } catch(e1) {
