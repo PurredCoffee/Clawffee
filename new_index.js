@@ -2,14 +2,17 @@ if(process.argv.includes('--verbose'))
     require('./internal/verbose');
 
 // TEMP
-globalThis.clawffee = {
-    sharedServerData: {
-        internal: {}
-    },
-    serverFunctions: {
-
+globalThis.clawffee = {}
+globalThis.clawffee.sharedServerData = {
+    internal: {}
+};
+globalThis.clawffee.serverFunctions = {};
+globalThis.clawffee.fileManagers = {
+    //TEMP
+    '.json': (fullpath, data) => {
+        return JSON.parse(data);
     }
-}
+};
 require('./internal/ConsoleOverrides');
 require('./internal/pluginLoader');
 

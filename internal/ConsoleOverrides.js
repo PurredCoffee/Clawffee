@@ -21,10 +21,14 @@ function cleanData(data) {
                             return prettyPrepareStack(err, stack);
                         }
                         let stack = v.stack;
-                        Error.prepareStackTrace = oldPrepareStack;
                         if(!preparedStack) {
                             stack = prettyPrepareStack(v, stack);
                         }
+                        if(!stack) {
+                            Error.captureStackTrace(v, cleanData.caller);
+                            stack = v.stack;
+                        }
+                        Error.prepareStackTrace = oldPrepareStack;
                         str += stack;
                     } catch(e) {
                         str += `${v.constructor.name}: ${v.message}\n    at <unable to get stack trace> reason:` + e.stack;

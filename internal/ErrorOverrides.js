@@ -161,6 +161,9 @@ function prettyPrepareStack(err, stack) {
     
     let s = undefined;
     let name = undefined;
+    if(!stack) {
+        return null;
+    }
     if(typeof stack == 'string') {
         // get the file name from the string
         const lines = stack.split("\n");
@@ -179,6 +182,7 @@ function prettyPrepareStack(err, stack) {
             }
         }
     }
+
     s = stack[0];
     stack.forEach(v => {
         if(overrideStack(v))

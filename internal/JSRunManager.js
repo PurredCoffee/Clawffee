@@ -58,11 +58,11 @@ let workingDirectory = process.cwd();
  * @param {string} path 
  * @param {string} str 
  */
-function loadCommand(path, str) {
+function loadCommand(path, str, initial) {
     const fullPath = join(workingDirectory, path);
     console.log(`+ ${path}`);
     try {
-        runAsFile(fullPath, str, true);
+        runAsFile(fullPath, str, initial);
     } catch(err) {
         console.error(err);
         console.log(`- ${path}`);
@@ -76,17 +76,21 @@ function loadCommand(path, str) {
 function runCommands(folder) {
     commandFolders.push(folder);
     hookToFolder(folder, (type, path, stats) => {
+        if(!path.endsWith('.js')) {
+            return;
+        }
         if(type == 'unlink') {
             unloadCommand(path);
             return;
         }
         fs.readFile(path, (err, data) => {
-            unloadCommand(path);
+            if(type != 'initial')
+                unloadCommand(path);
             if(err) {
                 console.warn(err);
                 return;
             }
-            loadCommand(path, data.toString());
+            loadCommand(path, data.toString(), type == 'initial');
         });
     });
 }

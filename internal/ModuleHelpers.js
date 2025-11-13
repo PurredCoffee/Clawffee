@@ -24,21 +24,6 @@ class ModuleLockedError extends Error {
     }
 }
 
-/**
- * @typedef {string} FullPath
- */
-
-/**
- * Used to detect circular requires
- * @type {Set<FullPath>}
- */
-const requireDepth = new Set();
-/**
- * Cache of loaded modules
- * @type {Map<FullPath, any>}
- */
-const requireCache = new Map();
-
 function isRelative(dir, parent) {
     const relative = path.relative(parent, dir);
     return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
@@ -47,28 +32,23 @@ function isRelative(dir, parent) {
 function createRequire(basePath, module) {
     return function(modulePath) {
         let fullpath = "";
-        // BUG: Required due to Bun bug where require.resolve(path, {paths: []}) has been removed by an AI generated PR
-        try {
-            fullpath = require.resolve(path.join(path.dirname(basePath), modulePath));
-        } catch(e1) {
-            try {
-                fullpath = require.resolve(modulePath);
-            } catch(e) {
-                throw new ModuleNotFoundError(modulePath);
-            }
-        }
+        fullpath = require.resolve(modulePath, {paths: [path.dirname(basePath)]});
         let relative = commandFolders.reduce((prev, cur) => prev || isRelative(fullpath, cur), false);
         if(relative) {
-            console.log(fullpath, ' relative');
             try {
-                if(cache.has(fullpath)) {
-                    if(!cache.get(fullpath).loaded) {
+                if(require.cache[fullpath]) {
+                    if(!require.cache[fullpath].loaded) {
                         throw new CircularRequireError(fullpath);
                     }
-                    return cache.get(fullpath);
+                    return require.cache[fullpath];
                 }
                 let data = fs.readFileSync(fullpath).toString();
-                runAsFile(fullpath, data);
+                for (const ending in clawffee.fileManagers) {
+                    if (!Object.hasOwn(clawffee.fileManagers, ending) || !fullpath.endsWith(ending)) continue;
+                    const element = clawffee.fileManagers[ending];
+                    return clawffee.fileManagers[ending](fullpath, data);
+                }
+                return data;
             } catch(e) {
                 throw e;
             }
@@ -91,21 +71,27 @@ function createModule(path) {
     return mod;
 }
 
-const cache = new Map();
 /**
  * 
  * @param {*} path 
  * @param {string} funcStr
  * @returns 
  */
-function runAsFile(fullpath, funcStr) {
+function runAsFile(fullpath, funcStr, keepCache) {
+    if(keepCache && require.cache[fullpath]) {
+        return require.cache[fullpath];
+    }
     const func = wrapCode(fullpath, funcStr);
     const mod = createModule(fullpath);
     mod.isPreloading = mod.isPreloading;
     func.bind(globalThis)(mod.exports, mod.require, mod, fullpath, path.dirname(fullpath));
     mod.loaded = true;
-    cache.set(fullpath, mod);
+    require.cache[fullpath] = mod;
     return mod;
+}
+
+clawffee.fileManagers['.js'] = (fullpath, data) => {
+    return runAsFile(fullpath, data).exports;
 }
 
 module.exports = {
