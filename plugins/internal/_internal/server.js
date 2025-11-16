@@ -16,8 +16,8 @@ const { associateFunctionWithFile } = require("./codeBinder");
 function setFunction(path, callback) {
     globalThis.clawffeeInternals.serverFunctions[path] = callback;
     return associateFunctionWithFile(() => {
-        if (callback == functions[path])
-            functions[path] = null;
+        if (callback == globalThis.clawffeeInternals.serverFunctions[path])
+            globalThis.clawffeeInternals.serverFunctions[path] = null;
     });
 }
 
