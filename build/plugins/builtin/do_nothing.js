@@ -32,11 +32,22 @@ function createDoNothing(path = [], base = null) {
         },
         apply(target, thisarg, args) {
             if(binds.has(base)) {
-                let obj = binds.get(base);
-                path.forEach(element => {
+                let obj = base;
+                let prevObj = null;
+                entry.path.forEach(element => {
+                    prevObj = obj;
                     obj = obj?.[element];
                 });
-                return Promise.resolve(obj?.(...args));
+                try {
+                    const retobj = obj?.bind(prevObj, ...entry.args);
+                    if(retobj instanceof Promise) {
+                        retobj.then(entry.resolve).catch(entry.reject);
+                    } else {
+                        entry.resolve(retobj);
+                    }
+                } catch(e) {
+                    entry.reject(e);
+                }
             }
             const file = globalThis.clawffeeInternals.getRunningScriptName();
             const icache = cache.get(base);
@@ -67,13 +78,15 @@ function bindDoNothing(proxy, base = null) {
     for (const [key, value] of icache) {
         value.forEach(entry => {
             let obj = base;
+            let prevObj = null;
             entry.path.forEach(element => {
+                prevObj = obj;
                 obj = obj?.[element];
             });
             try {
-                const retobj = obj?.(...entry.args);
+                const retobj = obj?.bind(prevObj, ...entry.args);
                 if(retobj instanceof Promise) {
-                    retobj.then(v => entry.resolve).catch(e => entry.reject(e));
+                    retobj.then(entry.resolve).catch(entry.reject);
                 } else {
                     entry.resolve(retobj);
                 }

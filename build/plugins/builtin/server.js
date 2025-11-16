@@ -1,7 +1,5 @@
 function openURL(url) {
     url = encodeURI(url)
-    console.log(url)
-    console.log(process.platform)
     if(process.platform == 'win32') {
         try {
             // windows does not want to be safe so we run unsafe commands here

@@ -14,9 +14,6 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
     console.error("Unhandled Rejection!", "reason:", reason);
 });
-process.on('uncaughtExceptionMonitor', (err, origin) => {
-    console.error("Uncaught Exception!", err);
-});
 process.on('multipleResolves', (type, promise, reason) => {
     console.error("Multiple Resolves!", type, reason);
 });

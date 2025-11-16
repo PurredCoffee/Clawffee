@@ -173,10 +173,9 @@ async function addBot(tokenData, main = false) {
         userID = await auth.addUserForToken(tokenData, ['chat']);
     } else {
         auth = new StaticAuthProvider(clientID, tokenData.accessToken || tokenData.access_token, tokenData.scopes || ['chat']);
-        const tempApi = new ApiClient({ authProvider: auth });
     }
 
-    const api = associateClassWithFile(new ApiClient({ authProvider: auth }), [(v) => v.startsWith("on")], (v) => v.unbind);
+    const api = new ApiClient({ authProvider: auth });
     const userInfo = (await api.callApi({
         type: 'helix',
         url: 'users'
@@ -345,7 +344,7 @@ async function connect() {
                             );
                         }
                     } catch (e) {
-                        console.error(`Failed to load token for user ${userId}: \u001b[0m${e.message}`);
+                        console.error(`Failed to load token for user ${userId}: \u001b[0m`, e);
                         let user = JSON.parse(decrypted).userInfo;
                         let name = user.name;
                         connectionInfo.failed.push({ ...user, listenTo: channels[name].channels });

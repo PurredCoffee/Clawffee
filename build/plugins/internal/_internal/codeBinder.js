@@ -27,12 +27,17 @@ function associateClassWithFile(value, functionIdentifiers, wrapper) {
         get(target, property, receiver) {
             const func = Reflect.get(target, property, receiver);
             if (functionIdentifiers.reduce((prev, curr) => prev || curr(property), false) && typeof func === 'function') {
-                const ret = func.bind(value);
-                associateFunctionWithFile(wrapper(ret));
-                return ret;
+                return (...args) => {
+                    const ret = func.bind(value)(...args);
+                    associateFunctionWithFile(wrapper(ret));
+                    return ret;
+                }
             }
-            if(typeof func == 'object')
-                return associateClassWithFile(func, functionIdentifiers);
+            if(typeof func == 'object' && func)
+                return associateClassWithFile(func, functionIdentifiers, wrapper, value);
+            if(typeof func == 'function') {
+                return func.bind(value);
+            }
             return func;
         }
     });
