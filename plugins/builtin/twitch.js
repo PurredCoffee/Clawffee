@@ -248,7 +248,7 @@ function makeEventSubListenerEventable(object) {
                                 }
                             });
                         });
-                        al[argscopy[0]] = value.bind(object, ...args);
+                        al[argscopy[0]] = value.apply(object, args);
                     }
                     return {
                         ...al[argscopy[0]],
