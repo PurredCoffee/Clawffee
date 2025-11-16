@@ -1,23 +1,35 @@
-const path = require('path');
-const fs = require('fs');
 
-console.log("\n Clawffee Version 0.2.5 🐾");
+console.log("\u001b[0m\n Clawffee Version 0.3.0 🐾");
 console.log("╴".repeat(32) + "╮");
 
-globalThis.clawffee = {};
+if(process.argv.includes('--verbose'))
+    require('./internal/verbose');
 
-const pluginsDir = fs.realpathSync('./plugins');
+globalThis.clawffeeInternals = {}
 
-require('./internal/defaultOverrides');
-require('./internal/server');
+// Global error handlers
+process.on('uncaughtException', (err) => {
+    console.error("Uncaught Error!", err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error("Unhandled Rejection!", "reason:", reason);
+});
+process.on('uncaughtExceptionMonitor', (err, origin) => {
+    console.error("Uncaught Exception!", err);
+});
+process.on('multipleResolves', (type, promise, reason) => {
+    console.error("Multiple Resolves!", type, reason);
+});
 
+require('./internal/ConsoleOverrides');
+require('./internal/Server');
+const {runCommands} = require('./internal/JSRunManager');
+const { requirePluginsRecursively }  = require('./internal/PluginLoader');
+requirePluginsRecursively(require('path').join(process.cwd(), 'plugins', 'internal'));
+requirePluginsRecursively(require('path').join(process.cwd(), 'plugins', 'builtin'));
+requirePluginsRecursively(require('path').join(process.cwd(), 'plugins'));
 
-const { requirePluginsRecursively } = require("./internal/pluginLoader")
-const { loadedmodules } = require("./internal/commandFSHooks");
-const { loadModule } = require("./internal/commandHotReloader");
-
-/* -------------------------------- UI THREAD ------------------------------- */
-
+/**
 const worker = new Worker(
     require.resolve("./dashboard.js"), 
     {
@@ -28,11 +40,6 @@ worker.addEventListener("close", event => {
     console.log("exiting...")
     process.exit();
 });
+*/
 
-// Higher priority
-requirePluginsRecursively(path.join(pluginsDir, 'internal'));
-requirePluginsRecursively(path.join(pluginsDir, 'builtin'));
-
-requirePluginsRecursively(pluginsDir);
-
-loadModule(loadedmodules);
+runCommands('./commands');

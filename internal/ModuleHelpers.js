@@ -32,7 +32,12 @@ function isRelative(dir, parent) {
 function createRequire(basePath, module) {
     return function(modulePath) {
         let fullpath = "";
-        fullpath = require.resolve(modulePath, {paths: [path.dirname(basePath)]});
+        try {
+            fullpath = require.resolve(modulePath, {paths: [path.dirname(basePath)]});
+        } catch(e) {
+            throw new ModuleNotFoundError(module);
+        }
+        module.children.push(fullpath);
         let relative = commandFolders.reduce((prev, cur) => prev || isRelative(fullpath, cur), false);
         if(relative) {
             try {
@@ -43,16 +48,15 @@ function createRequire(basePath, module) {
                     return require.cache[fullpath];
                 }
                 let data = fs.readFileSync(fullpath).toString();
-                for (const ending in clawffee.fileManagers) {
-                    if (!Object.hasOwn(clawffee.fileManagers, ending) || !fullpath.endsWith(ending)) continue;
-                    const element = clawffee.fileManagers[ending];
-                    return clawffee.fileManagers[ending](fullpath, data);
+                for (const ending in clawffeeInternals.fileManagers) {
+                    if (!Object.hasOwn(clawffeeInternals.fileManagers, ending) || !fullpath.endsWith(ending)) continue;
+                    const element = clawffeeInternals.fileManagers[ending];
+                    return clawffeeInternals.fileManagers[ending](fullpath, data);
                 }
                 return data;
             } catch(e) {
                 throw e;
             }
-            return;
         }
         return require(fullpath);
     }
@@ -81,17 +85,25 @@ function runAsFile(fullpath, funcStr, keepCache) {
     if(keepCache && require.cache[fullpath]) {
         return require.cache[fullpath];
     }
-    const func = wrapCode(fullpath, funcStr);
+    globalThis.clawffeeInternals.fileCleanupFuncs[fullpath] = [];
     const mod = createModule(fullpath);
     mod.isPreloading = mod.isPreloading;
-    func.bind(globalThis)(mod.exports, mod.require, mod, fullpath, path.dirname(fullpath));
+    try {
+        const func = wrapCode(fullpath, funcStr);
+        func.bind(globalThis)(mod.exports, mod.require, mod, fullpath, path.dirname(fullpath));
+    } catch(e) {
+        throw e;
+    }
     mod.loaded = true;
     require.cache[fullpath] = mod;
     return mod;
 }
 
-clawffee.fileManagers['.js'] = (fullpath, data) => {
-    return runAsFile(fullpath, data).exports;
+// TODO: add to plugins and replace with autosaved json
+globalThis.clawffeeInternals.fileManagers = {
+   '.js': (fullpath, data) => {
+        return runAsFile(fullpath, data).exports;
+    }
 }
 
 module.exports = {

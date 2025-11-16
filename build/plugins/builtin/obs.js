@@ -1,9 +1,7 @@
 const { autoSavedJSON } = require('./files');
-const { enums, createRequestObj, eventParams, requestParams, requestResponse } = require('./obs-codegen');
+const { enums, createRequestObj, eventParams, requestParams } = require('./obs-codegen');
 
-const { codeBinder: { associateObjectWithFile }, clawCallbacks: { reloadPlugin } } = require("../internal/internal");
-
-const { createUnfailable } = require('./unfailable');
+const { codeBinder: { associateFunctionWithFile } } = require("../internal/internal");
 
 const confPath = 'config/internal/';
 const conf = autoSavedJSON(confPath + 'obs.json', {
@@ -344,7 +342,9 @@ client.onClose(() => {
 });
 let originalListener = client.onEvent;
 client.onEvent = (type, callback) => {
-    return associateObjectWithFile(originalListener(type, callback), "disconnect");
+    const listener = originalListener(type, callback);
+    associateFunctionWithFile(listener.off.bind(listener));
+    return listener;
 }
 create();
 

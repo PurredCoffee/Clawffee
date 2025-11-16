@@ -1,4 +1,4 @@
-const { associateObjectWithFile } = require("./codeBinder");
+const { associateFunctionWithFile } = require("./codeBinder");
 
 
 /**
@@ -14,17 +14,13 @@ const { associateObjectWithFile } = require("./codeBinder");
  * @returns 
  */
 function setFunction(path, callback) {
-    globalThis.clawffee.serverFunctions[path] = callback;
-    return associateObjectWithFile({
-        path: path,
-        callback: callback,
-        unbind() {
-            if (callback == functions[path])
-                functions[path] = null;
-        }
-    }, "unbind");
+    globalThis.clawffeeInternals.serverFunctions[path] = callback;
+    return associateFunctionWithFile(() => {
+        if (callback == functions[path])
+            functions[path] = null;
+    });
 }
 
 module.exports = {
-    sharedServerData: clawffee.sharedServerData, setFunction
+    sharedServerData: clawffeeInternals.sharedServerData, setFunction
 }

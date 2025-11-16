@@ -1,5 +1,4 @@
-const { createServer, addListener } = require('../plugins/internal/_internal/subscribable.js');
-const { server: ServerListener } = require('../plugins/internal/internal.js');
+const { createServer, addListener } = require('./Subscribable.js');
 const sharedServerData = createServer({internal: {}});
 
 let bakedhtml;
@@ -126,8 +125,8 @@ addListener(sharedServerData, "", (path, newValue, oldValue) => {
 });
 
 const functions = {};
-ServerListener["#setFunctionsObj"](functions);
-ServerListener['#setSharedServerData'](sharedServerData);
+clawffeeInternals.serverFunctions = functions;
+clawffeeInternals.sharedServerData = sharedServerData;
 
 console.log(`server running on port ${server.port}`);
 

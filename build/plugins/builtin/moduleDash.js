@@ -1,3 +1,5 @@
+return;
+
 const fs = require('fs');
 const pathModule = require('path');
 const crypto = require('crypto');

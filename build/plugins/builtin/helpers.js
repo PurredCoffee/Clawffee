@@ -6,6 +6,8 @@ const twitch_data = require('./twitch_data');
 const obs = require('./obs');
 const unfailable = require('./unfailable');
 
+clawffeeInternals.defaultFile = "const { files, server, twitch, twitch_data, obs, unfailable } = require('#helpers');\n" + clawffeeInternals.defaultFile;
+
 module.exports = {
     files,
     server,

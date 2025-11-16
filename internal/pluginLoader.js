@@ -1,8 +1,5 @@
 const fs = require('node:fs');
 const path = require('path');
-const { clawCallbacks: { onBlockPlugin } } = require("../plugins/internal/internal");
-
-const unavailablePlugins = {};
 
 function requirePluginsRecursively(dir) {
     fs.readdirSync(dir).forEach(file => {
@@ -14,16 +11,12 @@ function requirePluginsRecursively(dir) {
             try {
                 require(filePath);
             } catch(e) {
-                console.deepError(e);
+                console.error(e);
             }
         }
     });
 }
-onBlockPlugin((filename) => {
-    unavailablePlugins[filename] = true;
-});
 
 module.exports = {
-    unavailablePlugins,
     requirePluginsRecursively
 }

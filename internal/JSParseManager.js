@@ -108,7 +108,7 @@ function applyOverrides(filename, codeStr, parsedCode, newLinePositions) {
     };
 }
 
-globalThis.clawffee.addFunction = (name, fn, fakename) => {
+globalThis.clawffeeInternals.addFunction = (name, fn, fakename) => {
     /**
      * @type {string}
      */

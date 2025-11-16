@@ -5,14 +5,10 @@ const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { RefreshingAuthProvider, StaticAuthProvider, exchangeCode } = require('@twurple/auth');
 const path = require("path");
 
-const {
-    codeBinder: { associateClassWithFile }, 
-    clawCallbacks: { reloadPlugin, blockPlugin }
-} = require('../internal/internal');
+const {codeBinder: { associateClassWithFile }} = require('../internal/internal');
 
-const { autoSavedJSON, encryptData, decryptData, readFileSyncDefault } = require("./files");
+const { autoSavedJSON, encryptData, decryptData } = require("./files");
 const { setFunction, sharedServerData, openURL } = require("./server");
-const { createUnfailable } = require("./unfailable");
 
 if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
     fs.writeFileSync(path.join(__dirname, 'twitch_data.js'), "module.exports = " + JSON.stringify({
@@ -21,6 +17,7 @@ if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
     }))
 }
 const extraData = require("./twitch_data");
+const { createDoNothing, bindDoNothing } = require('./do_nothing');
 
 
 const confPath = 'config/internal/';
@@ -36,7 +33,7 @@ const channels = conf.chats;
 
 
 /**
- * @typedef {Object} ConnectedBot
+ * @typedef ConnectedBot
  * @property {number} id - The user ID of the bot.
  * @property {string} name - The user login of the bot.
  * @property {import('@twurple/api').ApiClient} api - The Twurple API client for the bot.
@@ -48,10 +45,14 @@ const channels = conf.chats;
 
 /**
  * Stores connected bots by username.
- * @type {Object.<string, ConnectedBot>}
+ * @type {{[username: string]: ConnectedBot}}
  */
 const connectedBots = {};
-
+/**
+ * Stores connected bots by username.
+ * @type {{[username: string]: ConnectedBot}}
+ */
+const connectedBotsDoNothing = createDoNothing();
 /**
  * The main user connected to twitch. Main API object.
  */
@@ -67,15 +68,15 @@ const connectedUser = {
     /**
      * @type import('@twurple/api').ApiClient
      */
-    api: createUnfailable(),
+    api: createDoNothing(),
     /**
      * @type import('@twurple/chat').ChatClient
      */
-    chat: createUnfailable(),
+    chat: createDoNothing(),
     /**
      * @type import('@twurple/eventsub-ws').EventSubWsListener
      */
-    listener: createUnfailable(),
+    listener: createDoNothing(),
     /**
      * Sends a regular chat message to a channel.
      * @param {string} channel - The channel to send the message to.
@@ -175,7 +176,7 @@ async function addBot(tokenData, main = false) {
         const tempApi = new ApiClient({ authProvider: auth });
     }
 
-    const api = associateClassWithFile(new ApiClient({ authProvider: auth }), "unbind");
+    const api = associateClassWithFile(new ApiClient({ authProvider: auth }), [(v) => v.startsWith("on")], (v) => v.unbind);
     const userInfo = (await api.callApi({
         type: 'helix',
         url: 'users'
@@ -188,7 +189,7 @@ async function addBot(tokenData, main = false) {
         }
     }
     const ownedChannels = channels[ownName].channels;
-    const chat = associateClassWithFile(new ChatClient({ authProvider: auth, channels: ownedChannels }), "unbind");
+    const chat = associateClassWithFile(new ChatClient({ authProvider: auth, channels: ownedChannels }), [(v) => v.startsWith("on")], (v) => v.unbind);
     chat.connect();
 
     connectedBots[ownName] = {
@@ -317,12 +318,13 @@ async function connect() {
                             let user = (await addBot(tokenData.tokenData, true));
                             let name = user.name;
                             connectedUser.id = user.id;
-                            connectedUser.api = connectedBots[name].api;
-                            connectedUser.chat = cleanChatListenerOutput(connectedBots[name].chat);
-                            connectedUser.listener = associateClassWithFile(
+                            bindDoNothing(connectedUser.api, connectedBots[name].api);
+                            bindDoNothing(connectedUser.chat, cleanChatListenerOutput(connectedBots[name].chat));
+                            bindDoNothing(connectedUser.listener, associateClassWithFile(
                                 makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
-                                "stop"
-                            );
+                                [(v) => v.startsWith("on")], 
+                                (v) => v.stop
+                            ));
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
@@ -343,7 +345,7 @@ async function connect() {
                             );
                         }
                     } catch (e) {
-                        console.error(`Failed to load token for user ${userId}:`, e);
+                        console.error(`Failed to load token for user ${userId}: \u001b[0m${e.message}`);
                         let user = JSON.parse(decrypted).userInfo;
                         let name = user.name;
                         connectionInfo.failed.push({ ...user, listenTo: channels[name].channels });
@@ -355,10 +357,9 @@ async function connect() {
         }
     }
     sharedServerData.internal.twitch = connectionInfo;
+    bindDoNothing(connectedBotsDoNothing, connectedBots);
     console.debug("Connected to Twitch API with Twurple.");
-    reloadPlugin(__filename);
 }
-blockPlugin(__filename);
 connect()
 
 
@@ -644,7 +645,8 @@ function print() {
 
 
 module.exports = {
-    connectedBots,
+    connectedBots: connectedBotsDoNothing,
+    ...connectedUser,
     connectedUser,
     print,
     IDs: extraData.IDs,

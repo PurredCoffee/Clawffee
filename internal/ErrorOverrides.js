@@ -72,6 +72,23 @@ util.getCallSites = () => {
     return stack;
 }
 
+globalThis.clawffeeInternals.getRunningScriptName = (fn) => {
+    const oldPrepareStack = Error.prepareStackTrace;
+    Error.prepareStackTrace = (err, stack) => {
+        for(x of stack) {
+            if(overrideStack(x)) {
+                return x.getFileName();
+            }
+        }
+        return null;
+    }
+    const st = {};
+    Error.captureStackTrace(st, fn ?? globalThis.clawffeeInternals.getRunningScriptName);
+    const stack = st.stack;
+    Error.prepareStackTrace = oldPrepareStack;
+    return stack;
+}
+
 const keyWordRegex = new RegExp("\\b(?:" + [
     "abstract", "arguments", "async", "await", 
     "boolean", "break", "byte", "case",
@@ -183,11 +200,11 @@ function prettyPrepareStack(err, stack) {
         }
     }
 
-    s = stack[0];
     stack.forEach(v => {
         if(overrideStack(v))
             s = s ?? v;
     });
+    s = s ?? stack[0];
     name = s.getFileName();
     err.line = s.getLineNumber();
     err.fileName = name;
@@ -269,8 +286,12 @@ function prettyPrepareStack(err, stack) {
     stack = stack.slice(start);
     for(let x = 0; x < 5; x++) {
         if(!stack[x]) break;
+        if(stack[x+1]?.isToplevel() && stack[x+1]?.getFileName().startsWith('[')) {
+            stack.splice(x+1, 1);
+            stack[x].isToplevel = () => true;
+        }
         errStr += `\n    \u001b[90mat ${
-            stack[x].getFunctionName()?.length?`${stack[x].isToplevel()?"\u001b[0;94;1;3m":"\u001b[0;1;3m"}${stack[x].getFunctionName()}`:"\u001b[90m<anonymous>"
+            stack[x].isToplevel()?"\u001b[0;94;1;3mtop level":stack[x].getFunctionName()?.length?`\u001b[0;1;3m${stack[x].getFunctionName()}`:"\u001b[90m<anonymous>"
             } \u001b[0;90m(${stack[x].getFileName()?.length?`\u001b[96m${stack[x].getFileName()}`:"\u001b[0minternal"}\u001b[90m:\u001b[93m${stack[x].getLineNumber()}\u001b[90m:\u001b[93m${stack[x].getColumnNumber()}\u001b[90m)\u001b[0m`;
     }
     return errStr;

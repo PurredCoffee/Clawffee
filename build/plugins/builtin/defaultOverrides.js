@@ -1,14 +1,12 @@
 const path = require('path');
 const fs = require('fs');
-const { codeBinder: { associateObjectWithFile }, clawCallbacks: { moduleByPath } } = require('../internal/internal');
+const { codeBinder: { associateFunctionWithFile }} = require('../internal/internal');
 
 /* ------------------------------- FILE SAFETY ------------------------------ */
 
-const MAIN_FOLDER = path.resolve(__dirname, '../../');
-
-function isPathAllowed(targetPath) {
-    const resolved = path.resolve(MAIN_FOLDER, targetPath);
-    return resolved.startsWith(MAIN_FOLDER);
+function isRelative(dir, parent) {
+    const relative = path.relative(parent, dir);
+    return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
 function wrapFsMethod(methodName) {
@@ -16,7 +14,7 @@ function wrapFsMethod(methodName) {
     fs[methodName] = function (...args) {
         let filePath = args[0];
         if (typeof filePath === 'string' || Buffer.isBuffer(filePath)) {
-            if (!isPathAllowed(filePath)) {
+            if (!isRelative(fs.realpathSync(filePath), process.cwd())) {
                 throw new Error(`Access to path "${filePath}" is not allowed.`);
             }
         }
@@ -46,23 +44,50 @@ function wrapFsMethod(methodName) {
 const oldSetInterval = setInterval;
 setInterval = (...params) => {
     let callback = oldSetInterval(...params); 
-    associateObjectWithFile({
-        callback: callback,
-        disconnect: () => {
-            clearInterval(callback);
-        }
-    }, "disconnect");
+    associateFunctionWithFile(() => {
+        clearInterval(callback);
+    });
     return callback;
 }
 
 const oldSetTimeout = setTimeout;
 setTimeout = (...params) => {
     let callback = oldSetTimeout(...params); 
-    associateObjectWithFile({
-        callback: callback,
-        disconnect: () => {
-            clearTimeout(callback);
-        }
-    }, "disconnect");
+    associateFunctionWithFile(() => {
+        clearTimeout(callback);
+    });
     return callback;
+}
+
+/* ------------------------------- JSON SAFETY ------------------------------ */
+
+const oldJSONstringify = JSON.stringify;
+JSON.stringify = (value, replacer, space) => {
+    const set = new Set();
+    function replace(value) {
+        if (value && typeof value === 'object') {
+            if (set.has(value)) {
+                return "[circular]";
+            }
+            set.add(value);
+            let result = {};
+            if (value.toJSON) {
+                result = value.toJSON();
+            } else if (Array.isArray(value)) {
+                result = value.map(replace);
+            } else if (value instanceof Map) {
+                result = Object.fromEntries(value);
+            } else {
+                for (const key in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, key)) {
+                        result[key] = replace(value[key]);
+                    }
+                }
+            }
+            set.delete(value);
+            return result;
+        }
+        return value;
+    }
+    return oldJSONstringify(replace(value), replacer, space);
 }
