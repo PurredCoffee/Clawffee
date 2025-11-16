@@ -334,8 +334,6 @@ async function create() {
     }
     console.log("Connected to OBS!");
     connected = true;
-
-    reloadPlugin(__filename);
 }
 client.onClose(() => {
     console.warn("Disconnected from OBS!");
