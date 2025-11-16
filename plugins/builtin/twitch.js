@@ -192,7 +192,7 @@ async function addBot(tokenData, main = false) {
         associateClassWithFile(
             new ChatClient({ authProvider: auth, channels: ownedChannels }),
             [(v) => v.startsWith("on")], 
-            (v) => () => {v.unbind(); console.log('unbound')}
+            (v) => () => {v.unbind();}
         )
     );
     chat.connect();
