@@ -63,7 +63,7 @@ function applyOverrides(filename, codeStr, parsedCode, newLinePositions) {
         ForOfStatement: whileWrapper,
         FunctionDeclaration: (node, state) => {
             const funcstr = addVariable(filename, "function_name", codeStr);
-            inverseCommands.push([node.start, () => `let ${node.id.name} = globalThis.clawffee.addFunction("${filename}",`]);
+            inverseCommands.push([node.start, () => `let ${node.id.name} = globalThis.clawffeeInternals.addFunction(${JSON.stringify(filename)},`]);
             inverseCommands.push([node.id.start, () => `${funcstr}_`]);
             inverseCommands.push([node.end, () => `,"${node.id.name}")`]);
         },
@@ -76,12 +76,12 @@ function applyOverrides(filename, codeStr, parsedCode, newLinePositions) {
         },
         FunctionExpression: (node, state) => {
             const funcstr = addVariable(filename, "function_name", codeStr);
-            inverseCommands.push([node.start, () => `globalThis.clawffee.addFunction("${filename}",{${funcstr}:`]);
+            inverseCommands.push([node.start, () => `globalThis.clawffeeInternals.addFunction(${JSON.stringify(filename)},{${funcstr}:`]);
             inverseCommands.push([node.end, () => `}.${funcstr})`]);
         },
         ArrowFunctionExpression: (node, state) => {
             const funcstr = addVariable(filename, "function_name", codeStr);
-            inverseCommands.push([node.start, () => `globalThis.clawffee.addFunction("${filename}",{${funcstr}:`]);
+            inverseCommands.push([node.start, () => `globalThis.clawffeeInternals.addFunction(${JSON.stringify(filename)},{${funcstr}:`]);
             inverseCommands.push([node.end, () => `}.${funcstr})`]);
         },
     });

@@ -14,7 +14,7 @@ function wrapFsMethod(methodName) {
     fs[methodName] = function (...args) {
         let filePath = args[0];
         if (typeof filePath === 'string' || Buffer.isBuffer(filePath)) {
-            if (!isRelative(fs.realpathSync(filePath), process.cwd())) {
+            if (!isRelative(path.resolve(filePath), process.cwd())) {
                 throw new Error(`Access to path "${filePath}" is not allowed.`);
             }
         }

@@ -39,7 +39,7 @@ function createDoNothing(path = [], base = null) {
                     obj = obj?.[element];
                 });
                 try {
-                    const retobj = obj?.bind(prevObj, ...entry.args);
+                    const retobj = obj?.apply(prevObj, entry.args);
                     if(retobj instanceof Promise) {
                         retobj.then(entry.resolve).catch(entry.reject);
                     } else {
@@ -58,7 +58,7 @@ function createDoNothing(path = [], base = null) {
                 icache.set(file, []);
             }
             return new Promise((resolve, reject) => {
-                icache.get(file).push({path, args, resolve, reject});
+                icache.get(file).push({path, args, resolve, reject, stack: globalThis.clawffeeInternals.getPrefixStack()});
             });
         }
     });
@@ -77,6 +77,7 @@ function bindDoNothing(proxy, base = null) {
     const icache = cache.get(proxy);
     for (const [key, value] of icache) {
         value.forEach(entry => {
+            globalThis.clawffeeInternals.setPrefixStack(entry.stack);
             let obj = base;
             let prevObj = null;
             entry.path.forEach(element => {
@@ -84,7 +85,7 @@ function bindDoNothing(proxy, base = null) {
                 obj = obj?.[element];
             });
             try {
-                const retobj = obj?.bind(prevObj, ...entry.args);
+                const retobj = obj?.apply(prevObj, entry.args);
                 if(retobj instanceof Promise) {
                     retobj.then(entry.resolve).catch(entry.reject);
                 } else {
@@ -93,6 +94,7 @@ function bindDoNothing(proxy, base = null) {
             } catch(e) {
                 entry.reject(e);
             }
+            globalThis.clawffeeInternals.setPrefixStack();
         });
     }
     icache.clear();

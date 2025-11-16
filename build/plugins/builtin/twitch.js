@@ -188,7 +188,13 @@ async function addBot(tokenData, main = false) {
         }
     }
     const ownedChannels = channels[ownName].channels;
-    const chat = associateClassWithFile(new ChatClient({ authProvider: auth, channels: ownedChannels }), [(v) => v.startsWith("on")], (v) => v.unbind);
+    const chat = cleanChatListenerOutput(
+        associateClassWithFile(
+            new ChatClient({ authProvider: auth, channels: ownedChannels }),
+            [(v) => v.startsWith("on")], 
+            (v) => () => {v.unbind(); console.log('unbound')}
+        )
+    );
     chat.connect();
 
     connectedBots[ownName] = {
@@ -238,7 +244,7 @@ function makeEventSubListenerEventable(object) {
                                 try {
                                     call(...newargs.map(v => deepCleanTwitchData(v)))
                                 } catch (ex) {
-                                    console.deepError(ex);
+                                    console.error(ex);
                                 }
                             });
                         });
@@ -275,7 +281,7 @@ function cleanChatListenerOutput(object) {
                                 try {
                                     v(...newargs.map(vv => deepCleanTwitchData(vv)));
                                 } catch (ex) {
-                                    console.deepError(ex);
+                                    console.error(ex);
                                 }
                             }; 
                         return v;
@@ -318,11 +324,11 @@ async function connect() {
                             let name = user.name;
                             connectedUser.id = user.id;
                             bindDoNothing(connectedUser.api, connectedBots[name].api);
-                            bindDoNothing(connectedUser.chat, cleanChatListenerOutput(connectedBots[name].chat));
+                            bindDoNothing(connectedUser.chat, connectedBots[name].chat);
                             bindDoNothing(connectedUser.listener, associateClassWithFile(
                                 makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
                                 [(v) => v.startsWith("on")], 
-                                (v) => v.stop
+                                (v) => v.stop.bind(v)
                             ));
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;

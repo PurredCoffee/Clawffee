@@ -28,7 +28,7 @@ function associateClassWithFile(value, functionIdentifiers, wrapper) {
             const func = Reflect.get(target, property, receiver);
             if (functionIdentifiers.reduce((prev, curr) => prev || curr(property), false) && typeof func === 'function') {
                 return (...args) => {
-                    const ret = func.bind(value)(...args);
+                    const ret = func.apply(value, args);
                     associateFunctionWithFile(wrapper(ret));
                     return ret;
                 }

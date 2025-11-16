@@ -5,7 +5,24 @@ const fs = require('fs');
 const acorn = require("acorn");
 const acorn_walk = require("acorn-walk");
 
+globalThis.clawffeeInternals.getPrefixStack = () => {
+    const oldPrepareStack = Error.prepareStackTrace;
+    Error.prepareStackTrace = (err, stack) => {
+        return stack;
+    }
+    const st = {};
+    Error.captureStackTrace(st, globalThis.clawffeeInternals.getPrefixStack);
+    const stack = st.stack;
+    Error.prepareStackTrace = oldPrepareStack;
+    return stack;
+}
+let prefixStack = [];
+globalThis.clawffeeInternals.setPrefixStack = (stack = []) => {
+    prefixStack = stack;
+}
+
 function overrideStack(v) {
+    if(v.Overriden) return true;
     let f = v.getFunctionName();
     const fileName = functionFileNames.get(f);
     if(!fileName) return false;
@@ -25,6 +42,7 @@ function overrideStack(v) {
         });
         return column;
     }
+    v.Overriden = true;
     for(let key in functionOverrides.get(fileName)) {
         var val = v[key]();
         v[key] = functionOverrides.get(fileName)[key].bind(v, val, f);
@@ -35,6 +53,7 @@ function overrideStack(v) {
 util.getCallSites = () => {
     const oldPrepareStack = Error.prepareStackTrace;
     Error.prepareStackTrace = (err, stack) => {
+        stack = stack.concat(prefixStack);
         return stack.map((v) => { 
             let override = overrideStack(v);
             return {
@@ -75,6 +94,7 @@ util.getCallSites = () => {
 globalThis.clawffeeInternals.getRunningScriptName = (fn) => {
     const oldPrepareStack = Error.prepareStackTrace;
     Error.prepareStackTrace = (err, stack) => {
+        stack = stack.concat(prefixStack);
         for(x of stack) {
             if(overrideStack(x)) {
                 return x.getFileName();
@@ -203,6 +223,7 @@ function prettyPrepareStack(err, stack) {
         }
     }
 
+    stack = stack.concat(prefixStack);
     stack.forEach(v => {
         if(overrideStack(v))
             s = s ?? v;
