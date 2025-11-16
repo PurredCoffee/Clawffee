@@ -95,7 +95,7 @@ globalThis.clawffeeInternals.getRunningScriptName = (fn) => {
     const oldPrepareStack = Error.prepareStackTrace;
     Error.prepareStackTrace = (err, stack) => {
         stack = stack.concat(prefixStack);
-        for(x of stack) {
+        for(let x of stack) {
             if(overrideStack(x)) {
                 return x.getFileName();
             }
