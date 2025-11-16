@@ -192,7 +192,7 @@ async function addBot(tokenData, main = false) {
         associateClassWithFile(
             new ChatClient({ authProvider: auth, channels: ownedChannels }),
             [(v) => v.startsWith("on")], 
-            (v) => () => {v.unbind();}
+            (v) => () => v.unbind()
         )
     );
     chat.connect();
@@ -325,11 +325,11 @@ async function connect() {
                             connectedUser.id = user.id;
                             bindDoNothing(connectedUser.api, connectedBots[name].api);
                             bindDoNothing(connectedUser.chat, connectedBots[name].chat);
-                            bindDoNothing(connectedUser.listener, associateClassWithFile(
-                                makeEventSubListenerEventable(new EventSubWsListener({ apiClient: connectedUser.api })),
+                            bindDoNothing(connectedUser.listener, makeEventSubListenerEventable(
+                                associateClassWithFile(new EventSubWsListener({ apiClient: connectedUser.api }),
                                 [(v) => v.startsWith("on")], 
                                 (v) => v.stop.bind(v)
-                            ));
+                            )));
                             connectedUser.listener.start();
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;

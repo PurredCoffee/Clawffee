@@ -14,5 +14,6 @@ module.exports = {
     subscribable,
     twitch,
     obs,
-    unfailable
+    unfailable,
+    twitch_data
 }

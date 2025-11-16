@@ -54,6 +54,7 @@ globalThis.clawffeeInternals.fileCleanupFuncs = {}
  */
 function unloadCommand(path) {
     const fullPath = join(workingDirectory, path);
+    if(!globalThis.clawffeeInternals.fileCleanupFuncs[fullPath]) return;
     globalThis.clawffeeInternals.fileCleanupFuncs[fullPath].forEach((v) => v());
     console.log(`- ${path}`);
 }
