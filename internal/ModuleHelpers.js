@@ -45,13 +45,13 @@ function createRequire(basePath, module) {
                     if(!require.cache[fullpath].loaded) {
                         throw new CircularRequireError(fullpath);
                     }
-                    return require.cache[fullpath];
+                    return require.cache[fullpath].exports;
                 }
                 let data = fs.readFileSync(fullpath).toString();
                 for (const ending in clawffeeInternals.fileManagers) {
                     if (!Object.hasOwn(clawffeeInternals.fileManagers, ending) || !fullpath.endsWith(ending)) continue;
-                    const element = clawffeeInternals.fileManagers[ending];
-                    return clawffeeInternals.fileManagers[ending](fullpath, data);
+                    const handler = clawffeeInternals.fileManagers[ending];
+                    return handler(fullpath, data);
                 }
                 return data;
             } catch(e) {
