@@ -354,5 +354,6 @@ setInterval(async () => {
         await create();
     }
 }, 5000);
+console.info("TEMPORARILY: To add a twitch connection please edit config/internal/obs.json !!");
 
 module.exports = client;

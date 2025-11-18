@@ -364,6 +364,7 @@ async function connect() {
     sharedServerData.internal.twitch = connectionInfo;
     bindDoNothing(connectedBotsDoNothing, connectedBots);
     console.debug("Connected to Twitch API with Twurple.");
+    console.info("TEMPORARILY: To add a twitch connection please use http://localhost:4444/twitch/add/main");
 }
 connect()
 
