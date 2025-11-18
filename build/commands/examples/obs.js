@@ -1,12 +1,12 @@
 const { obs } = require('#helpers');
 
 // this will be automatically cleaned up when the module is unloaded
-obs.client.on("InputVolumeChanged", (data) => {
-    console.log(`${data.inputName} changed volume to ${data.inputVolumeMul}`);
+obs.onEvent("InputVolumeChanged", (inputName, inputUuid, inputVolumeMul, inputVOlumeDb) => {
+    console.log(`${inputName} changed volume to ${inputVolumeMul}`);
 });
 
 // doing requests
-let inputList = await obs.client.call('GetInputList', {});
+let inputList = await obs.requests.inputs.getInputList();
 console.log(inputList);
 
 /*

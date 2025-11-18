@@ -3,6 +3,9 @@ const { files } = require('#helpers');
 // read config/data.json or use the default {} if it doesnt exist
 const data = files.autoSavedJSON('config/data.json', {});
 
+// if the file exists you can also use require to achieve the same result!
+const otherdata = require('../../config/data.json')
+
 // write {x = 5} to config/data.json
 data.x = 5;
 

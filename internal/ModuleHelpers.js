@@ -99,7 +99,7 @@ function runAsFile(fullpath, funcStr, keepCache) {
     return mod;
 }
 
-// TODO: add to plugins and replace with autosaved json
+console.info("To start, create a .js file in the commands folder!");
 globalThis.clawffeeInternals.fileManagers = {
    '.js': (fullpath, data) => {
         return runAsFile(fullpath, data).exports;
