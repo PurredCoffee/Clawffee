@@ -1,5 +1,5 @@
 
-console.log("\u001b[0m\n Clawffee Version 0.3.0 🐾");
+console.log("\u001b[0m\n Clawffee Version 0.3.1 🐾");
 console.log("╴".repeat(32) + "╮");
 
 if(process.argv.includes('--verbose'))
