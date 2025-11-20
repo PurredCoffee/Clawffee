@@ -4,9 +4,9 @@ const subscribable = require('./subscribable');
 const twitch = require('./twitch');
 const twitch_data = require('./twitch_data');
 const obs = require('./obs');
-const unfailable = require('./unfailable');
+const persistent = require('./persistent');
 
-clawffeeInternals.defaultFile = "const { files, server, twitch, twitch_data, obs, unfailable } = require('#helpers');\n" + clawffeeInternals.defaultFile;
+clawffeeInternals.defaultFile = "const { files, server, twitch, twitch_data, obs, persistent } = require('#helpers');\n" + clawffeeInternals.defaultFile;
 
 module.exports = {
     files,
@@ -14,6 +14,6 @@ module.exports = {
     subscribable,
     twitch,
     obs,
-    unfailable,
-    twitch_data
+    twitch_data,
+    persistent
 }
