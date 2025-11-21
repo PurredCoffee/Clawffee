@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { ApiClient } = require('@twurple/api');
-const { ChatClient } = require('@twurple/chat');
 const { EventSubWsListener } = require('@twurple/eventsub-ws');
 const { RefreshingAuthProvider, StaticAuthProvider, exchangeCode } = require('@twurple/auth');
+const { TwitchBot } = require('./_twitch/TwitchBot');
 const path = require("path");
 
 const {codeBinder: { associateClassWithFile }} = require('../internal/internal');
@@ -18,6 +18,7 @@ if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
 }
 const extraData = require("./twitch_data");
 const { createDoNothing, bindDoNothing } = require('./do_nothing');
+const { listen } = require('bun');
 
 
 const confPath = 'config/internal/';
@@ -33,14 +34,14 @@ const channels = conf.chats;
 
 
 /**
- * @typedef ConnectedBot
- * @property {number} id - The user ID of the bot.
- * @property {string} name - The user login of the bot.
- * @property {import('@twurple/api').ApiClient} api - The Twurple API client for the bot.
- * @property {import('@twurple/chat').ChatClient} chat - The Twurple Chat client for the bot.
- * @property {(channel: string, message: string) => Promise<void>} say - Function to send a message to a channel.
- * @property {(channel: string, message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void>} reply - Function to reply to a message in a channel.
- * @property {(callback: Function) => void} onWhisper - Function to register a whisper event callback.
+ * @typedef AddedBot
+ * @prop {string} name - The user login of the bot.
+ * @prop {(message: string, channel: string) => Promise<void>} say - Function to send a message to a channel.
+ * @prop {(message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void>} reply - Function to reply to a message in a channel.
+ */
+
+/**
+ * @typedef {TwitchBot & AddedBot} ConnectedBot
  */
 
 /**
@@ -55,43 +56,39 @@ const connectedBots = {};
 const connectedBotsDoNothing = createDoNothing();
 /**
  * The main user connected to twitch. Main API object.
+ * @type {ConnectedBot}
  */
 const connectedUser = {
     /**
      * @type number
      */
-    id: 0,
+    userId: 0,
     /**
      * @type string
      */
     name: "",
     /**
-     * @type import('@twurple/api').ApiClient
+     * @type TwitchBot['requests']
      */
-    api: createDoNothing(),
+    requests: createDoNothing(),
     /**
-     * @type import('@twurple/chat').ChatClient
+     * @type TwitchBot['events']
      */
-    chat: createDoNothing(),
-    /**
-     * @type import('@twurple/eventsub-ws').EventSubWsListener
-     */
-    listener: createDoNothing(),
+    events: createDoNothing(),
     /**
      * Sends a regular chat message to a channel.
      * @param {string} channel - The channel to send the message to.
      * @param {string} text - The message to send.
      * @returns {Promise<void>}
      */
-    say: async (channel, message) => { },
+    say: async (message, channel) => { },
     /**
      * Replies to a chat message in a channel.
-     * @param {string} channel - The channel to send the message to.
-     * @param {string} text - The message to send.
+     * @param {string} message - The message to send.
      * @param {import('@twurple/chat').ChatMessage} replyTo - The message to reply to.
      * @returns {Promise<void>}
      */
-    reply: async (channel, message) => { },
+    reply: async (message, replyTo) => { },
 };
 
 
@@ -103,60 +100,6 @@ function saveToken(path, newTokenData) {
     encryptData(path, JSON.stringify(data));
 }
 
-function flatten_inheritance(e) {
-    var o = Object.create(null),
-        c = e, i, prop;
-    do {
-        prop = Object.getOwnPropertyNames(c).filter(v => !v.startsWith("_"));
-        for (i = 0; i < prop.length; ++i)
-            try {
-                if (!(prop[i] in o) && typeof e[prop[i]] != 'function')
-                    o[prop[i]] = e[prop[i]];
-            } catch (ex) {}
-    } while (c = c.__proto__);
-    return o;
-}
-
-function deepCleanTwitchData(value, seen = new Map()) {
-    if (seen.has(value)) {
-        return seen.get(value);
-    }
-    seen.set(value, value);
-    if (typeof value !== 'object' || value === null) return value;
-    if(value.toJSON) return value;
-    if(Array.isArray(value)) {
-        value.forEach(v => deepCleanTwitchData(v, seen));
-        return value;
-    }
-    if (value instanceof Map) {
-        const newMap = new Map();
-        for (const [k, v] of value.entries()) {
-            newMap.set(k, deepCleanTwitchData(v, seen));
-        }
-        return newMap;
-    } 
-
-    var o = flatten_inheritance(value);
-    var r = Object.create(null);
-    for (const key in o) {
-        r[key] = deepCleanTwitchData(value[key], seen);
-    }
-    seen.set(value, new Proxy(r, {
-        get(target, prop, receiver) {
-            if(target[prop] !== undefined) {
-                const result = Reflect.get(target, prop, receiver);
-                if(typeof result === 'function') {
-                    return function(...args) {
-                        return result.apply(value, args);
-                    }
-                }
-                return result;
-            }
-            return value[prop];
-        }
-    }));
-    return seen.get(value);
-}
 
 /**
  * Adds a new bot using the provided token data.
@@ -181,128 +124,34 @@ async function addBot(tokenData, main = false) {
         url: 'users'
     })).data[0];
     const TokenInfo = (await api.getTokenInfo());
-    const ownName = userInfo.login;
-    if (!channels[ownName] || !channels[ownName].channels) {
-        channels[ownName] = {
-            channels: []
-        }
-    }
-    const ownedChannels = channels[ownName].channels;
-    const chat = cleanChatListenerOutput(
-        associateClassWithFile(
-            new ChatClient({ authProvider: auth, channels: ownedChannels }),
-            [(v) => v.startsWith("on")], 
-            (v) => () => v.unbind()
-        )
-    );
-    chat.connect();
+    const listener = new EventSubWsListener({ apiClient: api });
+    listener.start();
 
-    connectedBots[ownName] = {
-        api: api,
-        chat: chat,
-        id: userInfo.id,
-        name: ownName,
-        say: async (channel, message) => await chat.say(channel, message),
-        reply: async (channel, message, replyTo) => await chat.say(channel, message, {
-            replyTo: replyTo
-        }),
-        onWhisper: (callback) => chat.onWhisper(callback)
-    };
-    console.debug(`added token for ${userInfo.id} (${ownName}) and connected to [${ownedChannels}]`);
+    const ownName = userInfo.login;
+    connectedBots[ownName] = new TwitchBot(userInfo.id, listener, api);
+    connectedBots[ownName].events = associateClassWithFile(connectedBots[ownName].events, [(v) => v.startsWith('on')], (v => v.off));
+    connectedBots[ownName].name = ownName;
+    connectedBots[ownName].listener = listener;
+    connectedBots[ownName].api = api;
+    connectedBots[ownName].say = async (message, channel) => connectedBots[ownName].requests.chat.sendChatMessage(channel ?? connectedUser.userID, message);
+    connectedBots[ownName].reply = async (message, replyTo) => connectedBots[ownName].requests.chat.sendChatMessage(replyTo.channelId, message, {
+        replyParentMessageId: replyTo.id
+    });
+    console.debug(`added token for ${userInfo.id} (${ownName})`);
+
     return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url, expiryDate: TokenInfo.expiryDate.getTime() };
 }
 
-/**
- * make the eventsublistener listeners subscribable instead of requiring a new sub for everything
- * @param {EventSubWsListener} object 
- * @returns 
- */
-function makeEventSubListenerEventable(object) {
-    const activeEventListeners = {};
-    const activeListeners = {};
-    return new Proxy(object, {
-        get(target, property, receiver) {
-            const value = Reflect.get(target, property, receiver);
-            if (typeof value === 'function' && property.startsWith('on')) {
-                return (...args) => {
-                    let callback = args.pop();
-                    let argscopy = [...args, property];
-
-                    let el = activeEventListeners;
-                    let al = activeListeners;
-
-                    while (argscopy.length > 1) {
-                        let curarg = argscopy.pop();
-                        el = el[curarg] = el[curarg] ?? {};
-                        al = al[curarg] = al[curarg] ?? {};
-                    }
-                    if (!el[argscopy[0]]) el[argscopy[0]] = [];
-                    el[argscopy[0]].push(callback);
-                    if (!al[argscopy[0]]) {
-                        args.push((...newargs) => {
-                            el[argscopy[0]].forEach((call) => {
-                                try {
-                                    call(...newargs.map(v => deepCleanTwitchData(v)))
-                                } catch (ex) {
-                                    console.error(ex);
-                                }
-                            });
-                        });
-                        al[argscopy[0]] = value.apply(object, args);
-                    }
-                    return {
-                        ...al[argscopy[0]],
-                        suspend() {
-                            el[argscopy[0]] = el[argscopy[0]].filter((v) => v != callback);
-                        },
-                        start() {
-                            el[argscopy[0]].push(callback);
-                        },
-                        stop() {
-                            el[argscopy[0]] = el[argscopy[0]].filter((v) => v != callback);
-                        }
-                    }
-                }
-            }
-            return value;
-        }
-    });
-}
-
-function cleanChatListenerOutput(object) {
-    return new Proxy(object, {
-        get(target, property, receiver) {
-            const value = Reflect.get(target, property, receiver);
-            if (typeof value === 'function' && property.startsWith('on')) {
-                return (...args) => {
-                    args = args.map(v => {
-                        if(typeof v === 'function') 
-                            return (...newargs) => {
-                                try {
-                                    v(...newargs.map(vv => deepCleanTwitchData(vv)));
-                                } catch (ex) {
-                                    console.error(ex);
-                                }
-                            }; 
-                        return v;
-                    });
-                    return value.apply(object, args);
-                };
-            }
-            return value;
-        }
-    });            
-}
 
 /**
  * Connects all bots by loading and decrypting their OAuth tokens.
  * @returns {Promise<void>}
  */
 async function connect() {
-    connectedUser.listener.stop();
+    connectedUser.listener?.stop();
     Object.keys(connectedBots).forEach(key => {
-        connectedBots[key].chat.quit()
-        delete connectedBots[key]
+        connectedBots[key].listener.stop();
+        delete connectedBots[key];
     });
     const connectionInfo = {
         main: {},
@@ -323,14 +172,8 @@ async function connect() {
                             let user = (await addBot(tokenData.tokenData, true));
                             let name = user.name;
                             connectedUser.id = user.id;
-                            bindDoNothing(connectedUser.api, connectedBots[name].api);
-                            bindDoNothing(connectedUser.chat, connectedBots[name].chat);
-                            bindDoNothing(connectedUser.listener, makeEventSubListenerEventable(
-                                associateClassWithFile(new EventSubWsListener({ apiClient: connectedUser.api }),
-                                [(v) => v.startsWith("on")], 
-                                (v) => v.stop.bind(v)
-                            )));
-                            connectedUser.listener.start();
+                            bindDoNothing(connectedUser.requests, connectedBots[name].requests);
+                            bindDoNothing(connectedUser.events, connectedBots[name].events);
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
                             try {
@@ -341,7 +184,7 @@ async function connect() {
                                     connectionInfo.redeems[val.id].managed = true;
                                 });
                             } catch (e) {}
-                            connectionInfo.main = { ...user, listenTo: channels[name].channels };
+                            connectionInfo.main = { ...user };
                         } else {
                             let user = (await addBot(tokenData.tokenData, true));
                             let name = user.name;
