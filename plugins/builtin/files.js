@@ -137,6 +137,7 @@ function autoSavedJSON(filePath, fallback, options) {
             return obj;
         }
     }
+    console.debug('reading', filePath);
     let data = fallback ?? {};
     try {
         data = JSON.parse(readFileSyncDefault(filePath, stringifyJSON(data), options));
