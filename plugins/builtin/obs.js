@@ -1,5 +1,4 @@
 const { autoSavedJSON } = require('./files');
-const { enums, createRequestObj, eventParams, requestParams } = require('./obs-codegen');
 
 const { codeBinder: { associateFunctionWithFile } } = require("../internal/internal");
 
