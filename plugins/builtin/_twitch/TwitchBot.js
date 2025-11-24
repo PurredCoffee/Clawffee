@@ -1,5 +1,4 @@
 const { ApiClient } = require("@twurple/api");
-const { ChatClient } = require("@twurple/chat");
 const { EventSubWsListener } = require("@twurple/eventsub-ws");
 const wrapEVS = require('./wrapEventSub');
 const { deepCleanTwitchData } = require('./cleanTwurple');
