@@ -1,21 +1,5 @@
-const { createServer, addListener } = require('./Subscribable.js');
-const sharedServerData = createServer({internal: {}});
-
-let bakedhtml;
-let awaiters = [];
-
-let requirements = {
-    html: null,
-    css: null,
-    js: null
-};
-
-import('./htmlbuilder.js').then((baked) => {
-    bakedhtml = baked.default;
-    awaiters.forEach(element => {
-        element(new Response(bakedhtml, {headers: { "Content-Type": "text/html" }}))
-    });
-})
+const { addListener } = require('./Subscribable.js');
+const { sharedServerData } = require('./SharedServerData.js');
 
 const server = Bun.serve({
     port: 4444,
@@ -46,7 +30,7 @@ const server = Bun.serve({
             extradata.data.path = "internal";
         const success = server.upgrade(req, extradata);
         if (success) {
-            return undefined
+            return undefined;
         }
 
         function wrapIncorrectData(res) {
@@ -126,7 +110,6 @@ addListener(sharedServerData, "", (path, newValue, oldValue) => {
 
 const functions = {};
 clawffeeInternals.serverFunctions = functions;
-clawffeeInternals.sharedServerData = sharedServerData;
 
 console.log(`server running on port ${server.port}`);
 

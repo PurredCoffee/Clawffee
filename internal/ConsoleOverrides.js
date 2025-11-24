@@ -1,5 +1,7 @@
 const { prettyPrepareStack } = require('./ErrorOverrides');
 const util = require('util');
+const { sharedServerData } = require('./SharedServerData');
+sharedServerData.internal.log = {};
 
 const {basename } = require('path');
 
@@ -41,9 +43,7 @@ function cleanData(data) {
         }
     });
     str = str.substring(1);
-    return str
-        .split("\n")
-        .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "   ╎ " + v);
+    return str;
 }
 
 let ownPrefix = process.cwd().trim().length + 1;
@@ -83,7 +83,18 @@ function wrapConsoleFunction(name, copy, prefix = "", skipcalls = false) {
             }
         }
         longestName = Math.max(longestName, renderedText.length + 2);
-        copy(prefix + renderedText.padEnd(longestName, " ") + "╶╶\u001b[0m┝╸" + prefix + cleanData(data));
+        const cleaneddata = cleanData(data);
+        if(name != 'debug')
+            sharedServerData.internal.log[name] = Bun.stripANSI(cleaneddata);
+        copy(
+            prefix 
+            + renderedText.padEnd(longestName, " ") 
+            + "╶╶\u001b[0m┝╸" 
+            + prefix 
+            + cleaneddata
+                .split("\n")
+                .reduce((p, v) => p + "\n".padEnd(longestName, " ") + "   ╎ " + v)
+        );
     }
 }
 
