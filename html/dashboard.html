@@ -5,22 +5,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clawffee</title>
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none"><defs>
-        <symbol id="move-icon" viewBox="0 0 256 256">
-            <rect width="256" height="256" fill="none"/><rect x="54.46" y="54.46" width="147.08" height="147.08" transform="translate(-53.02 128) rotate(-45)" opacity="0.2"/><line x1="128" y1="160" x2="128" y2="232" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="128" y1="96" x2="128" y2="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="96 56 128 24 160 56" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="96 200 128 232 160 200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="96" y1="128" x2="24" y2="128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="160" y1="128" x2="232" y2="128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="200 96 232 128 200 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><polyline points="56 96 24 128 56 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
-        </symbol>
-        <symbol id="pause-icon" viewBox="0 0 256 256">
-            <rect width="256" height="256" fill="none"/><rect x="152" y="40" width="56" height="176" rx="8" opacity="0.2"/><rect x="48" y="40" width="56" height="176" rx="8" opacity="0.2"/><rect x="152" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><rect x="48" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
-        </symbol>
-        <symbol id="play-icon" viewBox="0 0 256 256">
-            <rect width="256" height="256" fill="none"/><path d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z" opacity="0.2"/><path d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
-        </symbol>
-        <symbol id="close-icon" viewBox="0 0 256 256">
-            <rect width="256" height="256" fill="none"/><line x1="200" y1="56" x2="56" y2="200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/><line x1="200" y1="200" x2="56" y2="56" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
-        </symbol>
-    </defs></svg>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
-    <link rel="stylesheet" href="css/index.css">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+        <defs>
+            <symbol id="move-icon" viewBox="0 0 256 256">
+                <rect width="256" height="256" fill="none" />
+                <rect x="54.46" y="54.46" width="147.08" height="147.08" transform="translate(-53.02 128) rotate(-45)"
+                    opacity="0.2" />
+                <line x1="128" y1="160" x2="128" y2="232" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <line x1="128" y1="96" x2="128" y2="24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <polyline points="96 56 128 24 160 56" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <polyline points="96 200 128 232 160 200" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <line x1="96" y1="128" x2="24" y2="128" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <line x1="160" y1="128" x2="232" y2="128" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <polyline points="200 96 232 128 200 160" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <polyline points="56 96 24 128 56 160" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+            </symbol>
+            <symbol id="pause-icon" viewBox="0 0 256 256">
+                <rect width="256" height="256" fill="none" />
+                <rect x="152" y="40" width="56" height="176" rx="8" opacity="0.2" />
+                <rect x="48" y="40" width="56" height="176" rx="8" opacity="0.2" />
+                <rect x="152" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor"
+                    stroke-linecap="round" stroke-linejoin="round" stroke-width="24" />
+                <rect x="48" y="40" width="56" height="176" rx="8" fill="none" stroke="currentColor"
+                    stroke-linecap="round" stroke-linejoin="round" stroke-width="24" />
+            </symbol>
+            <symbol id="play-icon" viewBox="0 0 256 256">
+                <rect width="256" height="256" fill="none" />
+                <path
+                    d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z"
+                    opacity="0.2" />
+                <path
+                    d="M72,39.88V216.12a8,8,0,0,0,12.15,6.69l144.08-88.12a7.82,7.82,0,0,0,0-13.38L84.15,33.19A8,8,0,0,0,72,39.88Z"
+                    fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="24" />
+            </symbol>
+            <symbol id="close-icon" viewBox="0 0 256 256">
+                <rect width="256" height="256" fill="none" />
+                <line x1="200" y1="56" x2="56" y2="200" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+                <line x1="200" y1="200" x2="56" y2="56" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round" stroke-width="24" />
+            </symbol>
+        </defs>
+    </svg>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock,open_with" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <style>
         .material-symbols-outlined {
             font-variation-settings:
@@ -67,7 +105,7 @@
             console.error(`${event.reason}`);
         };
 
-        window.onerror = function(message, source, lineNumber, colno, error) {
+        window.onerror = function (message, source, lineNumber, colno, error) {
             console.error(`${message}\n${error.stack}`);
         };
         let firstmessage = null;
@@ -82,817 +120,185 @@
     </script>
 </head>
 
-<body>
-    <div class="modules">
-        <style>
-            .modules {
-                border: var(--c) solid 1px;
-                border-bottom-width: 3px;
-                border-radius: 8px;
-                margin: 8px;
-                padding: 20px;
-                padding-bottom: 10px;
-                overflow: scroll;
-            }
-
-            #sub-modules {
-                display: grid;
-                position: relative;
-                grid-template-columns: repeat(8, calc(100% / 8));
-                grid-auto-rows: 140px;
-                width: 100%;
-                padding: 0;
-                margin: 0;
-                min-height: 700px;
-                padding-bottom: 140px;
-                min-width: 1000px;
-                font-size: clamp(18px, 1.5vw, 40px);
-            }
-
-            #sub-modules::after {
-                content: "";
-                position: absolute;
-                top: 0;
-                bottom: 10px;
-                left: 10px;
-                right: 10px;
-                background: linear-gradient(0deg, transparent 9px, gray 10px, transparent 10.5px),
-                    linear-gradient(90deg, transparent calc(100% - 10px), gray calc(100% - 9px), transparent calc(100% - 8.5px));
-                background-repeat: repeat;
-                background-size: calc((100% + 20px) / 8) 140px;
-                z-index: -1;
-            }
-
-            #sub-modules>* {
-                border-radius: 20px;
-                margin: 10px;
-                margin-bottom: 20px;
-                margin-top: 0;
-                padding-inline: auto;
-                position: relative;
-                z-index: 2;
-                cursor: pointer;
-                user-select: none;
-            }
-
-            #sub-modules>*::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                border: var(--c) 2px solid;
-                border-bottom-width: 3px;
-                border-radius: 20px;
-                z-index: -3;
-                pointer-events: none;
-            }
-
-            #sub-modules>*::after {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background:
-                    linear-gradient(120deg, #09090f99, transparent),
-                    linear-gradient(40deg, #010101, #0d0b0b);
-                background-size: 100vw 100vh;
-                background-attachment: fixed;
-                filter: brightness(1000%) contrast(200%) blur(15px);
-                z-index: -5;
-                pointer-events: none;
-            }
-
-            #sub-modules>.inactive {
-                background-color: #44000088;
-            }
-
-            #sub-modules>.inactive::after {
-                filter: brightness(1000%) contrast(200%) blur(20px) brightness(70%);
-            }
-
-            #sub-modules>.inactive::before {
-                --c: var(--e);
-            }
-
-            #sub-modules>.folder>.btn-text>span {
-                text-decoration: underline;
-                text-decoration-thickness: 2px;
-            }
-
-            #sub-modules>.folder>.btn-text {
-                padding-bottom: 4px;
-            }
-
-            #sub-modules>.folder::before {
-                border-style: double;
-                border-width: 4px;
-                border-bottom-width: 9px;
-            }
-
-            #sub-modules>*>.btn-text {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                translate: -50% -50%;
-                width: max-content;
-                max-width: calc(100%-20px);
-                text-shadow: black 2px 2px 0px;
-                overflow: hidden;
-            }
-
-            #sub-modules>*>.btn-action {
-                position: absolute;
-                bottom: 8px;
-                right: 8px;
-            }
-
-            #sub-modules>*>.btn-action>button {
-                background: none !important;
-                border: none;
-                transition: --c 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
-                text-shadow: transparent 2px 2px 0px;
-                height: 24px;
-                padding: 0.2em;
-                margin-inline: 0em;
-                --c: #00000000;
-            }
-
-            #sub-modules>*>.btn-bg {
-                position: absolute;
-                top: 8px;
-                left: 8px;
-                right: 8px;
-                bottom: 8px;
-                z-index: -4;
-                border-radius: 14px;
-                background-size: cover;
-                background-position: 50% 50%;
-                --c: #fff;
-                pointer-events: none;
-            }
-
-            #sub-modules>.inactive>.btn-bg {
-                filter: brightness(40%) hue-rotate(50deg) sepia(40%) hue-rotate(-50deg);
-            }
-
-            #sub-modules>*:hover {
-                outline: rgba(var(--pr), 33%) 4px solid;
-            }
-
-            #sub-modules>*>.btn-action>button {
-                box-shadow: none;
-            }
-
-            #sub-modules>*:hover>.btn-action>button {
-                text-shadow: black 2px 2px 0px;
-                --c: var(--P);
-            }
-
-            #sub-modules>*>.btn-action>button:hover {
-                text-shadow: black 2px 2px 0px;
-                --c: #fff;
-            }
-
-            #sub-modules>*>.btn-action>button.disabled {
-                text-shadow: black 2px 2px 0px;
-                --c: #fff;
-            }
-
-            #sub-modules>.resize>.btn-action>button {
-                display: none;
-            }
-
-            #sub-modules>.resize {
-                opacity: 0.5;
-                cursor: nesw-resize;
-            }
-
-            #sub-modules>.move>.btn-action>button {
-                display: none;
-            }
-
-            #sub-modules>.move {
-                opacity: 0.5;
-                cursor: move;
-            }
-
-            #cur-module {
-                padding: 1em;
-            }
-
-            #commandpath>a {
-                cursor: pointer;
-            }
-
-            #commandpath>a>span {
-                text-decoration: underline;
-            }
-        </style>
-        <h3 style="margin-top: 0;">Commands<span id="commandpath"></span></h3>
-        <div id="sub-modules">
-            <div id="module-template" template>
-                <div class="btn-text" template-name></div>
-                <div class="btn-action">
-                    <button template-move><span class="material-symbols-outlined"><svg width="24" height="24" version="2.0">
-                        <use href="#move-icon" />
-                    </svg></span></button>
-                    <button template-pause><span class="material-symbols-outlined"><svg width="24" height="24" version="2.0">
-                        <use href="#pause-icon" template-pause-icon/>
-                    </svg></span></button>
+<body style="height: 100vh;" data-bs-theme="dark">
+    <nav class="navbar navbar-expand">
+        <button class="btn text-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"
+            aria-controls="offcanvas">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-layout-sidebar-inset" viewBox="0 0 16 16">
+                <path
+                    d="M14 2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2z" />
+                <path d="M3 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+            </svg>
+        </button>
+        <a class="navbar-brand" href="#">Clawffee</a>
+        <div style="display: flex; align-items: center;">
+            <ul class="navbar-nav me-auto mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" aria-current="page"><b>commands</b> / </a>
+                </li>
+            </ul>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-backspace-fill" viewBox="0 0 16 16">
+                <path
+                    d="M15.683 3a2 2 0 0 0-2-2h-7.08a2 2 0 0 0-1.519.698L.241 7.35a1 1 0 0 0 0 1.302l4.843 5.65A2 2 0 0 0 6.603 15h7.08a2 2 0 0 0 2-2zM5.829 5.854a.5.5 0 1 1 .707-.708l2.147 2.147 2.146-2.147a.5.5 0 1 1 .707.708L9.39 8l2.146 2.146a.5.5 0 0 1-.707.708L8.683 8.707l-2.147 2.147a.5.5 0 0 1-.707-.708L7.976 8z" />
+            </svg>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="card mb-3">
+            <div class="row g-2">
+                <div class="col" style="height: 4em; min-width: 4em; max-width: 4em; flex-grow: 0;">
+                    <img src="test">
                 </div>
-                <div class="btn-bg" template-background></div>
+                <div class="col">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger" style="text-align: start;">blueberries.js</h5>
+                    </div>
+                </div>
+                <div class="col me-4" style="flex-grow: 0; align-self: center;">
+                    <div class="btn-group">
+                        <button type="button" name="" id="" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+                                <path
+                                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                <path
+                                    d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                <path fill-rule="evenodd"
+                                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-play-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-gear-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="cur-module" style="display: none;">
-            <hr info>
-            <span>
-                Button Settings for
-                <label for="btn-name">
-                    Button Name
-                </label>
-                <input id="btn-name" type="text">:
-            </span>
-            <label for="bg-upload">
-                Set Background
-            </label>
-            <input type="file" id="bg-upload" />
+        <div class="card mb-3">
+            <div class="row g-2">
+                <div class="col" style="height: 4em; min-width: 4em; max-width: 4em; flex-grow: 0;">
+                    <img src="test">
+                </div>
+                <div class="col">
+                    <div class="card-body">
+                        <h5 class="card-title" style="text-align: start;"><u>folder</u></h5>
+                    </div>
+                </div>
+                <div class="col me-4" style="flex-grow: 0; align-self: center;">
+                    <div class="btn-group">
+                        <button type="button" name="" id="" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-folder-symlink-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2l.04.87a2 2 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3M2.19 3q-.362.002-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672a1 1 0 0 1 .707.293L7.586 3zm9.608 5.271-3.182 1.97c-.27.166-.616-.036-.616-.372V9.1s-2.571-.3-4 2.4c.571-4.8 3.143-4.8 4-4.8v-.769c0-.336.346-.538.616-.371l3.182 1.969c.27.166.27.576 0 .742" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+                                <path
+                                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-stop-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5" />
+                            </svg>
+                        </button>
+                        <button type="button" name="" id="" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-gear-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <script>
-            function lockButton(path, enable) {
-                let url = new URL(enable ? "/internal/moduleLoad" : "/internal/moduleUnload", 'http://localhost:4444/');
-                url.searchParams.append("path", path);
-                fetch(url);
-            }
-            function moveButton(path, left, top, w, h) {
-                for (let r = top; r < top + h; r++) {
-                    for (let c = left; c < left + w; c++) {
-                        if (map.has(`${r - 1},${c - 1}`)) return false;
-                    }
-                }
-                let url = new URL("/internal/setModulePos", 'http://localhost:4444/');
-                url.searchParams.append("path", path);
-                url.searchParams.append("left", left);
-                url.searchParams.append("top", top);
-                url.searchParams.append("w", w);
-                url.searchParams.append("h", h);
-                fetch(url);
-                return true;
-            }
-            const moduleParent = document.getElementById('sub-modules');
-            const moduleEditor = document.getElementById('cur-module');
-            let map = new Set();
-
-            function placeModule(module) {
-                let left = Math.min(8, module.conf.pos.left ?? 1);
-                let w = Math.min(9 - left, module.conf.pos.w ?? 1);
-                let top = module.conf.pos.top ?? 1;
-                let h = module.conf.pos.h ?? 1;
-                for (let r = top; r < top + h; r++) {
-                    for (let c = left; c < left + w; c++) {
-                        map.add(`${r - 1},${c - 1}`);
-                    }
-                }
-            }
-            function deleteModule(module) {
-                let left = Math.min(8, module.conf.pos.left ?? 1);
-                let w = Math.min(9 - left, module.conf.pos.w ?? 1);
-                let top = module.conf.pos.top ?? 1;
-                let h = module.conf.pos.h ?? 1;
-                for (let r = top; r < top + h; r++) {
-                    for (let c = left; c < left + w; c++) {
-                        map.delete(`${r - 1},${c - 1}`);
-                    }
-                }
-            }
-
-            const module_template = document.getElementById('module-template');
-            module_template.removeAttribute('template');
-            module_template.remove();
-
-            function selectModule(name, module) {
-                
-            }
-
-            function addModule(name, module, left, top, w, h) {
-                let moduleName = module.conf.name;
-                if (!moduleName) {
-                    moduleName = name.split('.js')[0];
-                    moduleName = moduleName.replace(/[_\.\-]/g, ' ');
-                    moduleName = moduleName.replace(/\b\w/g, c => c.toUpperCase());
-                }
-                let button = module_template.cloneNode(true);
-                button.classList = `${module.active ? '' : 'inactive '}${Object.keys(module.children).length ? 'folder ' : ''}`;
-                button.style.gridColumn = `${left} / span ${w}`;
-                button.style.gridRow = `${top} / span ${h}`;
-                button.querySelector('[template-pause]').classList = (module.conf.enabled ? '' : 'disabled ');
-                button.querySelector('[template-pause-icon]').href.baseVal = (module.conf.enabled ? '#pause-icon' : '#play-icon');
-                button.querySelector('[template-background]').style.backgroundImage = `url("images/${module.conf.img}")`;
-
-                let path = module.path;
-                let enabled = !module.conf.enabled;
-                let disabled = false;
-
-                let clickListener;
-                if (Object.keys(module.children).length) {
-                    clickListener = (e) => {
-                        selectModule(name, module);
-                    }
-                } else {
-                    clickListener = (e) => {
-                        selectModule(name, module);
-                    }
-                }
-
-                button.querySelector('[template-pause]').addEventListener('click', (event) => { lockButton(path, enabled); event.stopPropagation(); });
-                button.querySelector('[template-move]').addEventListener('click', (event) => {
-                    deleteModule(module);
-                    button.removeEventListener('click', clickListener);
-                    event.stopPropagation();
-                    button.classList.add('move');
-                    let col = 1;
-                    let row = 1;
-                    let moveFollower = (e) => {
-                        const rect = moduleParent.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        const colWidth = rect.width / 8;
-                        const rowHeight = 140;
-                        col = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
-                        row = Math.max(0, Math.floor(y / rowHeight));
-                        button.style.gridColumn = `${col + 1} / span 1`;
-                        button.style.gridRow = `${row + 1} / span 1`;
-                    }
-                    moveFollower(event);
-                    moduleParent.addEventListener('mousemove', moveFollower);
-                    let mouseDown = (event) => {
-                        event.stopPropagation();
-                        button.classList.remove('move');
-                        button.classList.add('resize');
-                        moduleParent.removeEventListener('mousemove', moveFollower);
-                        moduleParent.removeEventListener('mousedown', mouseDown);
-                        let ncol = 1;
-                        let nrow = 1;
-                        moveFollower = (e) => {
-                            const rect = moduleParent.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
-                            const colWidth = rect.width / 8;
-                            const rowHeight = 140;
-                            ncol = Math.min(7, Math.max(0, Math.floor(x / colWidth)));
-                            nrow = Math.max(0, Math.floor(y / rowHeight));
-                            button.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                            button.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
-                        }
-                        moveFollower(event);
-                        moduleParent.addEventListener('mousemove', moveFollower);
-                        mouseDown = (e) => {
-                            e.stopPropagation();
-                            moduleParent.removeEventListener('mousemove', moveFollower);
-                            moduleParent.removeEventListener('mouseup', mouseDown);
-                            moduleParent.removeEventListener('mouseleave', mouseLeave);
-                            button.classList.remove('move');
-                            button.classList.remove('resize');
-                            if (!moveButton(module.path, Math.min(col, ncol) + 1, Math.min(row, nrow) + 1, Math.abs(col - ncol) + 1, Math.abs(row - nrow) + 1)) {
-                                button.style.gridColumn = `${left} / span ${w}`;
-                                button.style.gridRow = `${top} / span ${h}`;
-                                placeModule(module);
-                            } else {
-                                button.style.gridColumn = `${Math.min(col, ncol) + 1} / span ${Math.abs(col - ncol) + 1}`;
-                                button.style.gridRow = `${Math.min(row, nrow) + 1} / span ${Math.abs(row - nrow) + 1}`;
-                            }
-                            setTimeout(() => button.addEventListener('click', clickListener), 500);
-                        }
-                        document.addEventListener('mouseup', mouseDown);
-                    }
-                    moduleParent.addEventListener('mousedown', mouseDown);
-                    let mouseLeave = () => {
-                        moduleParent.removeEventListener('mousemove', moveFollower);
-                        moduleParent.removeEventListener('mousedown', mouseDown);
-                        moduleParent.removeEventListener('mouseup', mouseDown);
-                        moduleParent.removeEventListener('mouseleave', mouseLeave);
-                        button.classList.remove('move');
-                        button.classList.remove('resize');
-                        button.style.gridColumn = `${left} / span ${w}`;
-                        button.style.gridRow = `${top} / span ${h}`;
-                        placeModule(module);
-                        button.addEventListener('click', clickListener);
-                    }
-                    moduleParent.addEventListener('mouseleave', mouseLeave);
-                });
-                button.addEventListener('click', clickListener);
-                moduleParent.appendChild(button);
-                button.querySelector('[template-name]').innerText = Object.keys(module.children).length ? `&gt; <span>${moduleName}</span>` : moduleName;
-                button.querySelector('[template-name]').style.scale = Math.min(1, (button.clientWidth - 40) / button.children[0].clientWidth);
-            }
-
-            function printModules(data) {
-                moduleParent.innerHTML = "";
-                map = new Set();
-                let firstfree = 0;
-                for (const name in data) {
-                    if (Object.prototype.hasOwnProperty.call(data, name)) {
-                        const module = data[name];
-                        if (!module) {
-                            continue;
-                        }
-                        if (module.conf?.pos && !module.conf?.hide) {
-                            let left = Math.min(8, module.conf.pos.left ?? 1);
-                            let w = Math.min(9 - left, module.conf.pos.w ?? 1);
-                            let top = module.conf.pos.top ?? 1;
-                            let h = module.conf.pos.h ?? 1;
-                            placeModule(module);
-                            addModule(name, module, left, top, w, h);
-                        }
-                    }
-                }
-                for (const name in data) {
-                    if (Object.prototype.hasOwnProperty.call(data, name)) {
-                        const module = data[name];
-                        if (!module) {
-                            continue;
-                        }
-                        let moduleName = `${Object.keys(module.children ?? {}).length ? ">&NonBreakingSpace;" : ""}${name.split('.js')[0]}`;
-                        let style = '';
-                        if (!module.conf?.pos && !module.conf?.hide) {
-                            console.log(module);
-                            while (map.has(`${Math.trunc(firstfree / 8)},${firstfree % 8}`)) {
-                                firstfree++;
-                            }
-                            moveButton(module.path, Math.trunc(firstfree % 8) + 1, Math.trunc(firstfree / 8) + 1, 1, 1);
-                            console.log(module);
-                            return
-                        }
-                    }
-                }
-            }
-
-            function printSettings(data) {
-                if (!data) {
-                    return;
-                }
-                let moduleName = data.conf.name;
-                if (!moduleName) {
-                    moduleName = (active || modpath[modpath.length - 1]).split('.js')[0];
-                    moduleName = moduleName.replace(/[_\.\-]/g, ' ');
-                    moduleName = moduleName.replace(/\b\w/g, c => c.toUpperCase());
-                }
-                document.getElementById('btn-name').value = moduleName;
-                document.getElementById('btn-name').onblur = () => {
-                    let url = new URL('/internal/setModuleName', 'http://localhost:4444/');
-                    url.searchParams.append('path', curPath);
-                    url.searchParams.append('name', event.target.value);
-                    fetch(url, {
-                        method: 'POST'
-                    });
-                };
-                document.getElementById('btn-name').onkeydown = (event) => {
-                    if (event.key === "Enter") {
-                        event.target.onblur(event);
-                    }
-                }
-                document.getElementById('bg-upload').onchange = (event) => {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            let url = new URL('/internal/setModuleImage', 'http://localhost:4444/');
-                            url.searchParams.append('path', curPath);
-                            fetch(url, {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    image: e.target.result
-                                })
-                            });
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-            }
-
-            let modpath = [];
-            let active = "";
-            let curPath = "";
-            function updateModuleDisplay(root) {
-                if(root == undefined) return;
-                modpath.forEach(e => {
-                    root = root.children[e] ?? root;
-                });
-                printModules(root.children);
-                if (modpath.length && !active) {
-                    moduleEditor.style.display = '';
-                    printSettings(root);
-                } else if (active) {
-                    moduleEditor.style.display = '';
-                    printSettings(root.children[active]);
-                } else {
-                    moduleEditor.style.display = 'none';
-                }
-            }
-
-            onfirstSub((data) => {
-                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
-            })
-            const modsL = katzComm.addListener(sharedServerData, "internal.loadedmodules", (path, newData, oldData) => {
-                updateModuleDisplay(sharedServerData.internal?.loadedmodules);
-            });
-        </script>
     </div>
-    <div class="plugins">
-        <h3>Plugin Settings</h3>
-        <style>
-            .plugins {
-                padding-inline: 1em;
-            }
-
-            .plugin {
-                margin-block: 1em;
-                padding-inline: 1em;
-                position: relative;
-            }
-
-            .plugin::before {
-                content: "";
-                position: absolute;
-                left: -1px;
-                top: 0;
-                bottom: 0;
-                width: 3px;
-                background-color: var(--c);
-                border-radius: 2px;
-            }
-        </style>
-        <ul>
-            <li>
-                <details name="plugin">
-                    <summary>twitch</summary>
-                    <div class="plugin">
-                        <h3>Twitch Settings</h3>
-                        <style>
-                            .usergrid {
-                                display: flex;
-                                gap: 1em;
-                                align-items: end;
-                            }
-
-                            .usergrid>* {
-                                flex-grow: 1;
-                                max-width: 300px;
-                                height: 100%;
-                            }
-
-                            .card {
-                                padding: 1em;
-                                border: 1px solid var(--c);
-                                border-bottom-width: 3px;
-                                border-radius: 1em;
-                            }
-
-                            .card>*>*:first-child {
-                                display: flex;
-                                gap: 8px;
-                            }
-
-                            .card>*>ul>li:hover {
-                                --c: var(--e);
-                                cursor: pointer;
-                            }
-
-                            .card img {
-                                width: 48px;
-                                height: 48px;
-                                border-radius: 8px;
-                            }
-
-                            .redeem img {
-                                height: 2em;
-                                width: 2em;
-                            }
-                            .redeem td:first-child>div {
-                                display: flex;
-                                flex-direction: row;
-                                justify-content: flex-start;
-                                align-items: center;
-                                height: 100%;
-                            }
-                            .redeem td:last-child>div {
-                                display: flex;
-                                flex-direction: row;
-                                justify-content: flex-end;
-                                align-items: center;
-                            }
-                            .redeem [redeem-template-id] {
-                                -webkit-user-select: text;
-                            }
-                        </style>
-                        <button onclick="fetch('http://localhost:4444/twitch/add/main')">Set main user</button><button onclick="fetch('http://localhost:4444/twitch/add/bot')">Add new bot</button>
-                        <div class="usergrid" id="twitch-usergrid">
-                            <div id="card-template" template>
-                                <h4 card-template-header></h4>
-                                <div class="card">
-                                    <div>
-                                        <div>
-                                            <img card-template-pfp src="">
-                                            <div><span card-template-username></span> (<span card-template-id secondary></span>)</div>
-                                        </div>
-                                        <div secondary>Expires: <span card-template-expiry></span></div>
-                                        <h5>
-                                            Connected Channels:
-                                        </h5>
-                                        <ul card-template-listening>
-                                        </ul>
-                                        <button card-template-add-channel>Add Channel</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="card-template-unset" template>
-                                <h4 card-template-header>Main User</h4>
-                                <div class="card">
-                                    <h4>No User Set!</h4>
-                                    <a href="http://localhost:4444/twitch/add/main"><button card-template-add-channel>Set Main User</button></a>
-                                </div>
-                            </div>
-                        </div>
-                        <h4>Redeems</h4>
-                        <button onclick="
-                            document.getElementById('redeem-menu').classList.toggle('show');
-                        ">View Redeems</button>
-                        <menu id="redeem-menu">
-                            <menubar>
-                                <close-btn onclick="
-                                    document.getElementById('redeem-menu').classList.toggle('show');
-                                "></close-btn>
-                                Redeems
-                            </menubar>
-                            <div>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th secondary>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="twitch-redeems">
-                                        <tr id="redeem-template" class="redeem" template>
-                                            <td>
-                                                <div>
-                                                    <img style="margin-right: 1em;" src="" alt="" redeem-template-img>
-                                                    <span redeem-template-name>Redeem Name</span>
-                                                    &MediumSpace;(<span redeem-template-id secondary>A8734-3984-DFS3-349823</span>)
-                                                </div>
-                                            </td>
-                                            <td secondary><span redeem-template-owned>Owned</span></td>
-                                            <td><div><button redeem-template-action-button>Delete</button></div></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </menu>
-                        <script>
-                            const twitch_template = document.getElementById("card-template");
-                            twitch_template.removeAttribute("template");
-                            twitch_template.remove();
-                            const twitch_template_unset = document.getElementById("card-template-unset");
-                            twitch_template_unset.removeAttribute("template");
-                            twitch_template_unset.remove();
-
-                            const twitchMainDiv = document.getElementById('twitch-usergrid');
-
-                            function addTwitchUserCard(header, { id, name, pfp, listenTo, expiryDate }) {
-                                const card = twitch_template.cloneNode(true);
-                                card.querySelector("[card-template-header]").innerText = header;
-                                card.querySelector("[card-template-pfp]").src = pfp;
-                                card.querySelector("[card-template-username]").innerText = name;
-                                card.querySelector("[card-template-id]").innerText = id;
-                                card.querySelector("[card-template-expiry]").innerText = new Date(expiryDate).toDateString();
-                                if(expiryDate < new Date().getTime() + 1000*60*60*24*14) {
-                                    card.classList.add("warning");
-                                    card.querySelector("[card-template-expiry]").classList.add("danger");
-                                }
-                                
-                                const list = card.querySelector("[card-template-listening]");
-                                if (Array.isArray(listenTo) && listenTo.length > 0) {
-                                    listenTo.forEach(channel => {
-                                        const li = document.createElement('li');
-                                        li.textContent = channel;
-                                        li.style.cursor = "pointer";
-                                        li.title = "Click to remove";
-                                        li.onclick = function () {
-                                            fetch(`http://localhost:4444/twitch/removeListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(channel)}`, {
-                                                method: 'POST'
-                                            }).then(() => {
-                                                li.remove();
-                                            });
-                                        };
-                                        list.appendChild(li);
-                                    });
-                                }
-                                card.querySelector("[card-template-add-channel]").onclick = function () {
-                                    const user = prompt('Enter username to listen to:');
-                                    if (user && user.trim()) {
-                                        fetch(`http://localhost:4444/twitch/addListenTo?id=${encodeURIComponent(id)}&user=${encodeURIComponent(user.trim())}`, {
-                                            method: 'POST'
-                                        });
-                                    }
-                                };
-                                if(expiryDate)
-                                twitchMainDiv.appendChild(card);
-                                return card;
-                            }
-                            
-                            const twitch_redeem_template = document.getElementById("redeem-template");
-                            twitch_redeem_template.removeAttribute("template");
-                            twitch_redeem_template.remove();
-
-                            const twitchRedeemDiv = document.getElementById('twitch-redeems');
-                            
-                            function addRedeem({ id, managed, title, img }) {
-                                const card = twitch_redeem_template.cloneNode(true);
-                                if(img)
-                                    card.querySelector("[redeem-template-img]").src = img;
-                                else 
-                                    card.querySelector("[redeem-template-img]").remove();
-                                card.querySelector("[redeem-template-name]").innerText = title;
-                                card.querySelector("[redeem-template-id]").innerText = id;
-                                card.querySelector("[redeem-template-owned]").innerText = managed?"Owned":"Unowned";
-                                const btn = card.querySelector("[redeem-template-action-button]");
-                                if(managed) {
-                                    btn.innerText = "Delete";
-                                    btn.classList.add("danger");
-                                    btn.onclick = () => {
-                                        fetch(`http://localhost:4444/twitch/deleteRedeem?redeemId=${id}`);
-                                    }
-                                } else {
-                                    btn.innerText = "Clone";
-                                    card.querySelector("[redeem-template-owned]").classList.add("success");
-                                    btn.onclick = () => {
-                                        fetch(`http://localhost:4444/twitch/cloneRedeem?redeemId=${id}`);
-                                    }
-                                }
-                                twitchRedeemDiv.appendChild(card);
-                            }
-
-                            function update_twitch(data) {
-                                if(!data.internal?.twitch) return;
-                                twitchMainDiv.innerHTML = "";
-                                if (data.internal.twitch?.main?.name)
-                                    addTwitchUserCard("Main User", data.internal.twitch.main);
-                                else {
-                                    twitchMainDiv.appendChild(twitch_template_unset.cloneNode(true));
-                                }
-                                
-                                let header = "Bots";
-                                if (data.internal.twitch?.bots)
-                                    data.internal.twitch.bots?.forEach?.((obj) => {
-                                        addTwitchUserCard(header, obj);
-                                        header = "";
-                                    });
-
-                                header = "Failed";
-                                if (data.internal.twitch?.failed)
-                                    data.internal.twitch.failed.forEach((obj) => {
-                                        let card = addTwitchUserCard(header, obj);
-                                        card.classList.add("danger");
-                                        header = "";
-                                    });
-
-                                twitchRedeemDiv.innerHTML = "";
-                                if (data.internal.twitch?.redeems)
-                                    Object.keys(data.internal.twitch.redeems).sort((a,b) => {
-                                        return (data.internal.twitch.redeems[a].name ?? "").localeCompare((data.internal.twitch.redeems[b].name ?? ""))
-                                    }).forEach((key) => {
-                                        addRedeem(data.internal.twitch.redeems[key]);
-                                    });
-                            }
-
-                            onfirstSub((data) => {
-                                update_twitch(sharedServerData);
-                            });
-                            const twitchL = katzComm.addListener(sharedServerData, "internal.twitch", (path, newData, oldData) => {
-                                update_twitch(sharedServerData);
-                            });
-                        </script>
-                    </div>
-                </details>
-            </li>
-            <li>
-                <details name="plugin">
-                    <summary>html</summary>
-                    <div class="plugin">
-                    </div>
-                </details>
-            </li>
-            <li>
-                <details name="plugin">
-                    <summary>obs</summary>
-                    <div class="plugin">
-                    </div>
-                </details>
-            </li>
-        </ul>
+    <div class="offcanvas offcanvas-start " tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+        <div class="offcanvas-header pb-0 mb-0">
+            <h5 class="offcanvas-title" id="offcanvasLabel">Clawffee</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <hr>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" aria-current="page">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-house-door-fill me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5" />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+            </ul>
+            <hr>
+            <p>Plugin Settings: </p>
+            <ul class="nav nav-pills flex-column mb-auto" style="overflow-y: auto; flex-wrap: nowrap;">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" aria-current="page">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-hdd-stack-fill me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M2 9a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2zm.5 3a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m2 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1M2 2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm.5 3a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m2 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1" />
+                        </svg>
+                        Server Settings
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav nav-pills flex-column">
+                <li>
+                    <a href="#" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-discord me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612" />
+                        </svg>
+                        Discord
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-heart-fill me-2" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314" />
+                        </svg>
+                        Supporters
+                    </a>
+                </li>
+            </ul>
+            <hr>
+            <span><span class="badge bg-primary" style="width: fit-content;">0.5.0</span> by Katzentatzentanz 🐾</span>
+        </div>
     </div>
     <div class="log">
         <style>
@@ -926,7 +332,7 @@
             #log>* {
                 animation: log 10s forwards;
                 white-space: pre-line;
-                background: linear-gradient(to right,rgba(var(--cr), 5%)), linear-gradient(to right,#01010144);
+                background: linear-gradient(to right, rgba(var(--cr), 5%)), linear-gradient(to right, #01010144);
                 width: fit-content;
                 margin-left: auto;
                 padding-left: 8px;
@@ -958,7 +364,6 @@
             });
         </script>
     </div>
-    <div class="background"></div>
     <script>
         let ws = new WebSocket("ws://localhost:4444/internal/");
         function reconnect() {
@@ -990,7 +395,7 @@
         }
         ws.onmessage = (message) => {
             let change = JSON.parse(message.data);
-            if(change.p?.[0] != 'internal' && change.p[0])
+            if (change.p?.[0] != 'internal' && change.p[0])
                 console.log(`data.${change.p?.join?.('.')} was set to ${JSON.stringify(change.v)}`);
             katzComm.apply(sharedServerData, change.v, change.p);
             if (!firstmessage) {
@@ -999,7 +404,7 @@
             }
         }
 
-        document.onkeydown = function(evt) {
+        document.onkeydown = function (evt) {
             evt = evt || window.event;
             var isEscape = false;
             if ("key" in evt) {
@@ -1014,6 +419,8 @@
             }
         };
     </script>
+    <script src="js/popper.js"></script>
+    <script src="js/bootstrap.min.js"></script>
 </body>
 
 </html>

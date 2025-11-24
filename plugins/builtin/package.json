@@ -9,9 +9,8 @@
   },
   "dependencies": {
     "@twurple/api": "npm:@twurple/api@^7.4.0",
-    "@twurple/chat": "npm:@twurple/chat@^7.4.0",
     "@twurple/eventsub-ws": "npm:@twurple/eventsub-ws@^7.4.0",
-    "ini": "npm:ini@^5.0.0",
+    "ini": "npm:ini@^6.0.0",
     "obs-kiss": "^1.2.0"
   }
 }
