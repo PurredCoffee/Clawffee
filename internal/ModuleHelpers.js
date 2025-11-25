@@ -51,7 +51,7 @@ function createRequire(basePath, module) {
                 for (const ending in clawffeeInternals.fileManagers) {
                     if (!Object.hasOwn(clawffeeInternals.fileManagers, ending) || !fullpath.endsWith(ending)) continue;
                     const handler = clawffeeInternals.fileManagers[ending];
-                    return handler(fullpath, data);
+                    return handler.onRequire?.(fullpath, data);
                 }
                 return data;
             } catch(e) {
@@ -99,12 +99,6 @@ function runAsFile(fullpath, funcStr, keepCache) {
     return mod;
 }
 
-console.info("To start, create a .js file in the commands folder!");
-globalThis.clawffeeInternals.fileManagers = {
-   '.js': (fullpath, data) => {
-        return runAsFile(fullpath, data).exports;
-    }
-}
 
 module.exports = {
     runAsFile

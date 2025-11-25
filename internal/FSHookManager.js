@@ -8,7 +8,7 @@ const path = require('path')
 /**
  * Run a callback whenever a file is updated in a folder (or subfolder)
  * @param {string[]} folder 
- * @param {(event: EventName | 'initial', path: string, stats?: Stats | undefined)} fileUpdateCallback 
+ * @param {(event: EventName | 'initial', path: string, stats?: fs.Stats | undefined)} fileUpdateCallback 
  */
 function hookToFolder(folder, fileUpdateCallback) {
     function readDir(f) {

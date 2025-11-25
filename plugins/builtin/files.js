@@ -185,8 +185,10 @@ function autoSavedJSON(filePath, fallback, options) {
     return proxied;
 }
 
-globalThis.clawffeeInternals.fileManagers['.json'] = (fullpath, data) => {
-    return autoSavedJSON(fullpath, {}, null);
+globalThis.clawffeeInternals.fileManagers['.json'] = {
+    onRequire(fullpath, data) {
+        return autoSavedJSON(fullpath, {}, null);
+    }
 }
 
 /**
