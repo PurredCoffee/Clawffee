@@ -118,6 +118,7 @@ function loadCommand(path, str, initial) {
 
 sharedServerData.internal.commands = JSON.parse(fs.readFileSync('config/internal/commands.json'));
 const config = sharedServerData.internal.commands;
+clawffeeInternals.commandConfig = config;
 
 /**
  * 
@@ -134,12 +135,13 @@ function getCMDObject(path) {
             name: 'fname',
             sortname: null,
             img: null,
+            hidden: false,
+            disabled: false,
             childfolders: {},
             childscripts: {}
         };
         mgr = mgr.childfolders[fname];
     }
-    console.log(mgr);
     return mgr;
 }
 /**
@@ -159,14 +161,33 @@ function runCommands(folder) {
         const cmdobj = getCMDObject(path);
         if(type == 'unlink') {
             if(stats.isDirectory()) {
+                delete cmdobj.childfolders[basename(path)];
             } else {
-
+                delete cmdobj.childscripts[basename(path)];
             }
         } else {
             if(stats.isDirectory()) {
-
+                if(!cmdobj.childfolders[basename(path)]) {
+                    cmdobj.childfolders[basename(path)] = {
+                        "name": basename(path),
+                        "sortname": null,
+                        "img": null,
+                        "hidden": false,
+                        "disabled": false,
+                        childfolders: {},
+                        childscripts: {}
+                    }
+                }
             } else {
-
+                if(!cmdobj.childscripts[basename(path)]) {
+                    cmdobj.childscripts[basename(path)] = {
+                        "name": basename(path),
+                        "sortname": null,
+                        "img": null,
+                        "hidden": false,
+                        "disabled": false,
+                    }
+                }
             }
         }
         if(!Object.keys(clawffeeInternals.fileManagers).find(v => path.endsWith(v))) {
