@@ -78,7 +78,7 @@ globalThis.clawffeeInternals.fileManagers = {
         onLoad(fullpath, data, initial) {
             if(!data.trim()) {
                 data = globalThis.clawffeeInternals.defaultFile + data;
-                setTimeout(() => fs.writeFile(path, str, (err) => {
+                setTimeout(() => fs.writeFile(fullpath, data, (err) => {
                     if(err) {
                         console.error(err);
                     }
@@ -104,7 +104,7 @@ function loadCommand(path, str, initial) {
             if (!Object.hasOwn(globalThis.clawffeeInternals.fileManagers, ending) || !path.endsWith(ending)) continue;
             const mgr = globalThis.clawffeeInternals.fileManagers[ending];
             try {
-                (mgr.onLoad, mgr.onRequire)?.(fullPath, str, initial);
+                (mgr.onLoad ?? mgr.onRequire)?.(fullPath, str, initial);
                 break;
             } catch(e) {
                 console.error(e);
