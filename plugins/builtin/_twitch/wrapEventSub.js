@@ -1,6 +1,8 @@
 const { EventSubWsListener } = require("@twurple/eventsub-ws");
 const { deepCleanTwitchData } = require('./cleanTwurple');
 
+// TODO: add IRC PRIVMSG event to onMessage and USERNOTICE to onSub onGiftSub etc.
+
 /**
  * @typedef {Parameters<T> extends [...infer _, infer L] ? L : never} TwurpleCallback
  * @template {Function} T

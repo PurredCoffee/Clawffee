@@ -5,10 +5,8 @@ const acorn_walk = require("acorn-walk");
 const { type } = require('os');
 const { prettyPrepareStack } = require('./ErrorOverrides');
 
-/**
- * @type {Map<string, string>} original File contents for a file path
- */
-const fileContent = new Map(); // TODO make map
+// TODO add callback that callback in file got ran for GUI
+
 function parseJS(codeStr) {
     const parsedCode = acorn.parse(codeStr, {
         ecmaVersion: "latest",
