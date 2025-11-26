@@ -38,7 +38,7 @@ function cleanData(data) {
                     break;
                 }
             default:
-                str += Bun.inspect(v, { colors: true, depth: 2 });
+                str += "\u001b[0m" + Bun.inspect(v, { colors: true, depth: 2 });
                 break;
         }
     });
