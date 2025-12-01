@@ -40,8 +40,8 @@ function cleanAPIOutput(object) {
     });
 }
 
-function wrapEventSubListener(evs, uid) {
-    const EventSubFunctions = wrapEVS(evs, uid);
+function wrapEventSubListener(evs, api, uid) {
+    const EventSubFunctions = wrapEVS(evs, api, uid);
     
     return {
         internal: {
@@ -159,7 +159,7 @@ class TwitchBot {
          * @type {TwitchApi}
          */
         this.requests = cleanAPIOutput(api);
-        this.events = wrapEventSubListener(EventSub, userID);
+        this.events = wrapEventSubListener(EventSub, api, userID);
         this.userID = userID;
     }
 }

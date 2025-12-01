@@ -1,7 +1,9 @@
 const { EventSubWsListener } = require("@twurple/eventsub-ws");
+const { ChatClient } = require("@twurple/chat");
 const { deepCleanTwitchData } = require('./cleanTwurple');
+const { ApiClient } = require("@twurple/api");
 
-// TODO: add IRC PRIVMSG event to onMessage and USERNOTICE to onSub onGiftSub etc.
+// TODO: add IRC PRIVMSG event to onMessage and USERNOTICE to onSub onGiftSub etc. using their ids
 
 /**
  * @typedef {Parameters<T> extends [...infer _, infer L] ? L : never} TwurpleCallback
@@ -16,9 +18,20 @@ const { deepCleanTwitchData } = require('./cleanTwurple');
  */
 
 /**
+ * @typedef {'IRC'|'EventSub'|number} IRCEventableType type of listener to subscribe to, defaults to a combination of IRC and EventSub messages (number for timeout period)
+ */
+
+/**
  * @type {Map<EventSubWsListener, {[k: string]: EventCache}}
  */
 const eventManagers = new Map();
+
+/**
+ * @type {Map<EventSubWsListener, ChatClient>}
+ */
+const chatListeners = new Map();
+
+const ID2UserCache = new Map();
 
 /**
  * @typedef EventListener
@@ -71,7 +84,149 @@ function wrapEvent(evs, name, callback, args = []) {
     return listener;
 }
 
-module.exports = function wrapEventSubListener(evs, uid) {
+function wrapChat(evs, userName, name, callback) {
+    const chat = chatListeners.get(evs);
+    if(!chat.currentChannels.includes(userName)) {
+        chat.join(userName);
+    }
+    if(!eventManagers.has(chat)) eventManagers.set(chat, {});
+    const eventManager = eventManagers.get(chat);
+    eventManager[name] = eventManager[name] ?? {listeners: new Map(), nextarg: new Map(), listener: null}
+    let mgr = eventManager[name];
+    if(!mgr.listener) {
+        console.debug(`subscribing to new message ${name}`)
+        mgr.listener = chat[name]((channel, ...data) => eventManager[name].nextarg.get(channel)?.listeners.forEach(v => {try {v(channel, ...data.map(v => deepCleanTwitchData(v)))} catch (e) { console.error(e)}}));
+    }
+
+    if(!mgr.nextarg.has(userName)) mgr.nextarg.set(userName, {listeners: new Map(), nextarg: new Map(), listener: null});
+    mgr = mgr.nextarg.get(userName);
+
+    const key = Bun.randomUUIDv7();
+    // TODO: unsubscribe empty listeners
+    const listener = {
+        key: key,
+        callback: callback,
+        on() { return mgr.listeners.set(key, callback) },
+        off() { return mgr.listeners.delete(key) },
+        enable() { return mgr.listeners.set(key, callback) },
+        disable() { return mgr.listeners.delete(key) },
+        subscribe() { return mgr.listeners.set(key, callback) },
+        unsubscribe() { return mgr.listeners.delete(key) },
+    }
+    listener.on();
+    return listener;
+}
+
+/**
+ * 
+ * @param {any} channelID 
+ * @param {ApiClient} api 
+ * @returns 
+ */
+function resolveName(channelID, api) {
+    if(ID2UserCache.has(channelID)) return Promise.resolve(ID2UserCache.get(channelID));
+    return api.users.getUserById(channelID).then((value) => value.name);
+}
+
+/**
+ * @function combineListener
+ * @param {*} IRCIDCbk 
+ */
+/**
+ * 
+ * @param {IRCEventableType} type 
+ * @param {ApiClient} api 
+ * @param {number} channelID
+ * @param {(id: number, callback: EVSCallback) => EventSubWsListener} evsCbk 
+ * @param {(...params: Parameters<EVSCallback>) => number} evsIDCbk 
+ * @param {(name: string, callback: IRCCallback) => ChatClient} IRCCbk 
+ * @param {(...params: Parameters<IRCCallback>) => number} IRCIDCbk 
+ * @param {(EVSargs: Parameters<EVSCallback>[0], IRCargs: Parameters<IRCCallback>) => any} dataCbk
+ * @template IRCCallback
+ * @template EVSCallback
+ * @returns {EventListener}
+ */
+function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDCbk, dataCbk) {
+    let IRCListener = null;
+    let EVSListener = null;
+    let IRCCache = new Map();
+    let EVSCache = new Map();
+    let Cache = [];
+    let Resolved = new Map();
+    function flush(id) {
+        if(Resolved.get(id) === true) return;
+        clearTimeout(Resolved.get(id));
+        Resolved.set(id, true);
+        dataCbk(EVSCache.get(id), IRCCache.get(id));
+    }
+    function resolve(id) {
+        if(Resolved.get(id) === true) return;
+        Cache.push(id);
+        if(
+            type == 'EventSub' || type == 'IRC'
+            || (EVSCache.has(id) && IRCCache.has(id))
+        ) {
+            flush(id);
+        } else {
+            Resolved.set(id, setTimeout(() => flush(id), type * 1000));
+        }
+        if(Cache.length > 64) {
+            flush(id);
+            const id = Cache.shift();
+            IRCCache.delete(id);
+            EVSCache.delete(id);
+            Resolved.delete(id);
+        }
+    }
+    function addEVSData(id, data) {
+        EVSCache.set(id, data);
+        resolve(id);
+    }
+    function addIRCData(id, data) {
+        IRCCache.set(id, data);
+        resolve(id);
+    }
+    if(type != 'EventSub') {
+        resolveName(channelID, api).then((name) => {
+            IRCListener = IRCCbk(name, (...args) => {
+                let id = IRCIDCbk(...args);
+                addIRCData(id, args);
+            });
+        });
+    }
+    if(type != 'IRC') {
+        EVSListener = evsCbk(channelID, (...args) => {
+            let id = evsIDCbk(...args);
+            addEVSData(id, args);
+        })
+    }
+    if(type != 'EventSub' && type != 'IRC' && typeof type != "number") {
+        console.warn("type is not a number or 'IRC' or 'EventSub'");
+        type = 5;
+    }
+    return {
+        on() { IRCListener?.enable(); EVSListener?.enable() },
+        off() { IRCListener?.disable(); EVSListener?.disable() },
+        enable() { IRCListener?.enable(); EVSListener?.enable() },
+        disable() { IRCListener?.disable(); EVSListener?.disable() },
+        subscribe() { IRCListener?.enable(); EVSListener?.enable() },
+        unsubscribe() { IRCListener?.disable(); EVSListener?.disable() }
+    };
+}
+
+/**
+ * 
+ * @param {EventSubWsListener} evs 
+ * @param {ApiClient} api
+ * @param {number} uid
+ */
+module.exports = function wrapEventSubListener(evs, api, uid) {
+    if(!chatListeners.has(evs)) {
+        chatListeners.set(evs, new ChatClient({
+            authProvider: api._authProvider
+        }));
+        chatListeners.get(evs).connect();
+    }
     const EventSubFunctions = {
         /**
          * Fires when a user socket has established a connection with the EventSub server.
@@ -502,7 +657,7 @@ module.exports = function wrapEventSubListener(evs, uid) {
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatMessageDelete']>} callback 
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelChatMessageDelete(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelChatMessageDelete', callback, [broadcasterID, uid]) },
+        onChannelChatMessageDelete(callback, broadcasterID = uid) {return wrapEvent(evs, 'onChannelChatMessageDelete', callback, [broadcasterID, uid]);},
         /**
          * Subscribes to events that represent a chat notification being sent to a channel.
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatNotification']>} callback 
@@ -510,11 +665,94 @@ module.exports = function wrapEventSubListener(evs, uid) {
          */
         onChannelChatNotification(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelChatNotification', callback, [broadcasterID, uid]) },
         /**
-         * Subscribes to events that represent a chat message being sent to a channel.
-         * @param {TwurpleCallback<EventSubWsListener['onChannelChatMessage']>} callback 
-         * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
+         * @typedef onChannelMessageParam
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]} EventSubData
+         * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[3]} IRCData
+         * @prop {'text' | 'cheermote' | 'emote' | 'mention' | null} messageType
+         * @prop {string} broadcasterID
+         * @prop {string} broadcasterDisplayName
+         * @prop {string} chatterId
+         * @prop {string} chatterName
+         * @prop {string} chatterDisplayName
+         * @prop {string} color
+         * @prop {string} badges
+         * @prop {string} messageId
+         * @prop {string} messageText
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]['messageParts'] | null} messageParts
+         * @prop {boolean | null} isFirst
+         * @prop {boolean | null} isReturningChatter
+         * @prop {boolean | null} isHighlight
+         * @prop {boolean} isReply
+         * @prop {{[tag: string]: string} | nul} tags
          */
-        onChannelChatMessage(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelChatMessage', callback, [broadcasterID, uid]) },
+        /**
+         * Subscribes to events that represent a chat message being sent to a channel.
+         * @param {(data: onChannelMessageParam) => void} callback 
+         * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
+         * @param {IRCEventableType?} type type of listener to subscribe as, defaults to a combination of IRC and EventSub messages (number for timeout period)
+         */
+        onChannelChatMessage(callback, broadcasterID = uid, type = 5) {
+            return combineListeners(type, api, broadcasterID,
+                /**
+                 * 
+                 * @param {number} id 
+                 * @param {TwurpleCallback<EventSubWsListener['onChannelChatMessage']>} cbk 
+                 * @returns 
+                 */
+                (id, cbk) => wrapEvent(evs, 'onChannelChatMessage', cbk, [broadcasterID, uid]),
+                (data) => data.messageId,
+                /**
+                 * 
+                 * @param {string} name 
+                 * @param {TwurpleCallback<ChatClient['onMessage']} cbk 
+                 * @returns 
+                 */
+                (name, cbk) => wrapChat(evs, name, 'onMessage', cbk),
+                (channel, user, text, msg) => msg.id,
+                (evsData, ircData) => {
+                    callback({
+                        EventSubData: evsData,
+                        IRCData: ircData[3],
+                        messageType: evsData.messageType ?? null, // TODO text, cheermote (emote only but p2w), emote, mention
+                        broadcasterID: evsData.broadcasterId ?? ircData[3].channelId,
+                        broadcasterDisplayName: evsData.broadcasterDisplayName ?? ircData[3].userInfo.displayName,
+                        chatterId: evsData.chatterId ?? ircData[3].userInfo.userId,
+                        chatterName: evsData.chatterName ?? ircData[3].userInfo.userName,
+                        chatterDisplayName: evsData.chatterDisplayName ?? ircData[3].userInfo.displayName,
+                        color: evsData.color ?? ircData[3].userInfo.color,
+                        badges: evsData.badges ?? ircData[3].userInfo.badges,
+                        messageId: evsData.messageId ?? ircData[3].id,
+                        messageText: evsData.messageText ?? ircData[2],
+                        messageParts: evsData.messageParts ?? null, // TODO?
+                        parentMessageId: evsData.parentMessageId ?? ircData[3].parentMessageId,
+                        parentMessageText: evsData.parentMessageText ?? ircData[3].parentMessageText,
+                        parentMessageUserId: evsData.parentMessageUserId ?? ircData[3].parentMessageUserId,
+                        parentMessageUserName: evsData.parentMessageUserId ?? ircData[3].parentMessageUserId,
+                        parentMessageUserDisplayName: evsData.parentMessageUserDisplayName ?? ircData[3].parentMessageUserDisplayName,
+                        threadMessageId: evsData.threadMessageId ?? ircData[3].threadMessageId,
+                        threadMessageUserId: evsData.threadMessageUserId ?? ircData[3].threadMessageUserId,
+                        threadMessageUserName: evsData.threadMessageUserName ?? ircData[3].threadMessageUserName,
+                        threadMessageUserDisplayName: evsData.threadMessageUserDisplayName ?? ircData[3].threadMessageUserDisplayName,
+                        isCheer: evsData.isCheer ?? ircData[3].isCheer,
+                        bits: evsData.bits ?? ircData[3].bits,
+                        isRedemption: evsData.isRedemption ?? ircData[3].isRedemption,
+                        rewardId: evsData.rewardId ?? ircData[3].rewardId,
+                        sourceBroadcasterId: evsData.sourceBroadcasterId ?? null, // Doesn't ecist in IRC
+                        sourceBroadcasterName: evsData.sourceBroadcasterName ?? null,
+                        sourceBroadcasterDisplayName: evsData.sourceBroadcasterDisplayName ?? null,
+                        sourceMessageId: evsData.sourceMessageId ?? null,
+                        sourceBadges: evsData.sourceBadges ?? null,
+                        isSorceOnly: evsData.isSourceOnly ?? null,
+                        
+                        isFirst: ircData[3].isFirst ?? null, // Doesn't exist in EVS
+                        isReturningChatter: ircData[3].isReturningChatter ?? null, // Doesn't exist in EVS
+                        isHighlight: ircData[3].isHighlight ?? null, // Doesn't exist in EVS
+                        isReply: ircData[3].isReply ?? Boolean(evsData.parentMessageId),
+                        tags: ircData[3].tags ?? null
+                    });
+                }
+            );
+        },
         /**
          * Subscribes to events that represent chat settings being updated in a channel.
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatSettingsUpdate']>} callback 
@@ -633,6 +871,11 @@ module.exports = function wrapEventSubListener(evs, uid) {
 
     // DEV
     /**
+     * @typedef {keyof {[K in keyof A as K extends keyof B[keyof B]? never: K]: any}} missingFunctions
+     * @template A
+     * @template B
+     */
+    /**
      * @type {{[K in keyof {[J in keyof EventSubWsListener as J extends `on${string}` ? J : never]: EventSubWsListener[J]} as K extends keyof typeof EventSubFunctions? never : K]: any}}
      */
     const missingFunctions = {};
@@ -640,3 +883,8 @@ module.exports = function wrapEventSubListener(evs, uid) {
 
     return EventSubFunctions;
 }
+
+/**
+ * @type {missingFunctions<{c: true, b:true}, {a: {b: true}}>}
+ */
+const a = '';
