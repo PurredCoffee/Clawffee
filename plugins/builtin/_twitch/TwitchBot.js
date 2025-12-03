@@ -1,5 +1,6 @@
 const { ApiClient } = require("@twurple/api");
 const { EventSubWsListener } = require("@twurple/eventsub-ws");
+const { ChatClient } = require("@twurple/chat");
 const wrapEVS = require('./wrapEventSub');
 const { deepCleanTwitchData } = require('./cleanTwurple');
 
@@ -110,9 +111,12 @@ function wrapEventSubListener(evs, api, uid) {
                 onResub: EventSubFunctions.onChannelSubscriptionMessage,
             },
             /**
-             * @typedef {import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubGiftNotificationEvent').EventSubChannelChatSubGiftNotificationEvent} onGiftData
-             * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
-             * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @typedef OnGiftSubAddedData
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             */
+            /**
+             * @typedef {OnGiftSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubGiftNotificationEvent').EventSubChannelChatSubGiftNotificationEvent} onGiftData
              */
             /**
              * Subscribes to events that represent a user being gifted a subscription to a channel.
@@ -126,9 +130,12 @@ function wrapEventSubListener(evs, api, uid) {
                 }, broadcasterID, type);
             },
             /**
-             * @typedef {import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubNotificationEvent').EventSubChannelChatSubNotificationEvent} onSubData
-             * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
-             * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @typedef OnSubAddedData
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             */
+            /**
+             * @typedef {OnSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubNotificationEvent').EventSubChannelChatSubNotificationEvent} onSubData
              */
             /**
              * Subscribes to events that represent a user subscribing to a channel.
@@ -142,9 +149,13 @@ function wrapEventSubListener(evs, api, uid) {
                 }, broadcasterID, type);
             },
             /**
-             * @typedef {import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatResubNotificationEvent').EventSubChannelChatResubNotificationEvent} onResubData
-             * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
-             * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @typedef OnResubAddedData
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             */
+            /**
+             * 
+             * @typedef {OnResubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatResubNotificationEvent').EventSubChannelChatResubNotificationEvent} onResubData
              */
             /**
              * Subscribes to events that represent a user's subscription to a channel being announced.
