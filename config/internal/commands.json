@@ -1,0 +1,17 @@
+{
+    "name": "commands",
+    "sortname": null,
+    "img": null,
+    "hidden": false,
+    "disabled": false,
+    "childfolders": {
+        "name": "examples",
+        "sortname": null,
+        "img": null,
+        "hidden": true,
+        "disabled": true,
+        "childfolders": {},
+        "childscripts": {}
+    },
+    "childscripts": {}
+}
