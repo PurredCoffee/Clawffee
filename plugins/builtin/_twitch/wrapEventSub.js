@@ -48,9 +48,10 @@ const ID2UserCache = new Map();
 /**
  * wrap an event mgr
  * @param {EventSubWsListener} evs 
- * @param {string} name 
- * @param {Function} callback 
+ * @param {EVSCallbackName} name 
+ * @param {TwurpleCallback<EventSubWsListener[EVSCallbackName]>} callback 
  * @param {Array} args 
+ * @template {keyof EventSubWsListener} EVSCallbackName
  * @returns {EventListener}
  */
 function wrapEvent(evs, name, callback, args = []) {
@@ -84,6 +85,15 @@ function wrapEvent(evs, name, callback, args = []) {
     return listener;
 }
 
+/**
+ * 
+ * @param {EventSubWsListener} evs 
+ * @param {string} userName 
+ * @param {IRCCallbackName} name 
+ * @param {TwurpleCallback<ChatClient[IRCCallbackName]>} callback 
+ * @template {keyof ChatClient} IRCCallbackName
+ * @returns 
+ */
 function wrapChat(evs, userName, name, callback) {
     const chat = chatListeners.get(evs);
     if(!chat.currentChannels.includes(userName)) {
@@ -114,6 +124,19 @@ function wrapChat(evs, userName, name, callback) {
         unsubscribe() { return mgr.listeners.delete(key) },
     }
     listener.on();
+    return listener;
+}
+
+function combineChat(callback, ...args) {
+    const listeners = args.map(v => v(callback));
+    const listener = {
+        on() { listeners.forEach(v => v.on()) },
+        off() { listeners.forEach(v => v.off()) },
+        enable() { listeners.forEach(v => v.enable()) },
+        disable() { listeners.forEach(v => v.disable()) },
+        subscribe() { listeners.forEach(v => v.subscribe()) },
+        unsubscribe() { listeners.forEach(v => v.unsubscribe()) },
+    }
     return listener;
 }
 
@@ -190,6 +213,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
         resolveName(channelID, api).then((name) => {
             IRCListener = IRCCbk(name, (...args) => {
                 let id = IRCIDCbk(...args);
+                if(!id) return dataCbk(args, null);
                 addIRCData(id, args);
             });
         });
@@ -197,6 +221,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
     if(type != 'IRC') {
         EVSListener = evsCbk(channelID, (...args) => {
             let id = evsIDCbk(...args);
+                if(!id) return dataCbk(null, args);
             addEVSData(id, args);
         })
     }
@@ -362,19 +387,121 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {TwurpleCallback<EventSubWsListener['onChannelSubscription']>} callback 
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelSubscription(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelSubscription', callback, [broadcasterID]) },
+        onChannelSubscription(callback, broadcasterID = uid, type = 5) {
+            return combineListeners(type, api, broadcasterID,
+                /**
+                 * 
+                 * @param {number} id 
+                 * @param {TwurpleCallback<EventSubWsListener['onChannelSubscription']>} cbk 
+                 * @returns 
+                 */
+                (id, cbk) => wrapEvent(evs, 'onChannelSubscription', callback, [id]),
+                (data) => data.tier + " - " + data.userId + " - " + data.isGift,
+                /**
+                 * 
+                 * @param {string} name 
+                 * @param {TwurpleCallback<ChatClient['onSub']> | TwurpleCallback<ChatClient['onSubGift']>} cbk 
+                 * @returns 
+                 */
+                (name, cbk) => combineChat(cbk,
+                    (c) => wrapChat(evs, name, 'onSub', (channel, user, subInfo, msg) => c(channel, user, {...subInfo, isGift: false}, msg)),
+                    (c) => wrapChat(evs, name, 'onSubGift', (channel, user, subInfo, msg) => c(channel, user, {...subInfo, isGift: true}, msg))
+                ),
+                (channel, user, subInfo, msg) => (subInfo.isPrime?'1000':subInfo.plan) + " - " + subInfo.userId + " - " + subInfo.isGift,
+                (EVSData, IRCargs) => callback({
+                    EVSData: evsData,
+                    IRCData: IRCargs?.[2],
+                    IRCUser: IRCargs?.[3],
+                    broadcasterId: EVSData?.broadcasterId ?? broadcasterID,
+                    broadcasterName: EVSData?.broadcasterName ?? IRCargs?.[1],
+                    broadcasterDisplayName: EVSData?.broadcasterDisplayName ?? null,
+                    isGift: EVSData?.isGift ?? IRCargs?.[2].isGift,
+                    tier: IRCargs?.[2].plan ?? EVSData?.tier,
+                    userId: EVSData?.userId ?? IRCargs?.[2].userId,
+                    userName: EVSData?.userName ?? IRCargs?.[3].userInfo.userName,
+                    userDisplayName: EVSData?.userDisplayName ?? IRCargs[2].displayName,
+                    getBroadcaster: () => evsData?.getBroadcaster() ?? api.users.getUserById(broadcasterID),
+                    getUser: () => evsData?.getUser() ?? api.users.getUserById(IRCargs?.[3].id),
+                    streak: IRCargs?.[2].streak ?? IRCargs?.[2],
+
+                    
+                })
+            )
+            return wrapEvent(evs, 'onChannelSubscription', callback, [broadcasterID])
+        },
         /**
          * Subscribes to events that represent a user gifting a subscription to a channel to someone else.
-         * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionGift']>} callback 
+         * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionGift']>} callback
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelSubscriptionGift(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelSubscriptionGift', callback, [broadcasterID]) },
+        onChannelSubscriptionGift(callback, broadcasterID = uid,) { return wrapEvent(evs, 'onChannelSubscriptionGift', callback, [broadcasterID])},
+        /**
+         * @typedef onChannelSubscriptionType
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]?} EventSubData Original EventSub Data that this data is obtained from
+         * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
+         * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+         * @prop {string} broadcasterId ID of the broadcaster being subscribed to
+         * @prop {string} broadcasterName User Name of the broadcaster being subscribed to
+         * @prop {string} broadcasterDisplayName Display Name of the broadcaster being subscribed to
+         * @prop {number} cumulativeMonths Cumulative Months of subscriptions that the user subscribed to the broadcaster
+         * @prop {number?} durationMonths Duration of Months user subscribed to at once (null if EventSub packet is dropped)
+         * @prop {Map<string, string[]>?} emoteOffsets Map of emote offsets in the message (null if EventSub packet is dropped)
+         * @prop {string?} messageText Subscription text (if any)
+         * @prop {number?} streakMonths Month straek of the user subscribing (if shared)
+         * @prop {'Prime' | '1000' | '2000' | '3000'} tier Type of sub of the user (if IRC packet is dropped, Prime subs will be counted as 1000! (check if IRCData is null to check if the packet was dropped))
+         * @prop {string} userId ID of the user that is subscribing
+         * @prop {string} userName User Name of the user that is subscribing
+         * @prop {string} userDisplayName Display Name of the user that is subscibing
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelSubscriptionMessage']>>[0]['getBroadcaster']} getBroadcaster Fetch more information about the broadcaster
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelSubscriptionMessage']>>[0]['getUser']} getUser Fetch more information about the subscriber
+         * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift. (null if IRC packet is dropped)
+         */
         /**
          * Subscribes to events that represent a user's subscription to a channel being announced.
-         * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionMessage']>} callback 
+         * @param {(data: onChannelSubscriptionType) => void} callback 
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
+         * @param {IRCEventableType?} type type of listener to subscribe as, defaults to a combination of IRC and EventSub messages (number for timeout period)
          */
-        onChannelSubscriptionMessage(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelSubscriptionMessage', callback, [broadcasterID]) },
+        onChannelSubscriptionMessage(callback, broadcasterID = uid, type = 5) {
+            return combineListeners(type, api, broadcasterID, 
+                /**
+                 * 
+                 * @param {number} id 
+                 * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionMessage']>} cbk 
+                 * @returns 
+                 */
+                (id, cbk) => wrapEvent(evs, 'onChannelSubscriptionMessage', cbk, [id]),
+                data => data.tier + " - " + data.userId,
+                /**
+                 * 
+                 * @param {string} name 
+                 * @param {TwurpleCallback<ChatClient['onResub']>} cbk 
+                 * @returns 
+                 */
+                (name, cbk) => wrapChat(evs, name, 'onResub', cbk),
+                (channel, user, subInfo) => (subInfo.isPrime?'1000':subInfo.plan) + " - " + subInfo.userId,
+                (evsData, IRCargs) => callback({
+                    EVSData: evsData,
+                    IRCData: IRCargs?.[2],
+                    IRCUser: IRCargs?.[3],
+                    broadcasterId: evsData?.broadcasterId ?? IRCargs?.[3].channelId,
+                    broadcasterName: evsData?.broadcasterName ?? IRCargs?.[0],
+                    broadcasterDisplayName: evsData?.broadcasterDisplayName ?? null,
+                    cumulativeMonths: evsData?.cumulativeMonths ?? IRCargs?.[2]?.months,
+                    durationMonths: evsData?.durationMonths ?? null,
+                    emoteOffsets: evsData?.emoteOffsets ?? null,
+                    messageText: evsData?.messageText ?? IRCargs?.[2].message,
+                    streakMonths: evsData?.streakMonths ?? IRCargs?.[2].streak,
+                    tier: IRCargs?.[2].tier ?? evsData?.tier,
+                    userId: evsData?.userId ?? IRCargs?.[3].userInfo.userId,
+                    userName: evsData?.userName ?? IRCargs?.[3].userInfo.userName,
+                    userDisplayName: evsData?.userDisplayName ?? IRCargs?.[2].displayName,
+                    getBroadcaster: () => evsData?.getBroadcaster() ?? api.users.getUserById(broadcasterID),
+                    getUser: () => evsData?.getUser() ?? api.users.getUserById(IRCargs?.[3].id),
+                    originalGiftInfo: IRCargs?.[2].originalGiftInfo ?? null,
+                })
+            );
+        },
         /**
          * Subscribes to events that represent a user's subscription to a channel ending.
          * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionEnd']>} callback 
@@ -662,28 +789,141 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * Subscribes to events that represent a chat notification being sent to a channel.
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatNotification']>} callback 
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
+         * @param {'EventSub' | number?} type type of combination to use for the notification event (IRC is invalid)
          */
-        onChannelChatNotification(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelChatNotification', callback, [broadcasterID, uid]) },
+        onChannelChatNotification(callback, broadcasterID = uid, type = 5) {
+            if(type == 'IRC') {
+                return console.error('onChannelChatNotification does not support the IRC event type');
+            }
+            /**
+             * @typedef {{type: T, args: Parameters<TwurpleCallback<ChatClient[T]>>}} NotificationChatFunc
+             * @template {keyof ChatClient} T
+             */
+            /**
+             * @typedef { NotificationChatFunc<'onResub'> | 
+             *  NotificationChatFunc<'onSub'> | 
+             *  NotificationChatFunc<'onSub'> | 
+             *  NotificationChatFunc<'onSubGift'>
+             * } tmp
+             */
+            /**
+             * @param {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatNotification']>>[0]} data
+             */
+            function getEVSID(data) {
+                switch(data.type) {
+                    case "announcement": return null;
+                    case 'bits_badge_tier': return null;
+                    case 'charity_donation': return null;
+                    case 'community_sub_gift': return null;
+                    case 'gift_paid_upgrade': return null;
+                    case 'pay_it_forward': return null;
+                    case 'prime_paid_upgrade': return null;
+                    case 'raid': return null;
+                    case 'resub': return data.tier + " - " + data.chatterId + " - " + data.cumulativeMonths;
+                    case 'sub': return data.tier + " - " + data.chatterId;
+                    case 'sub_gift': return data.tier + " - " + data.recipientId;
+                    case 'unraid': return null;
+                }
+            }
+            /**
+             * 
+             * @param {tmp} data 
+             */
+            function getChatID(data) {
+                switch(data.type) {
+                    case 'onResub': return "resub - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId + " - " + data.args[2].months;
+                    case 'onSub': return "sub - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId;
+                    case 'onSubGift': return "sub_gift - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId;
+                }
+            }
+            return combineListeners(type, api, broadcasterID,
+                /**
+                 * @param {number} id
+                 * @param {TwurpleCallback<EventSubWsListener['onChannelChatNotification']>} cbk
+                 */
+                (id, cbk) => wrapEvent(evs, 'onChannelChatNotification', cbk, [id, uid]),
+                (data) => {
+                    const d = getEVSID(data);
+                    if(!d) return null;
+                    return data.type + " - " + d;
+                },
+                /**
+                 * 
+                 * @param {string} name 
+                 * @param {(data: tmp) => any} cbk 
+                 * @returns 
+                 */
+                (name, cbk) => combineChat(cbk,
+                    (c) => wrapChat(evs, name, 'onResub', (...args) => c({type: 'onResub', args})),
+                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({type: 'onSub', args})),
+                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({type: 'onSub', args})),
+                    (c) => wrapChat(evs, name, 'onSubGift', (...args) => c({type: 'onSubGift', args}))
+                ),
+                (data) => {
+                    return getChatID(data);
+                },
+                (evsdata, ircData) => {
+                switch(evsdata.type) {
+                    case "announcement": return callback(evsdata);
+                    case 'bits_badge_tier':
+                    case 'charity_donation':
+                    case 'community_sub_gift':
+                    case 'gift_paid_upgrade':
+                    case 'pay_it_forward':
+                    case 'prime_paid_upgrade':
+                    case 'unraid':
+                    case 'raid': return callback(data);
+                    case 'resub': 
+                    case 'sub':
+                    case 'sub_gift':
+                        evsdata.ircData = ircData[0].args[2];
+                        evsdata.ircUser = ircData[0].args[3];
+                        return callback(data);
+                }
+                }
+            )
+            return wrapEvent(evs, 'onChannelChatNotification', callback, [broadcasterID, uid])
+        },
         /**
          * @typedef onChannelMessageParam
-         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]} EventSubData
-         * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[3]} IRCData
-         * @prop {'text' | 'cheermote' | 'emote' | 'mention' | null} messageType
-         * @prop {string} broadcasterID
-         * @prop {string} broadcasterDisplayName
-         * @prop {string} chatterId
-         * @prop {string} chatterName
-         * @prop {string} chatterDisplayName
-         * @prop {string} color
-         * @prop {string} badges
-         * @prop {string} messageId
-         * @prop {string} messageText
-         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]['messageParts'] | null} messageParts
-         * @prop {boolean | null} isFirst
-         * @prop {boolean | null} isReturningChatter
-         * @prop {boolean | null} isHighlight
-         * @prop {boolean} isReply
-         * @prop {{[tag: string]: string} | nul} tags
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]?} EventSubData Original EventSub Data that this data is obtained from
+         * @prop {Parameters<TwurpleCallback<ChatClient['onMessage']>>[3]?} IRCData Original IRC Data that this data is obtained from
+         * @prop {'text' | 'cheermote' | 'emote' | 'mention' | null} messageType Type of Message that was sent (null if EventSub packet was dropped)
+         * @prop {string} broadcasterID ID of the channel this message was sent in
+         * @prop {string?} broadcasterName Username of the channel this message was sent in (null if EventSub packet was dropped)
+         * @prop {string?} broadcasterDisplayName Display Name of the channel this message was sent in (null if EventSub packet was dropped)
+         * @prop {string} chatterId ID of the user who sent the message
+         * @prop {string} chatterName Username of the user who sent the message
+         * @prop {string} chatterDisplayName Display Name of the user who sent the message
+         * @prop {string} parentMessageId ID of the message the user replied to
+         * @prop {string} parentMessageText Message Text of the message the user replied to
+         * @prop {string} parentMessageUserId User ID of the message the user replied to
+         * @prop {string} parentMessageUserName User Name of the message the user replied to
+         * @prop {string} parentMessageUserDisplayName User Display Name of the message the user replied to
+         * @prop {string} threadMessageId ID of the first message of the thread the user replied to
+         * @prop {string} threadMessageUserId User ID of the first message of the thread the user replied to
+         * @prop {string} threadMessageUserName User Name of the first message of the thread the user replied to
+         * @prop {string} threadMessageUserDisplayName User Display Name of the first message of the thread the user replied to
+         * @prop {number} bits amounts of bits used in this message
+         * @prop {boolean} isRedemption true if this message redeems a redeem
+         * @prop {string} rewardId ID of the redeem that was claimed with this message
+         * @prop {string} redeemId ID of the redeem that was claimed with this message
+         * @prop {string?} sourceBroadcasterId during multi streams, the ID of the broadcaster the chatter originally sent the message in (null if EventSub packet was dropped)
+         * @prop {string?} sourceBroadcasterName during multi streams, the Name of the broadcaster the chatter originally sent the message in (null if EventSub packet was dropped)
+         * @prop {string?} sourceBroadcasterDisplayName during multi streams, the Display Name of the broadcaster the chatter originally sent the message in (null if EventSub packet was dropped)
+         * @prop {string?} sourceMessageId during multi streams, the original ID of the message in its original chat (null if EventSub packet was dropped)
+         * @prop {{[badge: string]: string}?} sourceBadges during multi streams, the badges the user has in their original chat (null if EventSub packet was dropped)
+         * @prop {boolean?} isSorceOnly during multi streams, true if this message was not shared to other streamers
+         * @prop {string} color User Color of the user who sent the message
+         * @prop {{[badge: string]: string}} badges Badges of the user who sent the message {badge name: badge version}
+         * @prop {string} messageId ID of the message that was sent
+         * @prop {string} messageText Message text
+         * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]['messageParts']?} messageParts Individual Parts of the message (split by emotes and etc) (null if EventSub packet was dropped)
+         * @prop {boolean?} isFirst true if this is the chatters first message (null if IRC packet was dropped)
+         * @prop {boolean?} isReturningChatter true if the chatter has not messaged in a long time (null if IRC packet was dropped)
+         * @prop {boolean?} isHighlight true if chatter highlighted their message (null if IRC packet was dropped)
+         * @prop {boolean} isReply true if chatter replied to someone
+         * @prop {{[tag: string]: string}?} tags Individual IRC Tags of the message (null if IRC packet was dropped)
          */
         /**
          * Subscribes to events that represent a chat message being sent to a channel.
@@ -709,48 +949,48 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                  */
                 (name, cbk) => wrapChat(evs, name, 'onMessage', cbk),
                 (channel, user, text, msg) => msg.id,
-                (evsData, ircData) => {
-                    callback({
-                        EventSubData: evsData,
-                        IRCData: ircData[3],
-                        messageType: evsData.messageType ?? null, // TODO text, cheermote (emote only but p2w), emote, mention
-                        broadcasterID: evsData.broadcasterId ?? ircData[3].channelId,
-                        broadcasterDisplayName: evsData.broadcasterDisplayName ?? ircData[3].userInfo.displayName,
-                        chatterId: evsData.chatterId ?? ircData[3].userInfo.userId,
-                        chatterName: evsData.chatterName ?? ircData[3].userInfo.userName,
-                        chatterDisplayName: evsData.chatterDisplayName ?? ircData[3].userInfo.displayName,
-                        color: evsData.color ?? ircData[3].userInfo.color,
-                        badges: evsData.badges ?? ircData[3].userInfo.badges,
-                        messageId: evsData.messageId ?? ircData[3].id,
-                        messageText: evsData.messageText ?? ircData[2],
-                        messageParts: evsData.messageParts ?? null, // TODO?
-                        parentMessageId: evsData.parentMessageId ?? ircData[3].parentMessageId,
-                        parentMessageText: evsData.parentMessageText ?? ircData[3].parentMessageText,
-                        parentMessageUserId: evsData.parentMessageUserId ?? ircData[3].parentMessageUserId,
-                        parentMessageUserName: evsData.parentMessageUserId ?? ircData[3].parentMessageUserId,
-                        parentMessageUserDisplayName: evsData.parentMessageUserDisplayName ?? ircData[3].parentMessageUserDisplayName,
-                        threadMessageId: evsData.threadMessageId ?? ircData[3].threadMessageId,
-                        threadMessageUserId: evsData.threadMessageUserId ?? ircData[3].threadMessageUserId,
-                        threadMessageUserName: evsData.threadMessageUserName ?? ircData[3].threadMessageUserName,
-                        threadMessageUserDisplayName: evsData.threadMessageUserDisplayName ?? ircData[3].threadMessageUserDisplayName,
-                        isCheer: evsData.isCheer ?? ircData[3].isCheer,
-                        bits: evsData.bits ?? ircData[3].bits,
-                        isRedemption: evsData.isRedemption ?? ircData[3].isRedemption,
-                        rewardId: evsData.rewardId ?? ircData[3].rewardId,
-                        sourceBroadcasterId: evsData.sourceBroadcasterId ?? null, // Doesn't ecist in IRC
-                        sourceBroadcasterName: evsData.sourceBroadcasterName ?? null,
-                        sourceBroadcasterDisplayName: evsData.sourceBroadcasterDisplayName ?? null,
-                        sourceMessageId: evsData.sourceMessageId ?? null,
-                        sourceBadges: evsData.sourceBadges ?? null,
-                        isSorceOnly: evsData.isSourceOnly ?? null,
-                        
-                        isFirst: ircData[3].isFirst ?? null, // Doesn't exist in EVS
-                        isReturningChatter: ircData[3].isReturningChatter ?? null, // Doesn't exist in EVS
-                        isHighlight: ircData[3].isHighlight ?? null, // Doesn't exist in EVS
-                        isReply: ircData[3].isReply ?? Boolean(evsData.parentMessageId),
-                        tags: ircData[3].tags ?? null
-                    });
-                }
+                (evsData, ircData) => callback({
+                    EventSubData: evsData,
+                    IRCData: ircData?.[3],
+                    messageType: evsData?.messageType ?? null, // TODO text, cheermote (emote only but p2w), emote, mention
+                    broadcasterID: evsData?.broadcasterId ?? ircData?.[3].channelId,
+                    broadcasterName: evsData?.broadcasterName ?? undefined,
+                    broadcasterDisplayName: evsData?.broadcasterDisplayName ?? undefined,
+                    chatterId: evsData?.chatterId ?? ircData?.[3].userInfo.userId,
+                    chatterName: evsData?.chatterName ?? ircData?.[3].userInfo.userName,
+                    chatterDisplayName: evsData?.chatterDisplayName ?? ircData?.[3].userInfo.displayName,
+                    color: evsData?.color ?? ircData?.[3].userInfo.color,
+                    badges: evsData?.badges ?? ircData?.[3].userInfo.badges,
+                    messageId: evsData?.messageId ?? ircData?.[3].id,
+                    messageText: evsData?.messageText ?? ircData?.[2],
+                    messageParts: evsData?.messageParts ?? null, // TODO?
+                    parentMessageId: evsData?.parentMessageId ?? ircData?.[3].parentMessageId,
+                    parentMessageText: evsData?.parentMessageText ?? ircData?.[3].parentMessageText,
+                    parentMessageUserId: evsData?.parentMessageUserId ?? ircData?.[3].parentMessageUserId,
+                    parentMessageUserName: evsData?.parentMessageUserId ?? ircData?.[3].parentMessageUserName,
+                    parentMessageUserDisplayName: evsData?.parentMessageUserDisplayName ?? ircData?.[3].parentMessageUserDisplayName,
+                    threadMessageId: evsData?.threadMessageId ?? ircData?.[3].threadMessageId,
+                    threadMessageUserId: evsData?.threadMessageUserId ?? ircData?.[3].threadMessageUserId,
+                    threadMessageUserName: evsData?.threadMessageUserName ?? ircData?.[3].threadMessageUserName,
+                    threadMessageUserDisplayName: evsData?.threadMessageUserDisplayName ?? ircData?.[3].threadMessageUserDisplayName,
+                    isCheer: evsData?.isCheer ?? ircData?.[3].isCheer,
+                    bits: evsData?.bits ?? ircData?.[3].bits,
+                    isRedemption: evsData?.isRedemption ?? ircData?.[3].isRedemption,
+                    rewardId: evsData?.rewardId ?? ircData?.[3].rewardId,
+                    redeemId: evsData?.rewardId ?? ircData?.[3].rewardId,
+                    sourceBroadcasterId: evsData?.sourceBroadcasterId ?? null, // Doesn't ecist in IRC
+                    sourceBroadcasterName: evsData?.sourceBroadcasterName ?? null,
+                    sourceBroadcasterDisplayName: evsData?.sourceBroadcasterDisplayName ?? null,
+                    sourceMessageId: evsData?.sourceMessageId ?? null,
+                    sourceBadges: evsData?.sourceBadges ?? null,
+                    isSorceOnly: evsData?.isSourceOnly ?? null,
+                    
+                    isFirst: ircData?.[3].isFirst ?? null, // Doesn't exist in EVS
+                    isReturningChatter: ircData?.[3].isReturningChatter ?? null, // Doesn't exist in EVS
+                    isHighlight: ircData?.[3].isHighlight ?? null, // Doesn't exist in EVS
+                    isReply: ircData?.[3].isReply ?? Boolean(evsData?.parentMessageId),
+                    tags: ircData?.[3].tags ?? null
+                })
             );
         },
         /**
