@@ -7,6 +7,8 @@ const { associateFunctionWithFile } = require("./codeBinder");
  * @param {import("bun").BunRequest} request
  * @param {URL} url
  */
+
+//TODO add / to the start and end of path if not existant
 /**
  * 
  * @param {string} path 

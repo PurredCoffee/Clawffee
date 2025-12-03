@@ -5,10 +5,10 @@ sharedServerData.internal.log = {};
 
 const {basename } = require('path');
 
-function cleanData(data) {
+function cleanData(data, prefix) {
     let str = "";
     data.forEach(v => {
-        str += " ";
+        str += " " + prefix;
         switch(typeof v) {
             case 'string':
                 str += v;
@@ -38,7 +38,7 @@ function cleanData(data) {
                     break;
                 }
             default:
-                str += Bun.inspect(v, { colors: true, depth: 2 });
+                str += Bun.inspect(v, { colors: true, depth: 2 }).replaceAll('\u001b[0m', '\u001b[0m' + prefix);
                 break;
         }
     });
@@ -83,7 +83,7 @@ function wrapConsoleFunction(name, copy, prefix = "", skipcalls = false) {
             }
         }
         longestName = Math.max(longestName, renderedText.length + 2);
-        const cleaneddata = cleanData(data);
+        const cleaneddata = cleanData(data, prefix);
         if(name != 'debug')
             sharedServerData.internal.log[name] = Bun.stripANSI(cleaneddata);
         copy(

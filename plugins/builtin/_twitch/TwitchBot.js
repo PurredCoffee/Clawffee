@@ -40,8 +40,8 @@ function cleanAPIOutput(object) {
     });
 }
 
-function wrapEventSubListener(evs, uid) {
-    const EventSubFunctions = wrapEVS(evs, uid);
+function wrapEventSubListener(evs, api, uid) {
+    const EventSubFunctions = wrapEVS(evs, api, uid);
     
     return {
         internal: {
@@ -105,10 +105,21 @@ function wrapEventSubListener(evs, uid) {
             onCheer: EventSubFunctions.onChannelCheer,
         },
         subs: {
-            onSub: EventSubFunctions.onChannelSubscription,
-            onGift: EventSubFunctions.onChannelSubscriptionGift,
-            onEnd: EventSubFunctions.onChannelSubscriptionEnd,
-            onMessage: EventSubFunctions.onChannelSubscriptionMessage
+            raw: {
+                onSub: EventSubFunctions.onChannelSubscription,
+                onEnd: EventSubFunctions.onChannelSubscriptionEnd,
+                onResub: EventSubFunctions.onChannelSubscriptionMessage,
+            },
+            onEnd: (callback, broadcasterID = uid, type = 5) => {
+
+            },
+            onSub: (callback, broadcasterID = uid, type = 5) => {
+
+            },
+            onResub: (callback, broadcasterID = uid, type = 5) => {
+
+            },
+            onCommunityGift: EventSubFunctions.onChannelSubscriptionGift,
         },
         charity: {
             onStart: EventSubFunctions.onChannelCharityCampaignStart,
@@ -159,7 +170,7 @@ class TwitchBot {
          * @type {TwitchApi}
          */
         this.requests = cleanAPIOutput(api);
-        this.events = wrapEventSubListener(EventSub, userID);
+        this.events = wrapEventSubListener(EventSub, api, userID);
         this.userID = userID;
     }
 }
