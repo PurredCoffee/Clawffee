@@ -3,8 +3,6 @@
 **/*._conf
 
 config/*
-!config/internal/commands.json
-!config/internal/commands/*
 
 # i do not know why this is required but :3
 
