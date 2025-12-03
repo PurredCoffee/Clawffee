@@ -107,19 +107,25 @@ function wrapEventSubListener(evs, api, uid) {
         subs: {
             raw: {
                 onSub: EventSubFunctions.onChannelSubscription,
-                onEnd: EventSubFunctions.onChannelSubscriptionEnd,
                 onResub: EventSubFunctions.onChannelSubscriptionMessage,
             },
-            onEnd: (callback, broadcasterID = uid, type = 5) => {
-
+            onGift: (callback, broadcasterID = uid, type = 5) => {
+                EventSubFunctions.onChannelChatNotification(data => {
+                    if(data.type == 'sub_gift') callback(data);
+                }, broadcasterID, type);
             },
             onSub: (callback, broadcasterID = uid, type = 5) => {
-
+                EventSubFunctions.onChannelChatNotification(data => {
+                    if(data.type == 'sub') callback(data);
+                }, broadcasterID, type);
             },
             onResub: (callback, broadcasterID = uid, type = 5) => {
-
+                EventSubFunctions.onChannelChatNotification(data => {
+                    if(data.type == 'resub') callback(data);
+                }, broadcasterID, type);
             },
             onCommunityGift: EventSubFunctions.onChannelSubscriptionGift,
+            onEnd: EventSubFunctions.onChannelSubscriptionEnd,
         },
         charity: {
             onStart: EventSubFunctions.onChannelCharityCampaignStart,
