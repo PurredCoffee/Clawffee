@@ -115,9 +115,9 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              */
             /**
-             * 
+             * Subscribes to events that represent a user being gifted a subscription to a channel.
              * @param {(data: onGiftData) => void} callback 
-             * @param {string?} broadcasterID 
+             * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
              * @param {number | 'EventSub'} type 
              */
             onGift: (callback, broadcasterID = uid, type = 5) => {
@@ -131,9 +131,9 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              */
             /**
-             * 
+             * Subscribes to events that represent a user subscribing to a channel.
              * @param {(data: onSubData) => void} callback 
-             * @param {string?} broadcasterID 
+             * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
              * @param {number | 'EventSub'} type 
              */
             onSub: (callback, broadcasterID = uid, type = 5) => {
@@ -147,9 +147,9 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              */
             /**
-             * 
+             * Subscribes to events that represent a user's subscription to a channel being announced.
              * @param {(data: onResubData) => void} callback 
-             * @param {string?} broadcasterID 
+             * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
              * @param {number | 'EventSub'} type 
              */
             onResub: (callback, broadcasterID = uid, type = 5) => {
