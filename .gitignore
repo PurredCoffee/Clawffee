@@ -29,3 +29,12 @@ build/**/node_modules/*
 # build and backups
 *.bak
 *.tar.gz
+
+# log files
+*.log
+
+# nix
+result
+result-*
+.direnv
+.envrc

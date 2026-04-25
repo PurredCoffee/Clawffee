@@ -127,11 +127,22 @@ To Create your own plugin, create a folder in the `plugins` directory and create
     ```
 2. Install dependencies:
     ```bash
-    bun install
+    bun install --frozen-lockfile
+    ```
+3. *(Optionally)* Checkout clawffee plugins
+    ```bash
+    git submodule init
+    git submodule update
+    bun install --frozen-lockfile --cwd ./plugins/builtin
+    bun install --frozen-lockfile --cwd ./plugins/internal
+    bun install --frozen-lockfile --cwd ./plugins/twurple
     ```
 3. Start the bot:
     ```bash
+    # run in current directory (requires clawffee plugins)
     bun launch.js
+    # run in default config directory
+    bun launch.js -- --xdg
     ```
 
 ### Signing
@@ -150,3 +161,81 @@ To be able to build clawffee you will need to build the internal plugin.
     ```bash
     bun build index.js --compile --outfile clawffee 
     ```
+
+## Nix
+
+This project is providing [a nix flake](https://nixos.wiki/wiki/flakes) for clawffee.
+
+### Running Clawffee from GitHub
+
+To run clawffee directly from this repository:
+
+```bash
+# show the usage
+nix run github:Clawffee/Clawffee -- --help
+# run in default config directory
+nix run github:Clawffee/Clawffee -- --xdg
+# run in current directory
+nix run github:Clawffee/Clawffee
+```
+
+### Installation
+
+To install clawffee by using a [flake based](https://nixos.wiki/wiki/flakes) NixOS or home-manager configuration:
+
+Add the following to your `flake.nix` file:
+
+```nix
+inputs.clawffee.url = "github:Clawffee/Clawffee";
+inputs.clawffee.inputs.nixpkgs.follows = "nixpkgs";
+```
+
+For a home-manager based nix flake add this to your home-manager modules:
+
+```nix
+{
+    imports = [
+        inputs.clawffee.homeModules.default
+    ];
+
+    programs.clawffee.enable = true;
+}
+```
+
+For a NixOS based nix flake add this to your NixOS:
+
+```nix
+{
+    imports = [
+        inputs.clawffee.nixosModules.default
+    ];
+
+    programs.clawffee.enable = true;
+}
+```
+
+You can also access the following directly:
+
+- the overlay adding `clawffee` to you packages: `inputs.clawffee.overlays.default` (this uses your packages to build clawffee)
+- the package itself: `inputs.clawffee.packages.${system}.default` (this uses the packages proxided by this flakes nixpkgs to build clawffee)
+
+### Development
+
+To run clawffee during development just run
+```bash
+nix develop
+```
+after step (1) and before step (2) of the [Manual Build Instructions](#manual-build-instructions).
+
+This will setup your environment to include the `bun` runtime as well as other environment variables to both be able to develop and run a develop build.
+
+Instead of `bun launch.js` you may use the `clawffee-dev` bash alias that is automatically set up for you.
+
+Useful commands:
+- `type clawffee-dev` - Show the bash alias.
+- `clawffee-dev --help` - Show the usage of `clawffee-dev`.
+- `clawffee-dev` - Run clawffee within the current working directory.
+- `clawffee-dev --xdg` - Run clawffee within the default clawffee config directory. See the usage of `clawffee-dev`. for details. This is useful for testing the development build of the clawffee launcher together with the currently released clawffee plugins.
+- `nix flake update --commit-lock-file` - Update the nix dependencies and commit the new `flake.lock` lock file.
+- `nix fmt` - Format all `*.nix` files.
+- `nix run .` - Run the production build of clawffee from the current source code. Note that all files need to be committed or staged into git for this to work correctly.
