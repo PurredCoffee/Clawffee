@@ -1,10 +1,10 @@
 
-$primary: #c53c27;
-$secondary: #7d6d6c;
-$success: #198754;
-$danger: #dc3545;
-$warning: #ffc107;
-$info: #0dcaf0;
+$primary: #ae3e78;
+$secondary: #893a31;
+$success: #4bb043;
+$danger: #f52213;
+$warning: #f39215;
+$info: #5585cd;
 $light: #faf8f9;
 $dark: #292321;
 
@@ -19,6 +19,12 @@ $theme-colors: (
   "dark": $dark
 );
 
-$body-color: #393232;
-$body-bg: #fff;
+$body-color: #2a1d22;
+$body-bg: #f5f0f2;
+$body-secondary-bg: #e2d1d8;
+$body-tertiary-bg: #fff;
+$body-color-dark: #f5f0f2;
+$body-bg-dark: #3a2d32;
+$body-secondary-bg-dark: #4a2723;
+$body-tertiary-bg-dark: #292023;
 @import "../node_modules/bootstrap/scss/bootstrap";
