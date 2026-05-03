@@ -1,5 +1,5 @@
 //@ts-check
-const {verifyHash, pubKey, runUpdate} = require('./internals/shared')
+const {verifyHash, pubKey, runUpdate} = require('./src/internals/shared')
 const fs = require('fs');
 function getVerInfoSafe() {
     try {

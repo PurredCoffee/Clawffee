@@ -1,6 +1,6 @@
 //@ts-check
 const fs = require('fs');
-const {update_info, verifyHash, runUpdate, pubKey, getPubHash, meta} = require('./internals/shared');
+const {update_info, verifyHash, runUpdate, pubKey, getPubHash, meta} = require('./src/internals/shared');
 
 globalThis.clawffeeInternals = {
     /**
@@ -17,4 +17,4 @@ globalThis.clawffeeInternals = {
         meta: meta
     }
 }
-require(fs.realpathSync('./plugins/internal/_clawffee/index.js'));
+require(fs.realpathSync('./plugins/clawffee/internal/launch.js'));

@@ -1,9 +1,0 @@
-[submodule "plugins/internal"]
-	path = plugins/internal
-	url = https://github.com/Clawffee/clawffee-plugin-internal
-[submodule "plugins/builtin"]
-	path = plugins/builtin
-	url = https://github.com/Clawffee/clawffee-plugin-builtin
-[submodule "plugins/twurple"]
-	path = plugins/twurple
-	url = https://github.com/Clawffee/clawffee-plugin-twurple.git
