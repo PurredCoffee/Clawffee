@@ -1,8 +1,36 @@
 //@ts-check
+/**
+ * @import {  InternalData, ModuleV1, PluginV1 } from '../plugins/internal/_clawffee/internal/Globals/launcher'
+ */
 const path = require('path');
 const crypto = require('crypto');
 const { IncomingMessage } = require('http');
 const fs = require('fs');
+const { logLevels, parseOptions } = require('./options.mjs')
+
+const { args, options, environment } = parseOptions();
+const { resolvePath, helpfulError } = environment;
+
+/**
+ * @param {...string} pathInPlugin
+ * @returns {string}
+ */
+const resolveInternalPluginPath = (...pathInPlugin) => {
+    return path.join(fs.realpathSync(resolvePath()), 'plugins', 'internal', ...pathInPlugin);
+}
+
+const getVerInfoSafe = () => {
+    try {
+        const verInfo = JSON.parse(fs.readFileSync(resolveInternalPluginPath('version.json'), { encoding: "utf-8" }));
+        if(!verInfo.hash || !verInfo.version) throw helpfulError("The verInfo JSON does not contain a valid 'hash' nor a valid 'version'.");
+        return verInfo;
+    } catch(e) {
+        if (options.verbose >= logLevels["trace"]) {
+            console.log(e);
+        }
+        return null;
+    };
+}
 
 const meta = require('./meta.json');
 /**
@@ -39,65 +67,84 @@ function verifyVersion(version, folder) {
     return version != reqVer;
 }
 
-
 //@ts-ignore
 const pubKey = require('../internal.pub.txt')?.default || require('../internal.pub.txt');
 
+/**
+ * 
+ * @returns {Promise<{info: any, update_data: any} | Error | string>}
+ */
 async function getUpdate() {
     const dns = require('dns/promises');
     let update_data;
     try {
         const data = await dns.resolveTxt('update.clawffee.com');
-        if(!data) return 'failed to retrieve update information, potential clawffee downage?';
+        if(!data) return helpfulError('failed to retrieve update information, potential clawffee downage?');
         try {
             update_data = JSON.parse(new Buffer(data.map(v => v[0]).join(''), 'base64').toString('ascii'));
-            if(!update_data.url || !update_data.headers || !update_data.filename) throw new Error();
+            if(!update_data.url || !update_data.headers || !update_data.filename) throw helpfulError(`!update_data.url || !update_data.headers || !update_data.filename`);
         } catch(e) {
-            return "failed to update clawffee, potential clawffee server misconfiguration?";
+            return helpfulError("failed to update clawffee, potential clawffee server misconfiguration?", e);
         }
     } catch(e) {
-        return 'failed to retrieve update information, potential clawffee downage?';
+        return helpfulError('failed to retrieve update information, potential clawffee downage?', e);
     }
     try {
         const update_info = await (await fetch(update_data.url)).json();
         if(update_info.status && update_info.status != 200) {
-            return `failed to fetch clawffee version information! Error code: ${update_info.status}`;
+            return helpfulError(`failed to fetch clawffee version information! Error code: ${update_info.status}`);
         }
         return {info: update_info, update_data};
     } catch(e) {
-        return 'failed to fetch clawffee version information!';
+        return helpfulError('failed to fetch clawffee version information!', e);
     }
 }
-const update_info = getUpdate();
+const error_update_info = getUpdate();
 
-function runUpdate() { return new Promise((resolve, reject) => {update_info.then((info) => {
-    if(!info.info || info.info.message) {
-        return reject('failed to download files!', info.info.message);
+function runUpdate() { return new Promise((resolve, reject) => {error_update_info.then((info) => {
+    if (info instanceof Error) {
+        return reject(helpfulError(`failed to download files!`, info));
+    } else if (typeof info === "string" || info.info.message) {
+        return reject(helpfulError(`failed to download files: ${typeof info === "string" ? info: info.info.message}!`));
+    } else if(!info.info) {
+        return reject(helpfulError(`failed to download files!`));
     }
-    if(fs.existsSync('update')) fs.rmSync('update', {recursive: true, force: true});
-    fs.mkdirSync('update');
-    const folderPath = 'update';
+    const pluginPath = resolvePath('plugins');
+    if(!fs.existsSync(pluginPath)) fs.mkdirSync(pluginPath);
+    const pluginsInternalPath = resolveInternalPluginPath();
+    if(fs.existsSync(path.join(pluginsInternalPath, ".git"))) {
+        // do not delete the internal plugin if it is checked out through git!
+        // otherwise progress might be lost >w<
+        return reject(helpfulError('the internal plugin is a git repository which needs to be updated via git manually'));
+    }
+    const folderPath = resolvePath('update');
+    // FIXME: this is super dangerous, maybe creating a marker file into the directory would be a good idea to check before running `rm`
+    if(fs.existsSync(folderPath)) fs.rmSync(folderPath, {recursive: true, force: true});
+    fs.mkdirSync(folderPath);
     const url = info.info.assets.find(v => v.name === info.update_data.filename)?.url;
     if(!url) {
-        return reject('failed to find the required update file');
+        return reject(helpfulError('failed to find the required update file'));
     }
     console.log(url);
     function verifyDownload() {
         console.log(`finished inflating update at ${folderPath}`);
-        if(!verifyHash(folderPath, pubKey)) return reject('Hash of downloaded folder is incorrect!!!');
-        if(!verifyVersion(meta.version, folderPath)) return reject('Clawffee executable outdated for the update, please download the newest Clawffee executable manually if you wish to update!')
+        if(!verifyHash(folderPath, pubKey)) return reject(helpfulError('Hash of downloaded folder is incorrect!!!'));
+        if(!verifyVersion(meta.version, folderPath)) return reject(helpfulError('Clawffee executable outdated for the update, please download the newest Clawffee executable manually if you wish to update!'))
+        
+        const pluginsInternalBackupPath = path.join(pluginPath, 'internal.bak');
         try {
-            fs.rmSync('plugins/internal.bak', {force: true, recursive: true});
+            // FIXME: this is super dangerous, maybe creating a marker file into the directory would be a good idea to check before running `rm`
+            fs.rmSync(pluginsInternalBackupPath, {force: true, recursive: true});
         } catch(e) {} // can silently fail
         try {
-            fs.renameSync('plugins/internal', 'plugins/internal.bak');
+            fs.renameSync(pluginsInternalPath, pluginsInternalBackupPath);
         } catch(e) {} // can silently fail, either means the file doesnt exist or it will fail loudly in the next step
         try {
-            fs.renameSync(folderPath, 'plugins/internal');
+            fs.renameSync(folderPath, pluginsInternalPath);
         } catch(e) {
-            return reject('failed to move the update to the required position');
+            return reject(helpfulError('failed to move the update to the required position'));
         }
-        resolve();
+        resolve(void(0));
     }
 
     const https = require('https');
@@ -121,7 +168,7 @@ function runUpdate() { return new Promise((resolve, reject) => {update_info.then
         let finished = false;
         zipFile.on('entry', (headers, stream, next) => {
             if(path.posix.normalize(headers.name).startsWith('../')) {
-                return reject(`path ${headers.name} is pointing outside the folder!!!`);
+                return reject(helpfulError(`path ${headers.name} is pointing outside the folder!!!`));
             }
             fs.mkdirSync(path.join(folderPath, path.dirname(headers.name)), {recursive: true});
             writers++;
@@ -143,6 +190,80 @@ function runUpdate() { return new Promise((resolve, reject) => {update_info.then
     }, handleDownload);
 });});}
 
+// convert Error to string (note that Error and string are resolved and not rejected)
+const update_info = error_update_info.then(data => Promise.resolve(data instanceof Error ? data.message : data));
+
+const pluginApiV0 = {
+    /**
+     * @param {InternalData} internalData 
+     */
+    prepareEnvironment: (internalData) => {
+        const { resolvePath, chdir, pluginArgv } = environment;
+        // add the global options
+        globalThis.clawffeeInternals = {
+            /**
+             * @type {InternalData & { update_info: InternalData["updateInfo"] }}
+             */
+            launcher: { ...internalData, update_info: internalData["updateInfo"] }
+        }
+        // change to the working directory that is configured
+        chdir(resolvePath());
+        // override argv until the plugin knows how to handle launcher options
+        process.argv = new Array(...pluginArgv());
+    },
+    /**
+     * @param {string} id The path to `index.js`
+     */
+    launch: (id) => {
+        // launch
+        require(id);
+    },
+};
+
+const pluginApiV1 = {
+    /**
+     * @param {string} id The path to `index.js`
+     * @returns {(internalData: InternalData) => Promise<PluginV1>} loadPlugin
+     */
+    loadModule: (id) => {
+        /** @type {unknown} */
+        const unknownModule = require(id);
+        if (unknownModule == null || typeof unknownModule != "object" || !("loadPlugin" in unknownModule) || typeof unknownModule.loadPlugin !== "function") {
+            throw helpfulError(`The module '${id.replaceAll("'", "\\'")}' is not an object containing a function 'loadPlugin'.`);
+        }
+        /**
+         * The type of an unknown function can not be checked.
+         * Lets hope for the best.
+         *
+         * @type {any}
+         */
+        const anyLoadPlugin = unknownModule.loadPlugin;
+        /** @type {ModuleV1["loadPlugin"]} */
+        const loadPlugin = anyLoadPlugin;
+        return (internalData) => loadPlugin({
+                    path: resolvePath(),
+                    args,
+                    logLevel: options.verbose,
+                    logLevels,
+                    internalData,
+                });
+    },
+};
+
 module.exports = {
-    pubKey, update_info, runUpdate, verifyHash, getPubHash, meta
-}
+    pubKey,
+    update_info,
+    runUpdate,
+    verifyHash,
+    getPubHash,
+    meta,
+    getVerInfoSafe,
+    resolvePath,
+    resolveInternalPluginPath,
+    helpfulError,
+    pluginApi: {
+        "v0": pluginApiV0,
+        "v1": pluginApiV1,
+    },
+    options
+};
