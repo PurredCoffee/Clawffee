@@ -2,36 +2,34 @@
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const readline = require('readline');
+const Writable = require('stream').Writable;
 (async () => {
-    const prompt = require('prompt');
-    prompt.start();
-    prompt.message = '';
-    prompt.delimiter = ':';
-    
-    async function promptClear(message) {
-        const { txt } = await prompt.get({
-            properties: {
-                txt: {
-                    message: message
-                }
-            }
-        })
-        return txt;
+    var mutableStdout = new Writable({
+    write: function(chunk, encoding, callback) {
+        if (!this.muted)
+            process.stdout.write(chunk, encoding);
+        callback();
+    }
+    });
+    var rl = readline.createInterface({
+    input: process.stdin,
+    output: mutableStdout,
+    terminal: true
+    });
+    function promptClear(message) {
+        mutableStdout.muted = false;
+        return new Promise(resolve => {
+            rl.question(message + ": ", resolve);
+        });
     }
 
-    async function promptPassword(message) {
-        prompt.start()
-        prompt.message = ''
-        prompt.delimiter = ':'
-        const { password } = await prompt.get({
-            properties: {
-                password: {
-                    message: message,
-                    hidden: true
-                }
-            }
-        })
-        return password;
+    function promptPassword(message) {
+        mutableStdout.muted = false;
+        return new Promise(resolve => {
+            rl.question(message + ": ", resolve);
+            mutableStdout.muted = true;
+        });
     }
     const paramCache = {};
     async function getParam(name, message, hidden = false) {
