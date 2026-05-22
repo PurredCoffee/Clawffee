@@ -9,9 +9,7 @@ const fs = require('fs');
  * @returns 
  */
 module.exports = (folder, excludes) => {
-    
     const hash = crypto.createHash('sha256');
-    
     /**
      * 
      * @param  {...any} data 
@@ -22,17 +20,19 @@ module.exports = (folder, excludes) => {
             hash.write('\0');
         });
     }
+
+    excludes.push('hash.x');
+    excludes.push('.git');
     
     /**
      * @type {string[]}
      */
     const skipped = [];
-    excludes.push('version.json');
-    const version = JSON.parse(fs.readFileSync(folder + '/version.json').toString());
-    delete version.hash;
-    write(JSON.stringify(version));
 
-    
+    /**
+     * 
+     * @param {string} p
+     */
     function enterFolder(p) {
         const files = fs.readdirSync(p, {
             encoding: 'utf-8',

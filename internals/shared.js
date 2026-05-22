@@ -2,11 +2,14 @@
 /**
  * @import {  InternalData, ModuleV1, PluginV1 } from '../plugins/internal/_clawffee/internal/Globals/launcher'
  */
-const path = require('path');
 const crypto = require('crypto');
 const { IncomingMessage } = require('http');
-const fs = require('fs');
-const { logLevels, parseOptions } = require('./options.mjs')
+const { logLevels, parseOptions } = require('./options.js');
+const dns = require('dns/promises');
+const path = require('path')
+const git = require('isomorphic-git')
+const http = require('isomorphic-git/http/node')
+const fs = require('fs')
 
 const { args, options, environment } = parseOptions();
 const { resolvePath, helpfulError } = environment;
@@ -22,7 +25,7 @@ const resolveInternalPluginPath = (...pathInPlugin) => {
 const getVerInfoSafe = () => {
     try {
         const verInfo = JSON.parse(fs.readFileSync(resolveInternalPluginPath('version.json'), { encoding: "utf-8" }));
-        if(!verInfo.hash || !verInfo.version) throw helpfulError("The verInfo JSON does not contain a valid 'hash' nor a valid 'version'.");
+        if(!verInfo.version) throw helpfulError("The verInfo JSON does not contain a valid 'version'.");
         return verInfo;
     } catch(e) {
         if (options.verbose >= logLevels["trace"]) {
@@ -36,12 +39,12 @@ const meta = require('./meta.json');
 /**
  * 
  * @param {Buffer<ArrayBuffer>} encHash 
- * @param {string} pubKey 
+ * @param {crypto.KeyLike} pubKey 
  * @returns 
  */
 function getPubHash(encHash, pubKey) {
     try {
-        return crypto.publicDecrypt(crypto.createPublicKey({key: pubKey, format: 'pem'}), encHash).toString('base64');
+        return crypto.publicDecrypt(pubKey, encHash).toString('base64');
     } catch (e) {
         return null;
     }
@@ -49,13 +52,17 @@ function getPubHash(encHash, pubKey) {
 /**
  * 
  * @param {string} folder
- * @param {string} pubKey 
+ * @param {crypto.KeyLike} pubKey 
  * @returns 
  */
 function verifyHash(folder, pubKey) {
-    const encHash = Buffer.from(JSON.parse(fs.readFileSync(path.join(folder,'version.json')).toString()).hash, 'base64');
-    return getPubHash(encHash, pubKey) === require('./hash_folder.js')(folder, []).hash.toString('base64');
+    const encHash = Buffer.from(fs.readFileSync(path.join(folder,"hash.x")).toString(), "base64");
+    const decHash = getPubHash(encHash, pubKey);
+    const compHash = require('./hash_folder.js')(folder, []).hash.toString('base64');
+    console.log(encHash, decHash, compHash);
+    return decHash === compHash;
 }
+
 /**
  * 
  * @param {string} version
@@ -68,127 +75,70 @@ function verifyVersion(version, folder) {
 }
 
 //@ts-ignore
-const pubKey = require('../internal.pub.txt')?.default || require('../internal.pub.txt');
+const pubKey = crypto.createPublicKey(require('../internal.pub.txt')?.default || require('../internal.pub.txt'));
 
 /**
  * 
- * @returns {Promise<{info: any, update_data: any} | Error | string>}
+ * @param {crypto.KeyLike} pubkey
+ * @returns {Promise<{url: string, branch: string, time: number} | Error | string>}
  */
-async function getUpdate() {
-    const dns = require('dns/promises');
-    let update_data;
+async function getInternalInfo(pubkey) {
     try {
-        const data = await dns.resolveTxt('update.clawffee.com');
-        if(!data) return helpfulError('failed to retrieve update information, potential clawffee downage?');
+        /*const data = await dns.resolveTxt('update.clawffee.com');*/
+        /*if(!data) return helpfulError('failed to retrieve update information, potential clawffee downage?');*/
         try {
-            update_data = JSON.parse(new Buffer(data.map(v => v[0]).join(''), 'base64').toString('ascii'));
-            if(!update_data.url || !update_data.headers || !update_data.filename) throw helpfulError(`!update_data.url || !update_data.headers || !update_data.filename`);
+            let [update_signature, update_data] = 
+                "TChboqjyaBb828v1NX+OzJc0c5wvmTs0ACLX+opKTNsAHN+JXP1xUhkqFu2hf2Xg7yRUdZz13WqeN+1YE4n7+FymZTgeXUsLduEyIi8TJsyCIPUGYzttSGWQIrHSugVTWUGpcXXdsawuXM8itrAexSuzwVNFndTA7bcEEbncLE9pz7AgjzwCToLoC8KwM3Ly4SmmGcwWR1MoluF+lAq8IlvBJDfVt1xebHZ6UkZMY+q9E6zbkTLBS8aWCDeDRRyZucja6EfYsWbMuDpHFma+sdFBAx3oLk3empSQGyOTmvyuZnNRtRxSs0SgRc/EF9KeYr4zn+EjfXLAPtqnExF5JucDoQNb/YvKoL/pymMmqR8VgvYu62vI9JqTDk096Vq1kVoPLQoVYDZ4/VxJ6+XJ3LaNExgNMG/HtcLafs3vZl/HkkPwgY450ksMwBTxhsVi2CChLxapOLgDgy5NnYxzJHWR6ErLAT4rRw7n42S6xztKAVm4/4wSNlduNbt9mGe6BZBwB1WZLJZ0jVu9ab5ZJu0timK8Gcxo4UvyeTpcyFKwRsnGfmYu88tIr8n0BwjWhPCXZxRiNLMc6CcIE4mklwRzvAqVW0GUY5CliLTzSCNho43dNw+4xhfItDTcOfQRMmGlzXOI/A8ALpRIwQs8n9hzqS2+VHLC20o0ATRVNkc= eyJ1cmwiOiJodHRwczovL2dpdGh1Yi5jb20vQ2xhd2ZmZWUvY2xhd2ZmZWUtcGx1Z2luLWludGVybmFsLmdpdCIsImJyYW5jaCI6InJlbGVhc2UiLCJ0aW1lIjoxNzc5MzQ4MDYzNTU2fQ==".split(' ');
+                //data.map(v => v[0]).join('').split(' ');
+            const Sign = crypto.createVerify("sha256");
+            const buff = Buffer.from(update_data, "base64");
+            Sign.write(buff);
+            if(Sign.verify(pubkey, Buffer.from(update_signature, "base64")))
+                return JSON.parse(buff.toString());
+            return helpfulError("failed to validate clawffee update information, potential clawffee server misconfiguration?");
         } catch(e) {
-            return helpfulError("failed to update clawffee, potential clawffee server misconfiguration?", e);
+            return helpfulError("failed to read clawffee update information, potential clawffee server misconfiguration?", e);
         }
     } catch(e) {
         return helpfulError('failed to retrieve update information, potential clawffee downage?', e);
     }
-    try {
-        const update_info = await (await fetch(update_data.url)).json();
-        if(update_info.status && update_info.status != 200) {
-            return helpfulError(`failed to fetch clawffee version information! Error code: ${update_info.status}`);
-        }
-        return {info: update_info, update_data};
-    } catch(e) {
-        return helpfulError('failed to fetch clawffee version information!', e);
-    }
 }
-const error_update_info = getUpdate();
+const error_update_info = getInternalInfo(pubKey);
 
-function runUpdate() { return new Promise((resolve, reject) => {error_update_info.then((info) => {
+function installInternals() { return new Promise((resolve, reject) => {error_update_info.then((info) => {
     if (info instanceof Error) {
         return reject(helpfulError(`failed to download files!`, info));
-    } else if (typeof info === "string" || info.info.message) {
-        return reject(helpfulError(`failed to download files: ${typeof info === "string" ? info: info.info.message}!`));
-    } else if(!info.info) {
-        return reject(helpfulError(`failed to download files!`));
     }
-    const pluginPath = resolvePath('plugins');
-    if(!fs.existsSync(pluginPath)) fs.mkdirSync(pluginPath);
-    const pluginsInternalPath = resolveInternalPluginPath();
-    if(fs.existsSync(path.join(pluginsInternalPath, ".git"))) {
-        // do not delete the internal plugin if it is checked out through git!
-        // otherwise progress might be lost >w<
-        return reject(helpfulError('the internal plugin is a git repository which needs to be updated via git manually'));
+    if (typeof info == 'string') {
+        return reject(helpfulError(`failed to download files! ${info}`));
     }
-    const folderPath = resolvePath('update');
-    // FIXME: this is super dangerous, maybe creating a marker file into the directory would be a good idea to check before running `rm`
-    if(fs.existsSync(folderPath)) fs.rmSync(folderPath, {recursive: true, force: true});
-    fs.mkdirSync(folderPath);
-    const url = info.info.assets.find(v => v.name === info.update_data.filename)?.url;
-    if(!url) {
-        return reject(helpfulError('failed to find the required update file'));
+    if(!confirm(`Installing internals from ${info.url}:${info.branch}`)) return reject(helpfulError(`cancelled download! ${info}`));
+    const dir = path.join(process.cwd(), 'plugins/internal.upd' );
+    try {
+        try {
+            fs.rmSync(dir, {recursive: true});
+        } catch(_) {}
+        fs.mkdirSync(dir, {recursive: true});
+    } catch(e) {
+        return reject(helpfulError("failed to create the plguin folder!", e));
     }
-    console.log(url);
-    function verifyDownload() {
-        console.log(`finished inflating update at ${folderPath}`);
-        if(!verifyHash(folderPath, pubKey)) return reject(helpfulError('Hash of downloaded folder is incorrect!!!'));
-        if(!verifyVersion(meta.version, folderPath)) return reject(helpfulError('Clawffee executable outdated for the update, please download the newest Clawffee executable manually if you wish to update!'))
+    git.clone({ 
+        fs, http, dir,
+        url: info.url,
+        singleBranch: true,
+        depth: 1,
+        ref: "UI" || info.branch,
+        onProgress(v) {
+            console.log(v.phase);
+            console.log(v.loaded / v.total || 0);
+        }
+    }).then(() => {
+        console.log('done!');
         
-        const pluginsInternalBackupPath = path.join(pluginPath, 'internal.bak');
-        try {
-            // FIXME: this is super dangerous, maybe creating a marker file into the directory would be a good idea to check before running `rm`
-            fs.rmSync(pluginsInternalBackupPath, {force: true, recursive: true});
-        } catch(e) {} // can silently fail
-        try {
-            fs.renameSync(pluginsInternalPath, pluginsInternalBackupPath);
-        } catch(e) {} // can silently fail, either means the file doesnt exist or it will fail loudly in the next step
-        try {
-            fs.renameSync(folderPath, pluginsInternalPath);
-        } catch(e) {
-            return reject(helpfulError('failed to move the update to the required position'));
-        }
-        resolve(void(0));
-    }
-
-    const https = require('https');
-    /**
-     * 
-     * @param {IncomingMessage} res 
-     * @returns 
-     */
-    function handleDownload(res) {
-        if(res.statusCode == 302) {
-            https.get(res.headers.location, {
-                headers: info.update_data.headers
-            }, handleDownload);
-            return;
-        }
-        const tar = require('tar-stream');
-        const gzip = require('zlib');
-        const zipFile = tar.extract();
-        const {createWriteStream} = require('fs');
-        let writers = 0;
-        let finished = false;
-        zipFile.on('entry', (headers, stream, next) => {
-            if(path.posix.normalize(headers.name).startsWith('../')) {
-                return reject(helpfulError(`path ${headers.name} is pointing outside the folder!!!`));
-            }
-            fs.mkdirSync(path.join(folderPath, path.dirname(headers.name)), {recursive: true});
-            writers++;
-            stream.pipe(createWriteStream(path.join(folderPath, headers.name))).on('finish', () => {
-                writers--;
-                if(writers == 0 && finished) verifyDownload();
-            });
-            stream.on('end', () => {
-                next();
-            });
-        }).once('close', () => {
-            finished = true;
-            if(writers == 0) verifyDownload();
-        });
-        res.pipe(gzip.createGunzip()).pipe(zipFile);
-    }
-    https.get(url, {
-        headers: info.update_data.headers
-    }, handleDownload);
-});});}
+    }, (err) => {
+        return reject(helpfulError("failed to download plugin, check your internet settings!", err));
+    });
+})})}
 
 // convert Error to string (note that Error and string are resolved and not rejected)
 const update_info = error_update_info.then(data => Promise.resolve(data instanceof Error ? data.message : data));
@@ -253,7 +203,6 @@ const pluginApiV1 = {
 module.exports = {
     pubKey,
     update_info,
-    runUpdate,
     verifyHash,
     getPubHash,
     meta,
@@ -265,5 +214,6 @@ module.exports = {
         "v0": pluginApiV0,
         "v1": pluginApiV1,
     },
-    options
+    options,
+    installInternals
 };

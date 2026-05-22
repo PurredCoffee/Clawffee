@@ -1,5 +1,5 @@
 //@ts-check
-import path from "path"
+const path = require("path")
 
 /**
  * @typedef {Object} HandlerReturnValue
@@ -51,24 +51,17 @@ const getValue = (...values) => {
 };
 
 /**
- * @param {string} arg 
- * @returns {string} The `arg` escaped for shells
- */
-export function escapeShellArg(arg) {
-    const safeShellArg = /^[a-zA-Z0-9,._+:@%\/-]+$/;
-    if (safeShellArg.test(arg)) {
-        return arg;
-    }
-    return `'${arg.replaceAll("'", "\\'")}'`;
-}
-
-/**
  * @param {string[]} args 
  * @returns {string} The `args` escaped for shells
  */
-export function escapeShellArgs(args) {
-    return args.map(arg => escapeShellArg(arg))
-        .join(" ");
+function escapeShellArgs(...args) {
+    return args.map(arg => {
+        const safeShellArg = /^[a-zA-Z0-9,._+:@%\/-]+$/;
+        if (safeShellArg.test(arg)) {
+            return arg;
+        }
+        return `'${arg.replaceAll("'", "\\'")}'`;
+    }).join(" ");
 }
 
 /**
@@ -80,11 +73,11 @@ function getBestArgv0(runtimePath, scriptPath) {
     const argv0 = process.argv0;
     if (path.basename(argv0) == path.basename(runtimePath)) {
         // if the runtime is called directly
-        return escapeShellArgs([argv0, ...process.execArgv, scriptPath, "--"]);
+        return escapeShellArgs(argv0, ...process.execArgv, scriptPath, "--");
     }
     // if argv[0] is overriden with `exec -a` or `env -a` we expect it to wrap the bun binary correctly
     // e.g. by appending the arguments to bun with `"--" "${@}"`
-    return escapeShellArg(argv0);
+    return escapeShellArgs(argv0);
 }
 
 /**
@@ -102,7 +95,7 @@ function readFlag([key, flag]) {
 /**
  * @param {Record<string, Flag>} flags
  */
-export function parseArguments(flags) {
+function parseArguments(flags) {
     const argv = [...process.argv];
 
     const [runtimePath, scriptPath] = argv.splice(0, 2);
@@ -290,4 +283,9 @@ export function parseArguments(flags) {
         bestArgv0,
     };
 
+}
+
+module.exports = {
+    parseArguments,
+    escapeShellArgs
 }

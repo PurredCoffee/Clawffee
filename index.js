@@ -1,5 +1,5 @@
 //@ts-check
-const { verifyHash, pubKey, runUpdate, getVerInfoSafe, helpfulError, resolveInternalPluginPath } = require('./internals/shared');
+const { verifyHash, pubKey, installInternals, getVerInfoSafe, helpfulError, resolveInternalPluginPath } = require('./internals/shared');
 
 function main() {
     const verInfo = getVerInfoSafe();
@@ -7,9 +7,9 @@ function main() {
     if(!verInfo) return (async () => {
         console.error('could not find internal plugins folder, assuming first launch. Downloading dependencies...');
         try {
-            await runUpdate();
+            await installInternals();
         } catch(e) {
-            throw helpfulError("update failed", e);
+            throw e;
         }
         require('./launch');
     })();

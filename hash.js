@@ -2,35 +2,8 @@
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
-const readline = require('readline');
-const Writable = require('stream').Writable;
+const {promptClear, promptPassword} = require('./buildReqs/prompt.js');
 (async () => {
-    var mutableStdout = new Writable({
-    write: function(chunk, encoding, callback) {
-        if (!this.muted)
-            process.stdout.write(chunk, encoding);
-        callback();
-    }
-    });
-    var rl = readline.createInterface({
-    input: process.stdin,
-    output: mutableStdout,
-    terminal: true
-    });
-    function promptClear(message) {
-        mutableStdout.muted = false;
-        return new Promise(resolve => {
-            rl.question(message + ": ", resolve);
-        });
-    }
-
-    function promptPassword(message) {
-        mutableStdout.muted = false;
-        return new Promise(resolve => {
-            rl.question(message + ": ", resolve);
-            mutableStdout.muted = true;
-        });
-    }
     const paramCache = {};
     async function getParam(name, message, hidden = false) {
         if (paramCache[name]) {
@@ -98,38 +71,11 @@ const Writable = require('stream').Writable;
         const json = require('./' + path.join(folder, 'version.json'));
         json.pub_key = publicKey;
         fs.writeFileSync(path.join(folder, 'version.json'), JSON.stringify(json, null, 4));
-        console.info(`wrote the keys into ${oldername + '.priv'} and ${foldername + '.pub.txt'}`)
+        console.info(`wrote the keys into ${foldername + '.priv'} and ${foldername + '.pub.txt'}`)
     }
+    let password = await getParam('-p', 'specify a password(empty for null)', true) || null;
     const privateKey = fs.readFileSync(keypath);
     console.log(clearHash.hash.toString('base64'));
-    const encHash = crypto.privateEncrypt(crypto.createPrivateKey({ key: privateKey, format: 'pem', passphrase: await getParam('-p', 'specify a password(empty for null)', true) || null }), clearHash.hash).toString('base64');
-    console.log(encHash);
-    const json = require('./' + path.join(folder, 'version.json'));
-    json.hash = encHash;
-    fs.writeFileSync(path.join(folder, 'version.json'), JSON.stringify(json, null, 4));
-
-    // create the tarball
-    const tar = require('tar-stream').pack();
-
-    
-    function enterFolder(p) {
-        const files = fs.readdirSync(p);
-        files.forEach(v => {
-            v = p + '/' + v;
-            if(ignoredFiles.includes(v.substring(folder.length + 1)))
-                return;
-            const stat = fs.statSync(v);
-            if(stat.isFile()) {
-                tar.entry({
-                    name: v.substring(folder.length + 1)
-                }, fs.readFileSync(v));
-            } else if(stat.isDirectory()) {
-                enterFolder(v);
-            }
-        });
-    }
-    enterFolder(folder);
-    const gzip = require('zlib');
-    tar.pipe(gzip.createGzip()).pipe(fs.createWriteStream(foldername + '.tar.gz'));
-    tar.finalize();
+    const encHash = crypto.privateEncrypt(crypto.createPrivateKey({ key: privateKey, format: 'pem', passphrase: password}), clearHash.hash).toString('base64');
+    fs.writeFileSync(path.join(folder, 'hash.x'), encHash);
 })();

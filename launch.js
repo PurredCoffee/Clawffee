@@ -5,16 +5,16 @@
 const { semver } = require('bun');
 const shared = require('./internals/shared');
 const { resolvePath, resolveInternalPluginPath, getVerInfoSafe, helpfulError, pluginApi, meta, options } = shared;
-const { escapeShellArg } = require('./internals/arguments.mjs');
+const { escapeShellArgs } = require('./internals/arguments.js');
 
 /**
  * @returns {InternalData}
  */
 const getInternalData = () => {
-    const { update_info, verifyHash, runUpdate, pubKey, getPubHash } = shared;
+    const { update_info, verifyHash, pubKey, getPubHash } = shared;
 
     return {
-        updateInfo: update_info, verifyHash, runUpdate, pubKey, getPubHash, meta
+        updateInfo: update_info, verifyHash, pubKey, getPubHash, meta
     };
 };
 
@@ -140,12 +140,12 @@ const main = async () => {
         switch (options.format) {
             case "human":
                 console.log(`Clawffee Launcher Version \u001b[33;1m${meta.version}\u001b[0m 🐾`);
-                console.log(`Clawffee Path \u001b[33;1m${escapeShellArg(resolvePath())}\u001b[0m 🐾`);
+                console.log(`Clawffee Path \u001b[33;1m${escapeShellArgs(resolvePath())}\u001b[0m 🐾`);
                 console.log(`Clawffee Version \u001b[33;1m${versionInfo?.version ?? "unknown"}\u001b[0m 🐾`);
                 return;
             case "text":
-                console.log(`CLAWFFEE_LAUNCHER_VERSION=${escapeShellArg(meta.version)}`);
-                console.log(`CLAWFFEE_PATH=${escapeShellArg(resolvePath())}`);
+                console.log(`CLAWFFEE_LAUNCHER_VERSION=${escapeShellArgs(meta.version)}`);
+                console.log(`CLAWFFEE_PATH=${escapeShellArgs(resolvePath())}`);
                 if (versionInfo != null) {
                     console.log(`CLAWFFEE_VERSION=${versionInfo?.version}`);
                 }

@@ -2,10 +2,10 @@
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
-/** @import { FlagWithOptionalArgument, FlagWithRequiredArgument } from './arguments.mjs' */
-import { parseArguments } from './arguments.mjs';
+/** @import { FlagWithOptionalArgument, FlagWithRequiredArgument } from './arguments.js' */
+const { parseArguments } =  require('./arguments.js');
 
-export const logLevels = Object.fromEntries([
+const logLevels = Object.fromEntries([
     "error",
     "warn",
     "info",
@@ -30,7 +30,7 @@ export const logLevels = Object.fromEntries([
  * @returns true if and only if the value is `true`, `1`, `yes`, `y`, or `on` (case-insensitive)
  */
 const isTrue = (value) => {
-    return !!value.match(/^true|1|yes|y|on$/i);
+    return trueValues.includes(value.toLowerCase());
 };
 
 const trueValues = ["true", "1", "yes", "y", "on"];
@@ -38,7 +38,7 @@ const trueValues = ["true", "1", "yes", "y", "on"];
 /**
  * @returns clawffee's user-specific configuration
  */
-export function xdgPath() {
+function xdgPath() {
     switch (process.platform) {
         case 'darwin': return path.join(os.homedir(), "Library", "Preferences", "com.clawffee");
         case 'win32': return path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local"), "Clawffee", "Config");
@@ -46,7 +46,7 @@ export function xdgPath() {
     }
 }
 
-export function xdgPathDescription() {
+function xdgPathDescription() {
     switch (process.platform) {
         case 'darwin': return "~/Library/Preferences/com.clawffee";
         case 'win32': return path.join("%LOCALAPPDATA%", "Clawffee", "Config");
@@ -58,7 +58,7 @@ export function xdgPathDescription() {
  * @param {string} p path
  * @returns The path `p` where `~` is resolved to the user's home directory
  */
-export function resolveHome(p) {
+function resolveHome(p) {
     if (p == "~" || p.startsWith("~/")) {
         return path.join(os.homedir(), p.substring(1));
     }
@@ -72,11 +72,11 @@ export function resolveHome(p) {
  * @param {string} code The error code, like "ENOENT".
  * @returns true if and only if the error has the error `code`.
  */
-export function hasErrorCode(e, code) {
+function hasErrorCode(e, code) {
     return typeof e === "object" && e != null && "code" in e && e.code === code;
 }
 
-export function parseOptions() {
+function parseOptions() {
     /** @type {Options} */
     const options = {
         version: false,
@@ -188,7 +188,7 @@ export function parseOptions() {
             return e;
         } else {
             // keep formatted
-            return `\u001b[31m${message.replaceAll("\u001b[0m", "\u001b[0m\u001b[31m")}\u001b[0m`;
+            return `\u001b[31m${message.replaceAll("\u001b[0m", "\u001b[0m\u001b[31m")}${cause?` ${typeof cause == 'string'?cause:cause.message}`:""}\u001b[0m`;
         }
     };
 
@@ -248,4 +248,14 @@ export function parseOptions() {
             chdir,
         }
     };
+}
+
+module.exports = {
+    parseOptions,
+    hasErrorCode,
+    resolveHome,
+    xdgPathDescription,
+    xdgPath,
+    logLevels,
+    isTrue
 }
