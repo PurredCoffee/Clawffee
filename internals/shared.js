@@ -134,7 +134,11 @@ function installInternals() { return new Promise((resolve, reject) => {error_upd
         }
     }).then(() => {
         console.log('done!');
-        
+        if(!verifyHash(dir, pubKey)) {
+            return reject(helpfulError("plugin failed to pass hash verification!"));
+        }
+        fs.renameSync(dir, dir.substring(0, dir.length-4));
+        return resolve(true);
     }, (err) => {
         return reject(helpfulError("failed to download plugin, check your internet settings!", err));
     });
