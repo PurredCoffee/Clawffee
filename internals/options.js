@@ -188,7 +188,7 @@ function parseOptions() {
             return e;
         } else {
             // keep formatted
-            return `\u001b[31m${message.replaceAll("\u001b[0m", "\u001b[0m\u001b[31m")}${cause?` ${typeof cause == 'string'?cause:cause.message}`:""}\u001b[0m`;
+            return `\u001b[31m${message.replaceAll("\u001b[0m", "\u001b[0m\u001b[31m")}${cause?` ${typeof cause == 'string'?cause:(cause.message ?? cause)}`:""}\u001b[0m`;
         }
     };
 

@@ -127,7 +127,7 @@ function installInternals() { return new Promise((resolve, reject) => {error_upd
         url: info.url,
         singleBranch: true,
         depth: 1,
-        ref: "UI" || info.branch,
+        ref: info.branch,
         onProgress(v) {
             console.log(v.phase);
             console.log(v.loaded / v.total || 0);
