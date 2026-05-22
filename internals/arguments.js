@@ -192,11 +192,7 @@ function parseArguments(flags) {
      */
     const callHandler = (flag, ...values) => {
         if (flag == null) {
-            return {
-                showUsage: true,
-                error: "unknown option",
-                exit: 1,
-            };
+            return {};
         }
         const envName = "envName" in flag ? flag.envName : null;
         if (envName != null) {

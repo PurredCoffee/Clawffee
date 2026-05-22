@@ -59,8 +59,9 @@ function verifyHash(folder, pubKey) {
     const encHash = Buffer.from(fs.readFileSync(path.join(folder,"hash.x")).toString(), "base64");
     const decHash = getPubHash(encHash, pubKey);
     const compHash = require('./hash_folder.js')(folder, []).hash.toString('base64');
-    console.log(encHash, decHash, compHash);
-    return decHash === compHash;
+    if(decHash === compHash) return true;
+    if(options.verbose > logLevels.verbose) console.error(encHash, decHash, compHash);
+    return false;
 }
 
 /**
@@ -162,8 +163,6 @@ const pluginApiV0 = {
         }
         // change to the working directory that is configured
         chdir(resolvePath());
-        // override argv until the plugin knows how to handle launcher options
-        process.argv = new Array(...pluginArgv());
     },
     /**
      * @param {string} id The path to `index.js`
