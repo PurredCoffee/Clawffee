@@ -6,13 +6,17 @@
     flake-utils.url = "github:numtide/flake-utils";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    bun2nix.url = "github:nix-community/bun2nix";
+    bun2nix.inputs.nixpkgs.follows = "nixpkgs";
+    bun2nix.inputs.systems.follows = "flake-utils/systems";
+    bun2nix.inputs.treefmt-nix.follows = "treefmt-nix";
   };
   outputs =
     inputs:
     let
       buildPackages =
         pkgs:
-        pkgs.lib.makeScope pkgs.newScope (self: {
+        pkgs.lib.makeScope (pkgs.extend inputs.bun2nix.overlays.default).newScope (self: {
           webview = self.callPackage ./nix/webview.nix { };
           clawffee = self.callPackage ./nix/clawffee.nix { };
         });

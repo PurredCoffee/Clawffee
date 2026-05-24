@@ -239,3 +239,12 @@ Useful commands:
 - `nix flake update --commit-lock-file` - Update the nix dependencies and commit the new `flake.lock` lock file.
 - `nix fmt` - Format all `*.nix` files.
 - `nix run .` - Run the production build of clawffee from the current source code. Note that all files need to be committed or staged into git for this to work correctly.
+
+#### Update nix/bun.nix
+
+The file `nix/bun.nix` contains all bun dependencies that are needed to build the nix package.
+This file should be updated after `package.json` or `bun.lock` was changed.
+To do so:
+```
+nix develop --command bun2nix -o nix/bun.nix
+```
