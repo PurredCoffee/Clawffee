@@ -6,9 +6,9 @@ const crypto = require('crypto');
 const { IncomingMessage } = require('http');
 const { logLevels, parseOptions } = require('./options.js');
 const dns = require('dns/promises');
-const path = require('path')
-const git = require('isomorphic-git')
-const http = require('isomorphic-git/http/node')
+const path = require('path');
+const git = require('isomorphic-git');
+const http = require('isomorphic-git/http/node');
 const fs = require('fs')
 
 const { args, options, environment } = parseOptions();
@@ -121,7 +121,7 @@ function installInternals() { return new Promise((resolve, reject) => {error_upd
         } catch(_) {}
         fs.mkdirSync(dir, {recursive: true});
     } catch(e) {
-        return reject(helpfulError("failed to create the plguin folder!", e));
+        return reject(helpfulError("failed to create the plugin folder!", e));
     }
     git.clone({ 
         fs, http, dir,

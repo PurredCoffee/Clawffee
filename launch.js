@@ -6,6 +6,7 @@ const { semver } = require('bun');
 const shared = require('./internals/shared');
 const { resolvePath, resolveInternalPluginPath, getVerInfoSafe, helpfulError, pluginApi, meta, options } = shared;
 const { escapeShellArgs } = require('./internals/arguments.js');
+const git = require('isomorphic-git');
 
 /**
  * @returns {InternalData}
@@ -14,7 +15,7 @@ const getInternalData = () => {
     const { update_info, verifyHash, pubKey, getPubHash } = shared;
 
     return {
-        updateInfo: update_info, verifyHash, pubKey, getPubHash, meta
+        updateInfo: update_info, verifyHash, pubKey, getPubHash, meta, git, git_http: require('isomorphic-git/http/node')
     };
 };
 
