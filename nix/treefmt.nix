@@ -7,5 +7,12 @@
   settings.on-unmatched = "warn";
   settings.walk = "git";
   settings.excludes = [
+    "**/bun.nix"
+    "*.{json,yaml,yml}"
+    "*.sh"
+    "*.{mjs,js}"
+    "*.scss"
+    "*.{txt,md}"
+    "*.{png,ico}"
   ];
 }

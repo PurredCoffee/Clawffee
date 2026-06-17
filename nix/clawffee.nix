@@ -8,30 +8,12 @@
   yad,
   libnotify,
   bun,
+  bun2nix,
   gst_all_1,
 }:
 let
   fullSrc = ./..;
   meta = builtins.fromJSON (builtins.readFile (fullSrc + /internals/meta.json));
-  findLib =
-    isFile: libPackages:
-    builtins.head (
-      builtins.concatMap (
-        drv:
-        let
-          path = drv.out + /lib;
-          fileNames = builtins.attrNames (builtins.readDir path);
-        in
-        lib.optionals (builtins.pathExists path) (
-          builtins.concatMap (fileName: lib.optional (isFile fileName) "${path}/${fileName}") fileNames
-        )
-      ) libPackages
-    );
-  setDefault =
-    name: value:
-    assert lib.isValidPosixName name;
-    "--set-default ${name} ${lib.escapeShellArg value}";
-  setDefaults = env: lib.concatStringsSep " " (lib.mapAttrsToList setDefault env);
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   strictDeps = true;
@@ -64,6 +46,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       ];
   };
 
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    bun2nix.hook
+  ]
+  ++ lib.optionals stdenvNoCC.isLinux [
+    copyDesktopItems
+  ];
+
   desktopItems = lib.optionals stdenvNoCC.isLinux [
     (makeDesktopItem {
       name = "clawffee";
@@ -80,45 +70,33 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     })
   ];
 
-  nativeBuildInputs = [
-    makeBinaryWrapper
-  ]
-  ++ lib.optionals stdenvNoCC.isLinux [
-    copyDesktopItems
-  ];
+  bunDeps = bun2nix.fetchBunDeps {
+    bunNix = ./bun.nix;
+  };
+  dontUseBunPatch = true;
+  dontUseBunBuild = true;
 
-  binPackages = [
+  runtimePackage = bun;
+  runtimeInputs = [
     libnotify
   ]
   ++ lib.optionals stdenvNoCC.isLinux [
     yad
   ];
-  binPath = lib.makeBinPath finalAttrs.binPackages;
-
-  libPackages = [
-    webview
-  ]
-  ++ lib.optionals stdenvNoCC.isLinux [
-    gst_all_1.gst-plugins-base
-    gst_all_1.gst-plugins-good
-    gst_all_1.gst-plugins-bad
-    gst_all_1.gstreamer
-  ];
-  libPath = lib.makeLibraryPath finalAttrs.libPackages;
-
   runtimeEnv =
     lib.optionalAttrs stdenvNoCC.isLinux {
-      WEBVIEW_PATH = findLib (fileName: fileName == "libwebview.so") finalAttrs.libPackages;
-      GST_PLUGIN_PATH = findLib (fileName: fileName == "gstreamer-1.0") finalAttrs.libPackages;
+      WEBVIEW_PATH = "${webview}/lib/libwebview.so";
+      GST_PLUGIN_PATH = lib.makeLibraryPath [
+        gst_all_1.gstreamer
+        gst_all_1.gst-plugins-base
+        gst_all_1.gst-plugins-good
+        gst_all_1.gst-plugins-bad
+        gst_all_1.gst-plugins-ugly
+      ];
     }
     // lib.optionalAttrs stdenvNoCC.isDarwin {
-      WEBVIEW_PATH = findLib (fileName: fileName == "libwebview.dylib") finalAttrs.libPackages;
+      WEBVIEW_PATH = "${webview}/lib/libwebview.dylib";
     };
-
-  env = finalAttrs.runtimeEnv;
-
-  runtimePackage = bun;
-  runtimePath = lib.getExe finalAttrs.runtimePackage;
 
   passthru = {
     inherit webview;
@@ -128,18 +106,33 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook preInstall
 
     mkdir -p "$out/share/clawffee"
-    cp -r "$src/." "$out/share/clawffee/"
+    cp -r "./." "$out/share/clawffee/"
 
     mkdir -p "$out/share/pixmaps"
     ln -s "$out/share/clawffee/assets/clawffee.png" "$out/share/pixmaps/clawffee.png"
 
+    ${lib.toShellVar "runtimePath" (lib.getExe finalAttrs.runtimePackage)}
+    ${lib.toShellVar "binPath" (lib.makeBinPath finalAttrs.runtimeInputs)}
+    ${lib.toShellVar "runtimeEnvArgs" (
+      lib.concatMap (
+        { name, value }:
+        [
+          "--set-default"
+          (
+            assert lib.isValidPosixName name;
+            name
+          )
+          (lib.escapeShellArg value)
+        ]
+      ) (lib.attrsToList finalAttrs.runtimeEnv)
+    )}
+
     makeBinaryWrapper "$runtimePath" "$out/bin/clawffee" \
-          ${setDefaults finalAttrs.runtimeEnv} \
           --inherit-argv0 \
           --add-flag "$out/share/clawffee/index.js" \
           --add-flag -- \
           --prefix PATH ':' "$binPath" \
-          --prefix LD_LIBRARY_PATH ':' "$libPath"
+          "''${runtimeEnvArgs[@]}"
 
     runHook postInstall
   '';

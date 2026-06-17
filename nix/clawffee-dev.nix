@@ -1,24 +1,19 @@
 {
   mkShellNoCC,
   clawffee,
+  bun2nix,
 }:
 mkShellNoCC (finalAttrs: {
   pname = "${clawffee.pname}-dev";
-  inherit (clawffee)
-    version
-    env
-    binPath
-    libPath
-    ;
-  packages = [ clawffee.runtimePackage ];
+  inherit (clawffee) version;
+  env = clawffee.runtimeEnv;
+  packages = clawffee.runtimeInputs ++ [
+    clawffee.runtimePackage
+    bun2nix
+  ];
   shellHook = ''
-    if [[ ! -z "$binPath" ]]; then
-      PATH="$binPath''${PATH:+:''${PATH}}"
-    fi
-    if [[ ! -z "$libPath" ]]; then
-      LD_LIBRARY_PATH="$libPath''${LD_LIBRARY_PATH:+:''${LD_LIBRARY_PATH}}"
-    fi
-    alias "$pname=env -a $pname bun "$(printf %q "$(pwd)/launch")" --"
-    env -a "$pname" bun "$(pwd)"/internals/shared -- --help
+    alias "$pname=env -a $pname bun $(printf %q "$(pwd)/launch") --"
+    echo 'Run `clawffee-dev --help` on how to run the development build.'
+    echo 'Run `bun2nix -o '"$(printf %q "$(pwd)/nix/bun.nix")"'` to update the bun dependencies for nix.'
   '';
 })
